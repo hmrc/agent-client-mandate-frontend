@@ -84,7 +84,7 @@ client.agent-declaration.agent-name = the nominated agent {0} has agreed to act 
 client.agent-declaration.information = that the information I have provided is correct and complete
 
 #client agent confirmation
-client.agent-confirmation.title = What happens next?
+client.agent-confirmation.title = Your request to appoint Agent Limited has been successfully submitted
 client.agent-confirmation.banner-text = Your request to appoint Agent Limited has been successfully submitted
 client.agent-confirmation.notification = Your agent will receive an email notification.
 client.agent-confirmation.header = What happens next?

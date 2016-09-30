@@ -85,7 +85,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite 
         viewAuthorisedClient(Some(mandate)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What happens next?")
+          document.title() must be("Your request to appoint Agent Limited has been successfully submitted")
           document.getElementById("notification").text() must be("Your agent will receive an email notification.")
           document.getElementById("heading").text() must be("What happens next?")
           document.getElementById("list").text() must include("Your agent has 28 days to accept the request your request by accessing the ATED service.")
