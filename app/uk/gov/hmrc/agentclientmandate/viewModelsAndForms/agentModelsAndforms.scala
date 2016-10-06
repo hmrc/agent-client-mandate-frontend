@@ -129,3 +129,33 @@ object EditMandateDetailsForm {
    "email" -> text.verifying(Messages("agent.enter-email.error.email"), email => email.nonEmpty)
   )(EditMandateDetails.apply)(EditMandateDetails.unapply))
 }
+
+case class RejectClientQuestion(rejectClient: Option[Boolean] = None)
+
+object RejectClientQuestion {
+  implicit val formats = Json.format[RejectClientQuestion]
+}
+
+object RejectClientQuestionForm {
+  val rejectClientQuestionForm =
+    Form(
+      mapping(
+        "rejectClient" -> optional(boolean).verifying(Messages("agent.reject-client.error.mandatory"), x => x.isDefined)
+      )(RejectClientQuestion.apply)(RejectClientQuestion.unapply)
+    )
+}
+
+case class RemoveClientQuestion(removeClient: Option[Boolean] = None)
+
+object RemoveClientQuestion {
+  implicit val formats = Json.format[RemoveClientQuestion]
+}
+
+object RemoveClientQuestionForm {
+  val removeClientQuestionForm =
+    Form(
+      mapping(
+        "removeClient" -> optional(boolean).verifying(Messages("agent.reject-client.error.mandatory"), x => x.isDefined)
+      )(RemoveClientQuestion.apply)(RemoveClientQuestion.unapply)
+    )
+}

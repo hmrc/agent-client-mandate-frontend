@@ -200,5 +200,26 @@ agent.reject-client-confirmation.request-new-client = you can request a new clie
 agent.reject-client-confirmation.submit-returns = submit returns for an existing client
 agent.reject-client-confirmation.view-all-clients = View all your clients
 
+agent.reject-client.error.mandatory = You must answer the question
+
 yes-no.error.mandatory = You must answer question
 yes-no.error.general.yesNo = There is a problem with the question
+
+# agent remove client
+agent.remove-client.title = Confirm Client Removal
+agent.remove-client.header = Are you sure you want to remove {0}?
+agent.remove-client.error.mandatory = You must answer the question
+agent.remove-client.error.general.removeClient = There is a problem with the question
+agent.remove-client.text = Once you have removed a client you will no longer be able to act on their behalf.
+
+
+# agent remove client confirmation
+agent.remove-client-confirmation.title = Client remove Confirmed
+agent.remove-client-confirmation.banner-text = You have removed {0}
+agent.remove-client-confirmation.banner-text-date = on the {0}
+agent.remove-client-confirmation.notification = Your client will receive an email notification.
+agent.remove-client-confirmation.what-next = What happens next?
+agent.remove-client-confirmation.request-new-client = you can request a new client
+agent.remove-client-confirmation.submit-returns = submit returns for an existing client
+agent.remove-client-confirmation.view-all-clients = View all your clients
+

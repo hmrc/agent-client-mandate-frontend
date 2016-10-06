@@ -52,7 +52,7 @@
             <tr>
               <td id="client-name-@index">@active.clientParty.map(_.name)</td>
               <td id="remove-client">
-                <a id="remove-client-link-@index">
+                <a id="remove-client-link-@index" href="@routes.RemoveClientController.view(active.id)">
                   @Messages("client.summary.client-remove") <span class="screen-reader-text">@active.clientParty.map(_.name)</span>
                 </a>
               </td>

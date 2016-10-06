@@ -214,6 +214,23 @@ class AgentClientMandateServiceSpec extends PlaySpec with OneAppPerSuite with Mo
         when(mockAgentClientMandateConnector.activateMandate(Matchers.any())(Matchers.any(), Matchers.any()))
           .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
         val response = TestAgentClientMandateService.acceptClient(mandateId)
+      }
+    }
+
+    "remove client" when {
+      "agent removes client status returned ok" in {
+        implicit val user = AuthBuilder.createOrgAuthContext(userId, "agent")
+        when(mockAgentClientMandateConnector.removeClient(Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(OK)))
+        val response = TestAgentClientMandateService.removeClient(mandateId)
+        await(response) must be(true)
+      }
+
+      "agent removes client status returned not ok" in {
+        implicit val user = AuthBuilder.createOrgAuthContext(userId, "agent")
+        when(mockAgentClientMandateConnector.removeClient(Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
+        val response = TestAgentClientMandateService.removeClient(mandateId)
         await(response) must be(false)
       }
     }

@@ -1,0 +1,43 @@
+@import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
+@import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
+@import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
+
+@(removeClientForm: Form[RemoveClientQuestion], clientName: String, mandateId: String)(implicit request: Request[_])
+
+@main_template(title = Messages("agent.remove-client.title")) {
+
+    <h1 id="header" class="heading-xlarge">
+        <span class="pre-heading" id="pre-heading">@Messages("agent.edit-mandate-details.pre-header")</span>
+        @Messages("agent.remove-client.header", clientName)
+    </h1>
+
+    <p>
+    @Messages("agent.remove-client.text")
+    </p>
+
+    @mandateErrorSummary(removeClientForm, "agent.remove-client.error.general")
+
+    @form(action = routes.RemoveClientController.confirm(mandateId, clientName)) {
+
+        <div class="form-group" id="rejectClient">
+        @mandateInputRadioGroup(
+            removeClientForm("removeClient"),
+            Seq("true" -> Messages("radio-yes"),
+                "false" -> Messages("radio-no")),
+            '_groupClass -> "inline",
+            '_legendClass -> "screen-reader-text",
+            '_legend -> Messages("agent.remove-client.header", clientName),
+            '_labelClass -> "block-label",
+            '_labelAfter -> true
+        )
+        </div>
+
+        <div class="form-group">
+            <button class="button" id="submit" type="submit">@Messages("confirm-button")</button>
+        </div>
+
+    }
+
+}
