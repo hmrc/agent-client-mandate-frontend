@@ -65,7 +65,11 @@
                   @Messages("client.summary.client-remove") <span class="screen-reader-text">@active.clientDisplayName</span>
                 </a>
               </td>
-
+              <td id="edit-client">
+                <a id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(service, active.id)">
+                  @Messages("Edit") <span class="screen-reader-text">@active.clientDisplayName</span>
+                </a>
+              </td>
               <td class="tdRight">
                 <a id="client-link-@index"
                    href='@routes.AgentSummaryController.doDelegation(service, active.subscription.referenceNumber.getOrElse(""), active.clientParty.map(_.name).getOrElse(""))'

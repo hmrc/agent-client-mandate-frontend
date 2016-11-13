@@ -37,6 +37,7 @@ trait AgentClientMandateConnector extends ServicesConfig with RawResponseReads {
   val rejectClientUri = "rejectClient"
   val removeUri = "remove"
   val importExistingUri = "importExisting"
+  val editMandate = "edit"
 
   def http: HttpGet with HttpPost with HttpDelete
 
@@ -103,6 +104,14 @@ trait AgentClientMandateConnector extends ServicesConfig with RawResponseReads {
     val jsonData = Json.toJson(ggRelationshipDtoList)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/$importExistingUri"
     Logger.info(s"[AgentClientMandateConnector][importExistingRelationships] - POST - $postUrl")
+    http.POST[JsValue, HttpResponse](postUrl, jsonData)
+  }
+
+  def editMandate(mandate: Mandate)(implicit hc: HeaderCarrier, ac: AuthContext): Future[HttpResponse] = {
+    val authLink = AuthUtils.getAuthLink
+    val jsonData = Json.toJson(mandate)
+    val postUrl = s"$serviceUrl$authLink/$mandateUri/$editMandate"
+    Logger.info(s"[AgentClientMandateConnector][editMandate] - POST - $postUrl")
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 

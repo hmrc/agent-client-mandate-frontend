@@ -211,18 +211,23 @@ agent.check-client-details.registered-name = Registered name
 agent.check-client-details.utr = Unique tax reference
 agent.check-client-details.confirm = Confirm and add client
 
-# edit mandate details
+# agent edit mandate details
 agent.edit-mandate-details.title = Edit ACME Limited
 agent.edit-mandate-details.header = Edit ACME Limited
 agent.edit-mandate-details.pre-header = Manage your ATED service
-agent.edit-mandate-details.sub-heading = Unique agent reference GG123456
+agent.edit-mandate-details.sub-heading = Unique agent reference {0}
 agent.edit-mandate-details.displayName = Display name
 agent.edit-mandate-details.hint = This does not change the official company name.
 agent.edit-mandate-details.utr = Unique tax reference
 agent.edit-mandate-details.utr-hint = A UTR number is made up of 10 or 13 digits, If it is 13 digits only enter the last 10.
 agent.edit-mandate-details.answer = <p>It is issued by HMRC when they register their business or for Self-Assessment.</p> <p>It can usually be found in the header of any letter issued by HMRC next to headings such as 'Tax Reference', 'UTR' or 'Official Use</p>
+agent.edit-client.error.general.email = There is a problem with the email question.
+agent.edit-client.error.general.displayName = There is a problem with the display name question.
 agent.edit-mandate-details.email = Your email address
 agent.edit-mandate-details.submit = Save changes
+agent.edit-client.error.dispName = You must answer client display name question.
+agent.edit-client.error.dispName.length = Client display name cannot be more than 99 characters.
+agent.edit-client.error.email = You must answer email address question.
 
 # agent reject client
 agent.reject-client.title = Are you sure you want to reject the request from {0}?

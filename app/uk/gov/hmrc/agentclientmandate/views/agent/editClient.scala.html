@@ -3,22 +3,23 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.agentclientmandate.models._
 
-
-@(editMandateDetailsForm: Form[EditMandateDetails], service: String)(implicit request: Request[_])
+@(editMandateDetailsForm: Form[EditMandateDetails], service: String, mandateId: String)(implicit request: Request[_])
 
 @main_template(title = Messages("agent.edit-mandate-details.title")) {
 
-<div class="heading-sub" id="pre-header">@Messages("agent.edit-mandate-details.pre-header", service)</div>
-<h1 class="heading-xlarge" id="header">
+  @mandateErrorSummary(editMandateDetailsForm, "agent.edit-client.error.general")
+
+  <div class="heading-sub" id="pre-header">@Messages("agent.edit-mandate-details.pre-header", service)</div>
+  <h1 class="heading-xlarge" id="header">
     @Messages("agent.edit-mandate-details.header", service)
-</h1>
+  </h1>
 
-<h2 id="sub-heading">@Messages("Unique agent reference GG123456")</h2>
+  <h2 id="sub-heading">@Messages("agent.edit-mandate-details.sub-heading", mandateId)</h2>
 
-@form(action = routes.EditMandateController.view(service)) {
-
-<div class="form-group">
+  @form(action = routes.EditMandateDetailsController.submit(service, mandateId)) {
+  <div class="form-group">
 
     <div class="form-field">
     @mandateInput(editMandateDetailsForm("displayName"),
@@ -35,10 +36,7 @@
 
     <button class="button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
 
-</div>
-
-}
-
-
+  </div>
+  }
 }
 

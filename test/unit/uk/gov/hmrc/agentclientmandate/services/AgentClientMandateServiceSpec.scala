@@ -299,6 +299,28 @@ class AgentClientMandateServiceSpec extends PlaySpec with OneAppPerSuite with Mo
       }
     }
 
+    "edit client details" when {
+      "edit mandate status returned OK" in {
+        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "agent")
+        val respJson = Json.toJson(mandateNew)
+        when(mockAgentClientMandateConnector.editMandate(Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(OK, Some(respJson))))
+        val response = TestAgentClientMandateService.editMandate(mandateNew)
+        await(response) must be(Some(mandateNew))
+      }
+    }
+
+
+    "not edit client details" when {
+      "edit mandate status does not return OK" in {
+        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "agent")
+        when(mockAgentClientMandateConnector.editMandate(Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, None)))
+        val response = TestAgentClientMandateService.editMandate(mandateNew)
+        await(response) must be(None)
+      }
+    }
+
   }
 
 
