@@ -8,15 +8,19 @@
 @main_template(title = Messages("agent.remove-client-confirmation.title"), delegatedService = Some(service)) {
 
     <div class="transaction-banner--complete" id="banner">
-        <h1 id="banner-text"> @Messages("agent.remove-client-confirmation.banner-text", clientName) </h1>
-        <h2 id="banner-text-date"> @Messages("agent.remove-client-confirmation.banner-text-date", DateUtils.getDateAsText(DateTime.now))</h2>
+        <h1 id="banner-text"><img class="tick" alt="tick" src='@controllers.routes.Assets.at("images/tick.png")'>
+            @Messages("agent.remove-client-confirmation.banner-text", clientName)
+        </h1>
+            <span class="heading-small" id="date"> @Messages("agent.remove-client-confirmation.banner-text-date", DateUtils.getDateAsText(DateTime.now))</span>
     </div>
 
-    <p id="notification" class="heading-small">@Messages("agent.remove-client-confirmation.notification")</p>
+    <div class="form-group">
+        <span id="notification" class="h3-heading">@Messages("agent.remove-client-confirmation.notification")</span>
+    </div>
 
-    <hr>
-
-    <h2 id="heading" class="heading-large">@Messages("agent.remove-client-confirmation.what-next")</h2>
+    <div class="divider--top--thick">
+        <h2 id="heading" class="heading-large">@Messages("agent.remove-client-confirmation.what-next")</h2>
+    </div>
 
     <ul id="list" class="bullets">
         <li>@Messages("agent.remove-client-confirmation.request-new-client")</li>
