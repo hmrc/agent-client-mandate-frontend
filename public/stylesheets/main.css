@@ -358,3 +358,8 @@ html.noScroll {
 table td {
     font-size:100%
 }
+
+.form-control {
+    max-width:60%;
+}
+
