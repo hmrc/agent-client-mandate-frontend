@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,7 @@ trait ClientBannerPartialController extends FrontendController with Actions {
         Future.successful(BadRequest("The return url is not correctly formatted"))
       }
       else {
-        mandateService.fetchClientMandateByClient(clientId, service).map { x =>
-          x match {
+        mandateService.fetchClientMandateByClient(clientId, service).map {
             case Some(mandate) => mandate.currentStatus.status match {
               case uk.gov.hmrc.agentclientmandate.models.Status.Active => Ok(client_banner(service, mandate.agentParty.name, mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
               case uk.gov.hmrc.agentclientmandate.models.Status.Approved => Ok(client_banner(service, mandate.agentParty.name, mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
@@ -51,7 +50,6 @@ trait ClientBannerPartialController extends FrontendController with Actions {
             }
             case None => NotFound
           }
-        }
       }
     }
   }
