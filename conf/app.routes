@@ -90,9 +90,9 @@ POST    /agent/edit-client/:mandateId             uk.gov.hmrc.agentclientmandate
 GET     /agent/missing-email                   uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailController.view(service = "ated")
 POST    /agent/missing-email                   uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailController.submit(service = "ated")
 
-GET     /client/partial-banner/:clientId       uk.gov.hmrc.agentclientmandate.controllers.client.ClientBannerPartialController.getBanner(clientId: String, service = "ated", returnUrl: uk.gov.hmrc.play.binders.ContinueUrl)
+GET     /client/partial-banner/:clientId/:service       uk.gov.hmrc.agentclientmandate.controllers.client.ClientBannerPartialController.getBanner(clientId: String, service: String, returnUrl: uk.gov.hmrc.play.binders.ContinueUrl)
 
-GET     /client/details/:clientId              uk.gov.hmrc.agentclientmandate.controllers.client.EditEmailController.getClientMandateDetails(clientId: String, service = "ated", returnUrl: uk.gov.hmrc.play.binders.ContinueUrl)
+GET     /client/details/:clientId/:service              uk.gov.hmrc.agentclientmandate.controllers.client.EditEmailController.getClientMandateDetails(clientId: String, service: String, returnUrl: uk.gov.hmrc.play.binders.ContinueUrl)
 GET     /client/update-email/:clientId         uk.gov.hmrc.agentclientmandate.controllers.client.EditEmailController.view(clientId: String, service = "ated", returnUrl: uk.gov.hmrc.play.binders.ContinueUrl)
 POST    /client/update-email                   uk.gov.hmrc.agentclientmandate.controllers.client.EditEmailController.submit(service = "ated")
 

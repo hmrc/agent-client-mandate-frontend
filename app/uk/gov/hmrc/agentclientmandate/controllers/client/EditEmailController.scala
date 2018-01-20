@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ trait EditEmailController extends FrontendController with Actions with MandateCo
 
   def getClientMandateDetails(clientId: String, service: String, returnUrl: ContinueUrl) = AuthorisedFor(ClientRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request => {
-
       if (!returnUrl.isRelativeOrDev(FrontendAppConfig.env)) {
         Future.successful(BadRequest("The return url is not correctly formatted"))
       }
