@@ -3,14 +3,16 @@
 
 @if(clientsCancelled.isDefined) {
 <div class="form-group">
-    <div class="highlight-message highlight-message--full-width">
-        <h2 id="client-cancelled-title">@Messages("client.summary.client-cancelled.title")</h2>
 
-        <p>@Messages("client.summary.client-cancelled.text", service.toUpperCase)</p>
-
+        <h2 class="heading-medium" id="client-cancelled-title">@Messages("client.summary.client-cancelled.text", service.toUpperCase)</h2>
+        <ul class="list list-bullet">
         @for((name, index) <- clientsCancelled.get.zipWithIndex) {
-        <p id="client-cancelled-name-@index">@name</p>
+
+        <li id="client-cancelled-name-@index">@name</li>
+
         }
-    </div>
+        </ul>
+
+        <p>@messages("client.summary.client-cancelled.text.28days")</p>
 </div>
 }

@@ -81,7 +81,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec with OneServerPerSuite with
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")
-      assert(document.getElementById("client-cancelled-title").text === "Your clients have recently changed")
+      assert(document.getElementById("client-cancelled-title").text === "Your authority to act for these clients has been removed:")
 
       And("I should see the name of the client")
       assert(document.getElementById("client-cancelled-name-0").text === "AAA")

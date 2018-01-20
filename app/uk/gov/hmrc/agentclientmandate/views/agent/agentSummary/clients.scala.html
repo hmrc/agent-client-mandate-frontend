@@ -43,7 +43,7 @@
 
 
   <section id="clients-tab" tabindex="-1">
-    
+
 @if(mandates.activeMandates.size >= 15 || isUpdate) {
   <div class="form-group">
     @if(isUpdate) {
@@ -51,10 +51,8 @@
     } else {
       <details>
     }
-      <summary>
-            <span id="filter-clients" class="summary">
-              @Messages("client.summary.filter-clients")
-            </span>
+      <summary id="filter-clients" class="summary">
+          @Messages("client.summary.filter-clients")
       </summary>
 
       <div class="filterbox">

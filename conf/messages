@@ -54,7 +54,8 @@ client.summary.filter-update = Update
 client.summary.no_clients_found = No clients found
 
 client.summary.client-cancelled.title = Your clients have recently changed
-client.summary.client-cancelled.text = The following clients have removed your authority to act for them for {0}. This message will be available for 28 days.
+client.summary.client-cancelled.text = Your authority to act for these clients has been removed:
+client.summary.client-cancelled.text.28days = This message will be available for 28 days.
 
 #client collect email
 client.collect-email.title = What is your email address?
@@ -142,7 +143,7 @@ client.remove-agent-confirmation.banner-text = You have removed {0} as your agen
 client.remove-agent-confirmation.create-return = create a return
 client.remove-agent-confirmation.appoint-agent = appoint another agent to act for you
 client.remove-agent-confirmation.service_button = Your {0} online service
-client.remove-agent-confirmation.header = You can 
+client.remove-agent-confirmation.header = You can
 
 #client change agent
 client.change-agent.title = Do you want to appoint another agent to act for you?
