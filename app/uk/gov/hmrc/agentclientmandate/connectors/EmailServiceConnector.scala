@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.agentclientmandate.connectors
 
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentclientmandate.config.WSHttp
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 
 object EmailServiceConnector extends EmailServiceConnector {
@@ -31,11 +33,16 @@ trait EmailServiceConnector extends ServicesConfig with RawResponseReads {
 
   def serviceUrl: String
 
-  def http: CoreGet
+  def http: CorePost
 
   def validate(email: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val getUrl = s"$serviceUrl/hmrc/validate-email-address"
-    http.GET[HttpResponse](getUrl, queryParams = Seq("email" -> email))
+    val getUrl = s"$serviceUrl/validate-email-address"
+    http.POST[EmailToValidate, HttpResponse](getUrl, EmailToValidate(email))
   }
+}
 
+case class EmailToValidate(email: String)
+
+object EmailToValidate {
+  implicit def formats: Format[EmailToValidate] = Json.format[EmailToValidate]
 }
