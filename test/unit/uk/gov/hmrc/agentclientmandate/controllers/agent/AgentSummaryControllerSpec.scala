@@ -49,6 +49,20 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
       }
     }
 
+    "return page with UR banner" when {
+      "the UR banner toggle is activated" in {
+        val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))
+        viewAuthorisedAgent(mockMandates) { result =>
+
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.title() must be("ATED clients - GOV.UK")
+          document.getElementById("ur-panel") must not be null
+          document.getElementsByClass("banner-panel__close").text must be("No thanks")
+        }
+      }
+    }
+
     "return check client details view for agent" when {
       "they have no data" in {
         val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))

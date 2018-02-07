@@ -5,11 +5,15 @@
   mainClass: Option[String] = None,
   scriptElem: Option[Html] = None,
   delegatedService: Option[String] = None,
+  isUserResearchBannerVisible:Boolean = true,
   analyticsAdditionalJs: Option[Html] = None)(mainContent: Html)(implicit request : Request[_], messages: Messages)
 
 @import uk.gov.hmrc.play.views.html.layouts
-
 @serviceInfoContent = {}
+
+@urToggle = @{
+    true
+}
 
 @sidebar = {
     @if(sidebarLinks.isDefined) {
@@ -17,16 +21,30 @@
     }
 }
 
+@afterHeader = @{
+    if(isUserResearchBannerVisible && urToggle) {
+        helpers.fullWidthBanner(
+            Some(helpers.fullWidthBannerContentUr(
+                messages("urbanner.message.text"),
+                externalLinkWarning = None
+            ))
+        )
+    }
+    else HtmlFormat.empty
+}
 
-@govuk_wrapper(appConfig = uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig,
-               title = s"$title - GOV.UK",
-               mainClass = mainClass,
-               bodyClasses = bodyClasses,
-               sidebar = sidebar,
-               contentHeader = contentHeader,
-               mainContent = mainContent,
-               serviceInfoContent = serviceInfoContent,
-               scriptElem = scriptElem,
-               delegatedService = delegatedService,
-               analyticsJs = analyticsAdditionalJs
-)
+
+@govuk_wrapper(
+    appConfig = uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig,
+    title = s"$title - GOV.UK",
+    afterHeader = afterHeader,
+    mainClass = mainClass,
+    bodyClasses = bodyClasses,
+    sidebar = sidebar,
+    contentHeader = contentHeader,
+    mainContent = mainContent,
+    serviceInfoContent = serviceInfoContent,
+    scriptElem = scriptElem,
+    delegatedService = delegatedService,
+    analyticsJs = analyticsAdditionalJs
+    )
