@@ -14,10 +14,11 @@
 * limitations under the License.
 *@
 @(linkText: String,
+        linkUrl: String,
   externalLinkWarning: Option[String]
  )(implicit messages: Messages)
 
-<a href="https://signup.take-part-in-research.service.gov.uk/home?utm_campaign=ATED_details_summary&utm_source=Survey_Banner&utm_medium=other&t=HMRC&id=129"
+<a href="@linkUrl"
 data-sso="false"
 data-journey-click="other-global:Click:Feedback"
 target="_blank">@linkText</a>

@@ -22,10 +22,11 @@
 }
 
 @afterHeader = @{
-    if(isUserResearchBannerVisible && urToggle) {
+    if(isUserResearchBannerVisible && uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig.urBannerToggle) {
         helpers.fullWidthBanner(
             Some(helpers.fullWidthBannerContentUr(
                 messages("urbanner.message.text"),
+                uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig.urBannerLink,
                 externalLinkWarning = None
             ))
         )

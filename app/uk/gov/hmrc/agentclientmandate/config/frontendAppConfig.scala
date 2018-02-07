@@ -34,6 +34,7 @@ trait AppConfig {
   val defaultTimeoutSeconds: Int
   val timeoutCountdown: Int
   val servicesUsed: List[String]
+  val urBannerToggle: Boolean
 
   def serviceSignOutUrl(service: Option[String]): String
   def nonUkUri(service: String, backLinkUrl: String): String
@@ -57,8 +58,8 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
     }
     feedbackUrl + "?return=" + returnUri
   }
-
-
+  override lazy val urBannerToggle: Boolean = loadConfig("urBanner.toggle").toBoolean
+  lazy val urBannerLink: String = loadConfig("urBanner.link")
   override lazy val analyticsToken = loadConfig("google-analytics.token")
   override lazy val analyticsHost = loadConfig("google-analytics.host")
   override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
