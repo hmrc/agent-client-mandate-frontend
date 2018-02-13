@@ -417,3 +417,8 @@ agent.search-previous-mandate.error.mandateRef.length = A unique authorisation n
 agent.search-previous-mandate.error.general.mandate-ref-form = The unique authorisation number you entered was not found. Please check and try again.
 agent.search-previous-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation number you entered cannot be found. Check the number, or enter a different number.
 agent.search-previous-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation number you entered has already been used. Check the number, or enter a different number.
+
+
+#ur banner text
+urbanner.message.text = Help improve digital services by joining the HMRC user panel (opens in new window)
+urbanner.message.reject = No thanks

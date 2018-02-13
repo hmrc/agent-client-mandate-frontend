@@ -2,6 +2,7 @@
   title: String,
   mainClass: Option[String] = None,
   mainDataAttributes: Option[Html] = None,
+  afterHeader:Html = HtmlFormat.empty,
   bodyClasses: Option[String] = None,
   sidebar: Html = HtmlFormat.empty,
   contentHeader: Option[Html] = None,
@@ -20,6 +21,7 @@
 <link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("stylesheets/main.css")'/>
 <link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.min.css")'/>
 <link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.structure.min.css")'/>
+<link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("stylesheets/urBanner.css")'/>
 }
 
 @head = {
@@ -38,6 +40,7 @@
   <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.min.js")'></script>
   <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui-1.12.1.min.js")'></script>
   <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/timeout-dialog.js")'></script>
+  <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/urBanner.js")'></script>
   <script>
   @if(userLoggedIn) {
      $.timeoutDialog({timeout: @appConfig.defaultTimeoutSeconds, countdown: @appConfig.timeoutCountdown, keep_alive_url: '/mandate/keep-alive', logout_url: '@appConfig.serviceSignOutUrl(delegatedService)', logout_redirect_url: '@appConfig.serviceSignOutUrl(delegatedService)', restart_on_yes: true, background_no_scroll: true});
@@ -60,7 +63,7 @@
       navLinks = Some(headerNavLinks))
 }
 
-@afterHeader = {}
+@*afterHeader = {}*@
 
 @bodyEnd = {
     @uiLayouts.footer(
