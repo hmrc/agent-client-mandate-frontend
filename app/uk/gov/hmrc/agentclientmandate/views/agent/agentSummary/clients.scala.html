@@ -100,7 +100,7 @@
           <div class="grid grid-1-4 asp-status">
             <a id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)"
             data-journey-click="agent-client-mandate:click:edit-client-link">
-              @Messages("Edit")
+              @Messages("client.summary.client-edit")
             <span class="visuallyhidden">@Messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
             </a>
           </div>
@@ -125,5 +125,3 @@
   </section>
   <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/clients.js")'></script>
 }
-
-
