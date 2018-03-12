@@ -1,12 +1,18 @@
 @import uk.gov.hmrc.agentclientmandate.utils.DateUtils
 @import org.joda.time.DateTime
-@(service: String, agentName: String)(implicit request: Request[_], messages: Messages)
+@(service: String, agentName: String, mandateId: String)(implicit request: Request[_], messages: Messages)
 
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig
 
-@main_template(title = Messages("client.remove-agent-confirmation.title"), delegatedService = Some(service)) {
+@analyticsJs = {
+  var id = "@mandateId";
+  var page = document.location.pathname.replace('/' + id, '');
+  ga('set', 'page', page);
+}
+
+@main_template(title = Messages("client.remove-agent-confirmation.title"), delegatedService = Some(service), analyticsAdditionalJs = Some(analyticsJs)) {
 
     <div class="transaction-banner--complete" id="banner">
         <h1 id="banner-text"> @Messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now)) </h1>

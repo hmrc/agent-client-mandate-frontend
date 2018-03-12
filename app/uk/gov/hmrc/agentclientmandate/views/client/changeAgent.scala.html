@@ -6,7 +6,13 @@
 
 @(service: String, changeAgentForm: Form[YesNoQuestion], mandateId: String, backLink: Option[String])(implicit request: Request[_], messages: Messages)
 
-@main_template(title = Messages("client.change-agent.title")) {
+@analyticsJs = {
+  var id = "@mandateId";
+  var page = document.location.pathname.replace('/' + id, '');
+  ga('set', 'page', page);
+}
+
+@main_template(title = Messages("client.change-agent.title"), analyticsAdditionalJs = Some(analyticsJs)) {
     @pageHeadersAndError(backLink, "pre-heading", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("client.change-agent.header"),
         Some(mandateErrorSummary(changeAgentForm, "yes-no.error.general", Some("client.agent-change.error"))))
 
