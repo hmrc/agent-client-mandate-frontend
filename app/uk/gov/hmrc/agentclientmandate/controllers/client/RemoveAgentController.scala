@@ -106,7 +106,7 @@ trait RemoveAgentController extends FrontendController with Actions {
     implicit authContext => implicit request =>
       acmService.fetchClientMandateAgentName(mandateId).map(
         agentName =>
-          Ok(views.html.client.removeAgentConfirmation(service, agentName))
+          Ok(views.html.client.removeAgentConfirmation(service, agentName, mandateId))
       )
   }
 

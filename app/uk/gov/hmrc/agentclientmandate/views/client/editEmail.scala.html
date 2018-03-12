@@ -6,7 +6,13 @@
 
 @(service: String, addEmailForm: Form[ClientEmail], backLink: Option[String])(implicit request: Request[_], messages: Messages)
 
-@main_template(title = Messages("client.edit-email.title"), delegatedService = Some(service)) {
+@analyticsJs = {
+  var lastSlash = document.location.pathname.lastIndexOf('/');
+  var page = document.location.pathname.substring(0, lastSlash + 1);
+  ga('set', 'page', page);
+}
+
+@main_template(title = Messages("client.edit-email.title"), delegatedService = Some(service), analyticsAdditionalJs = Some(analyticsJs)) {
 @pageHeadersAndError(backLink, "pre-heading", Messages("client.edit-email.preheader", service), "header", Messages("client.edit-email.header"),
 Some(mandateErrorSummary(addEmailForm, "client.edit-email.error.general")))
 
