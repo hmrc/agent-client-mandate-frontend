@@ -15,7 +15,6 @@ selected = selected
 mandate.checkbox-i-agree.confirm.error = Please confirm that you want to submit this
 mandate.agent.delegation.url.text = Change client
 
-
 agent-client-mandate.error.summaryHeader = There is a problem with this page
 agent.add-a-client.sub-header = Add a client
 
@@ -25,7 +24,8 @@ mandate.sign-out = Sign out
 ated.screen-reader.section = This section is:
 ated.screen-reader.name = this is for:
 
-#agent client summary
+##### AGENT CLIENT SUMMARY
+
 client.summary.title = {0} clients
 client.summary.header = {0} clients
 client.summary.add-client = Add a client
@@ -57,7 +57,8 @@ client.summary.client-cancelled.title = Your clients have recently changed
 client.summary.client-cancelled.text = Your authority to act for these clients has been removed:
 client.summary.client-cancelled.text.28days = This message will be available for 28 days.
 
-#client collect email
+##### CLIENT COLLECT EMAIL
+
 client.collect-email.title = What is your email address?
 client.collect-email.preheader = Appoint an agent
 client.collect-email.header = What is your email address?
@@ -71,11 +72,12 @@ client.collect-email.error.email.length = The email address cannot be more than 
 client.collect-email.error.email.invalid-by-email-service = This email is invalid
 client.collect-email.error.general.client-collect-email-form = This email is invalid
 
-#client edit email
+##### CLIENT EDIT EMAIL
+
 client.edit-email.title = Edit your email address
 client.edit-email.preheader = Manage your {0} service
 client.edit-email.header = Edit your email address
-client.edit-email.lede = We need this email to send you notifications. For example, when an agent accepts a request to act for you. No confidential information will be sent via email. You should enter your email address, not your agent’s.
+client.edit-email.lede = We need this email to send you notifications. For example, when an agent accepts a request to act for you. No confidential information will be sent by email. You should enter your email address, not your agent’s.
 client.edit-email.email = Email address
 client.edit-email.confirm-email = Confirm email address
 client.edit-email.error.general.email = There is a problem with the email address question
@@ -85,21 +87,23 @@ client.edit-email.error.email.length = The email address cannot be more than 241
 client.edit-email.error.email.invalid-by-email-service = This email is invalid
 client.edit-email.error.general.client-edit-email-form = This email is invalid
 
-#client search mandate
+##### CLIENT SEARCH MANDATE
+
 client.search-mandate.title =  What is your unique authorisation number?
 client.search-mandate.preheader = Appoint an agent
 client.search-mandate.header = What is your unique authorisation number?
 client.search-mandate.hint = For example, GG123456
 client.search-mandate.help.question = What is a unique authorisation number?
 client.search-mandate.lede =  You must get this from your agent.
-client.search-mandate.error.general.mandateRef= There is a problem with the unique authorisation number question
+client.search-mandate.error.general.mandateRef = There is a problem with the unique authorisation number question
 client.search-mandate.error.mandateRef = You must answer unique authorisation number question
 client.search-mandate.error.mandateRef.length = A unique authorisation number cannot be more than 8 characters
 client.search-mandate.error.general.mandate-ref-form = The unique authorisation number you entered was not found. Please check and try again.
 client.search-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation number you entered cannot be found. Check the number, or enter a different number.
 client.search-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation number you entered has already been used. Check the number, or enter a different number.
 
-#client review agent
+##### CLIENT REVIEW AGENT
+
 client.review-agent.title = Check that this is the agency you want to appoint
 client.review-agent.header = Check that this is the agency you want to appoint
 client.review-agent.preheader = Appoint an agent
@@ -110,7 +114,8 @@ client.review-agent.service-header = Service
 client.review-agent.agency-header = Agency
 client.review-agent.disclaimer = Appointing {0} will let them see all the details in your old returns.
 
-#client agent declaration
+##### CLIENT AGENT DECLARATION
+
 client.agent-declaration.title = Declaration and consent
 client.agent-declaration.header = Declaration and consent
 client.agent-declaration.pre-heading = Appoint an agent
@@ -120,7 +125,8 @@ client.agent-declaration.declare-header = I declare that:
 client.agent-declaration.agent-name = {0} has agreed to act on my behalf in respect of {1}
 client.agent-declaration.information = the information I have provided is correct and complete
 
-#client agent confirmation
+##### CLIENT AGENT CONFIRMATION
+
 client.agent-confirmation.title = Your request to appoint an agent has been successfully submitted
 client.agent-confirmation.banner-text = Your request to appoint {0} has been successfully submitted on {1}
 client.agent-confirmation.banner-confirmation.submitted.date = on {0}
@@ -131,13 +137,14 @@ client.agent-confirmation.sign-in = This authority will remain in place until yo
 client.agent-confirmation.finish-signout = Sign out
 client.declaration.error.general.agree = There is a problem with the checkbox
 
-#client remove agent
+##### CLIENT REMOVE AGENT
+
 client.remove-agent.title = Confirm Agent Removal
 client.remove-agent.header = Are you sure you want to cancel the authority for {0} to act on your behalf for {1}?
 client.remove-agent.error = remove agent
 
+##### CLIENT REMOVE AGENT CONFIRMATION
 
-#client remove agent confirmation
 client.remove-agent-confirmation.title = You have successfully removed your agent
 client.remove-agent-confirmation.banner-text = You have removed {0} as your agent on {1}
 client.remove-agent-confirmation.create-return = create a return
@@ -145,21 +152,25 @@ client.remove-agent-confirmation.appoint-agent = appoint another agent to act fo
 client.remove-agent-confirmation.service_button = Your {0} online service
 client.remove-agent-confirmation.header = You can
 
-#client change agent
+##### CLIENT CHANGE AGENT
+
 client.change-agent.title = Do you want to appoint another agent to act for you?
 client.change-agent.header = Do you want to appoint another agent to act for you?
 client.agent-change.error = change agent
 
-#agent select service
+##### AGENT SELECT SERVICE
+
 agent.select-service.title = Select a service
 agent.select-service.header = Select a service
 agent.select-service.error.general.service = There is a problem with the select service question
 agent.select-service.error.service = You must select one service
 
-#services
+##### SERVICE
+
 agent.select-service.services.ated = ATED
 
-#agent enter email
+##### AGENT ENTER EMAIL 
+
 agent.enter-email.title = What email address do you want to use for this client?
 agent.enter-email.header = What email address do you want to use for this client?
 agent.enter-email.error.general.email = There is a problem with the email address question
@@ -177,13 +188,15 @@ agent.enter-email.error.confirm-email.not-equal = The email address and confirm 
 agent.enter-email.error.email.max.length = The email address can not be more than 241 characters
 client.enter-email.error.email.max.length = The email address can not be more than 241 characters
 
-# agent - is client overseas question
+##### AGENT IS CLIENT OVERSEAS QUESTION
+
 agent.overseas-client-question.title = Does your client have an overseas company without a UK Unique Taxpayer Reference?
 agent.overseas-client-question.header = Does your client have an overseas company without a UK Unique Taxpayer Reference?
 agent.overseas-client-question.error.general.isOverseas = There is a problem with the overseas client question
 agent.overseas-client-question.error.isOverseas = You must answer the overseas client question
 
-# agent - client display name question
+##### AGENT CLIENT DISPLAY NAME QUESTION 
+
 agent.client-display-name.title = What display name do you want to use for this client?
 agent.client-display-name.header = What display name do you want to use for this client?
 agent.client-display-name.text = This will only be displayed on your screens and does not change your client’s official company name.
@@ -192,28 +205,32 @@ agent.client-display-name.error.length = A client display name cannot be more th
 agent.client-display-name.error.general.clientDisplayName = There is a problem with the client display name question
 agent.client-display-name.change = What display name do you want to use for this client?
 
-# agent - nrl question page
+##### AGENT NRL QUESTION PAGE
+
 agent.nrl-question.title = Is your client a non-resident landlord?
 agent.nrl-question.header = Is your client a non-resident landlord?
 agent.nrl-question.error.general.nrl = There is a problem with the non-resident landlord question
 agent.nrl-question.nrl.not-selected.error = You must answer the non-resident landlord question
 
-# agent - paySA question page
+##### AGENT PAY SA QUESTION PAGE
+
 agent.paySA-question.title = Does your client pay tax in the UK through Self Assessment?
 agent.paySA-question.header = Does your client pay tax in the UK through Self Assessment?
 agent.paySA-question.error.general.paySA = There is a problem with the do you pay Self Assessment question
 agent.paySA-question.paySA.not-selected.error = You must answer the Self Assessment question
 
-# agent - client permission page
+##### AGENT CLIENT PERMISSION PAGE
+
 agent.client-permission.title = Do you have permission to register on behalf of your client?
 agent.client-permission.header = Do you have permission to register on behalf of your client?
 agent.client-permission.error.general.hasPermission = There is a problem with the client permission question
 agent.client-permission.hasPermission.not-selected.error = You must answer the client permission question
 
 agent.client-permission.hasPermission.selected.ated.yes.notice = Your client must complete an <a href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1" data-journey-click="agent-client-mandate:click:ATED-1-link">ATED 1</a>. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records. If you already have an ATED&nbsp;1 for this client, they do not need to complete another. Form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
-agent.client-permission.hasPermission.selected.ated.no.notice =  	You must have permission from your client before you can continue.
+agent.client-permission.hasPermission.selected.ated.no.notice = You must have permission from your client before you can continue.
 
-# agent - has client registered before page
+##### AGENT HAS CLIENT REGISTERED BEFORE PAGE
+
 agent.client-prev-registered.title = Has your client previously had an agent who used the ATED online service to submit returns on their behalf?
 agent.client-prev-registered.header = Has your client previously had an agent who used the ATED online service to submit returns on their behalf?
 agent.client-prev-registered.error.general.hasPermission = There is a problem with the client permission question
@@ -221,11 +238,12 @@ agent.client-prev-registered.not-selected.error = You must answer the client per
 agent.client-prev-registered.not-selected.field-error = You must answer the previously had an agent question
 agent.client-permission.error.general.prevRegistered = There is a problem with the previously had an agent question
 
-# agent enter business details
+##### AGENT ENTER BUSINESS DETAILS 
+
 agent.enter-business-details-error.businessName = You must enter a company name
 agent.enter-business-details-error.businessName.length = A business name cannot be more than 105 characters
 agent.enter-business-details-error.utr = You must enter a Unique Taxpayer Reference number
-agent.enter-business-details-error.utr.length =A Unique Taxpayer Reference number must be 10 digits
+agent.enter-business-details-error.utr.length = A Unique Taxpayer Reference number must be 10 digits
 agent.enter-business-details-error.invalidUTR = The Unique Taxpayer Reference number is not valid
 agent.enter-business-details.business-name.label = Display name
 agent.enter-business-details.utr.label = Unique Taxpayer Reference (UTR)
@@ -234,11 +252,12 @@ agent.enter-business-details.header = What are your clients company details?
 agent.enter-business-details.business-name.hint = This does not change the official company name.
 agent.enter-business-details.utr.hint = A UTR number is made up of 10 or 13 digits, If it is 13 digits only enter the last 10.
 agent.enter-business-details.utr.help.question = Where to find their UTR
-agent.enter-business-details.utr.help.answer = <p>It is issued by HMRC when you register your business or for Self Assessment. If your UTR is 13 digits only enter the last 10.</p><p>It can usually be found in the header of any letter issued by HMRC next to headings such as ''Tax Reference'', ''UTR'' or ''Official Use''</p>
+agent.enter-business-details.utr.help.answer = <p>It is issued by HMRC when you register your business or for Self Assessment. If your UTR is 13 digits only enter the last 10.</p><p>It can usually be found in the header of any letter issued by HMRC next to headings such as ‘Tax Reference’, ‘UTR’ or ‘Official Use’</p>
 agent.enter-business-details-error.businessName.businessName = There is a problem with the display name field
 agent.enter-business-details-error.businessName.utr = There is a problem with the Unique Taxpayer Reference field
 
-# agent unique reference
+##### AGENT UNIQUE REFERENCE
+
 agent.unique-reference.title = Your unique authorisation number is {0}
 agent.unique-reference.header = Your unique authorisation number for {0} is {1}
 agent.unique-reference.next.heading.text = What you must do next
@@ -251,7 +270,8 @@ agent.unique-reference.details.text.2 = When you are signed in, register for {0}
 agent.unique-reference.details.text.3 = Add your or your agent’s contact email address.
 agent.unique-reference.details.text.4 = Enter the unique authorisation number {0}.
 
-# agent client details
+##### AGENT CLIENT DETAILS
+
 agent.check-client-details.title = Add a client
 agent.check-client-details.header = Check your client’s details are correct
 agent.check-client-details.service = Service
@@ -261,7 +281,8 @@ agent.check-client-details.registered-name = Registered name
 agent.check-client-details.utr = Unique Taxpayer Reference
 agent.check-client-details.confirm = Confirm and add client
 
-# agent edit mandate details
+##### AGENT EDIT MANDATE DETAILS
+
 agent.edit-mandate-details.title = Edit {0}
 agent.edit-mandate-details.header = Edit {0}
 agent.edit-mandate-details.pre-header = Manage your {0} service
@@ -271,7 +292,7 @@ agent.edit-mandate-details.displayName = Display name
 agent.edit-mandate-details.hint = This does not change the official company name.
 agent.edit-mandate-details.utr = Unique Taxpayer Reference
 agent.edit-mandate-details.utr-hint = A UTR number is made up of 10 or 13 digits, If it is 13 digits only enter the last 10.
-agent.edit-mandate-details.answer = <p>It is issued by HMRC when they register their business or for Self Assessment.</p> <p>It can usually be found in the header of any letter issued by HMRC next to headings such as 'Tax Reference', 'UTR' or 'Official Use</p>
+agent.edit-mandate-details.answer = <p>It is issued by HMRC when you register your business or for Self Assessment. If your UTR is 13 digits only enter the last 10.</p><p>It can usually be found in the header of any letter issued by HMRC next to headings such as ‘Tax Reference’, ‘UTR’ or ‘Official Use’</p>
 agent.edit-client.error.general.email = There is a problem with the email question
 agent.edit-client.error.general.displayName = There is a problem with the display name question
 agent.edit-mandate-details.email = Your email address
@@ -281,13 +302,15 @@ agent.edit-client.error.dispName.length = The client display name cannot be more
 agent.edit-client.error.email = You must answer the email address question
 agent.edit-client.error.general.agent-enter-email-form = There is a problem with the email address
 
-# agent reject client
+##### AGENT REJECT CLIENT
+
 agent.reject-client.title = Are you sure you want to reject the request from this client?
 agent.reject-client.header = Are you sure you want to reject the request from {0}?
 agent.reject-client.text = Rejecting a client request means you will not be able to act for them unless they submit another request.
 agent.reject-client.error = client reject
 
-# agent reject client confirmation
+##### AGENT REJECT CLIENT CONFIRMATION
+
 agent.reject-client-confirmation.title = You have rejected this client on {0}
 agent.reject-client-confirmation.banner-text = You have rejected {0} on {1}
 agent.reject-client-confirmation.notification = Your client will receive an email notification.
@@ -301,22 +324,24 @@ agent.reject-client.error.mandatory = You must answer the question
 yes-no.error.mandatory = The {0} question must be answered
 yes-no.error.general.yesNo = There is a problem with {0} question
 
-# agent remove client
+##### AGENT REMOVE CLIENT
+
 agent.remove-client.title = Confirm Client Removal
 agent.remove-client.header = Are you sure you want to remove {0}?
 agent.remove-client.error.mandatory = You must answer the question
 agent.remove-client.text = Once you have removed a client you will no longer be able to act for them.
 agent.remove-client.error = remove client
 
+##### AGENT REMOVE CLIENT CONFIRMATION 
 
-# agent remove client confirmation
 agent.remove-client-confirmation.title = You have removed your client
 agent.remove-client-confirmation.banner-text = You have removed {0} on <br/> {1}
 agent.remove-client-confirmation.notification = Your client will get an email notification.
 agent.remove-client-confirmation.non-uk-client-old-unique-refno = You need to give your client your unique authorisation number, {0}.
 agent.remove-client-confirmation.view-all-clients = View all your clients
 
-# client banner partial
+##### CLIENT BANNER PARTIAL
+
 client.banner.text.approved = You have requested <span class="heading-small">{0}</span> to act as your agent
 client.banner.text.active = <span class="heading-small">{0}</span> is now your appointed agent
 client.banner.text.rejected = <span class="heading-small">{0}</span> has rejected your request to act as your agent
@@ -324,7 +349,8 @@ client.banner.text.cancelled = The {1} agent can no longer act for the client
 client.banner.link-text.approved_active = Cancel
 client.banner.link-text.cancelled_rejected = Appoint an agent
 
-# agent missing email
+##### AGENT MISSSING EMAIL 
+
 agent.missing-email.title = Receive email notifications from your clients
 agent.missing-email.header = Receive email notifications from your clients
 agent.missing-email.text = We can send you a notification when a client accepts or rejects your requests in the {0} service. You can use a group email address and change it later.
@@ -335,7 +361,8 @@ agent.missing-email.email_address = Your email address
 agent.missing-email.must_answer = You must answer the question
 agent.enter-email.error.general.useEmailAddress = There is a problem with the question
 
-#edit agent details
+##### EDIT AGENT DETAILS
+
 agent.edit-details.title = Your details
 agent.edit-details.header = Your details
 agent.edit-details.sub-header = Edit details
@@ -418,7 +445,7 @@ agent.search-previous-mandate.error.general.mandate-ref-form = The unique author
 agent.search-previous-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation number you entered cannot be found. Check the number, or enter a different number.
 agent.search-previous-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation number you entered has already been used. Check the number, or enter a different number.
 
+##### UR BANNER TEXT
 
-#ur banner text
 urbanner.message.text = Help improve digital services by joining the HMRC user panel (opens in new window)
 urbanner.message.reject = No thanks
