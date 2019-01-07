@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,12 +101,11 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
 
 
       "invalid email is passed" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@invalid.com", "useEmailAddress" -> "true")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com", "useEmailAddress" -> "true")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("This email is invalid")
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
         }
       }
     }
@@ -117,7 +116,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
           verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -142,7 +140,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
   object TestAgentMissingEmailController extends AgentMissingEmailController {
     override val authConnector = mockAuthConnector
     override val agentClientMandateService = mockAgentClientMandateService
-    override val emailService = mockEmailService
   }
 
   def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {

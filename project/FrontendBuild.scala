@@ -19,13 +19,15 @@ private object AppDependencies {
   private val hmrcTestVersion = "3.1.0"
   private val scalaTestPlusVersion = "2.0.1"
   private val pegdownVersion = "1.6.0"
+  private val emailAddressVersion = "2.2.0"
 
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "frontend-bootstrap" % frontendBootstrapVersion,
     "uk.gov.hmrc" %% "play-partials" % playPartialsVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
-    "uk.gov.hmrc" %% "http-caching-client" % httpCachingClientVersion
+    "uk.gov.hmrc" %% "http-caching-client" % httpCachingClientVersion,
+    "uk.gov.hmrc" %% "emailaddress" % emailAddressVersion
   )
 
   trait TestDependencies {

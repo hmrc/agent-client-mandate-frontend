@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,6 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("You must answer the email address question.")
-          verify(mockEmailService, times(0)).validate(Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
@@ -127,7 +126,6 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("The email address cannot be more than 241 characters.")
-          verify(mockEmailService, times(0)).validate(Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
@@ -135,12 +133,11 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
       }
 
       "invalid email id is passed" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@invalid.com")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
         submitWithAuthorisedClient(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("This email is invalid")
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
@@ -154,7 +151,6 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
         }
       }
@@ -168,7 +164,6 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
       when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
       val result = TestEditEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       status(result) must be(BAD_REQUEST)
-      verify(mockEmailService, times(0)).validate(Matchers.any())(Matchers.any())
       verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
       verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
       verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
@@ -178,20 +173,17 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
 
   val mockAuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockEmailService: EmailService = mock[EmailService]
   val mockMandateService = mock[AgentClientMandateService]
 
   object TestEditEmailController extends EditEmailController {
     override val mandateService = mockMandateService
     override val authConnector = mockAuthConnector
     override val dataCacheService = mockDataCacheService
-    override val emailService = mockEmailService
   }
 
   override def beforeEach() = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
-    reset(mockEmailService)
     reset(mockMandateService)
   }
 
@@ -239,7 +231,6 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
     AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("/api/anywhere")))
     when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq("MANDATE_ID"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("mandateId")))
-    when(mockEmailService.validate(Matchers.any())(Matchers.any())).thenReturn(Future.successful(isValidEmail))
     val result = TestEditEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

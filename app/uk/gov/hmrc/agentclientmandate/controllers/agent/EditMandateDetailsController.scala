@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,11 @@ import play.api.i18n.Messages.Implicits._
 import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
 import uk.gov.hmrc.agentclientmandate.models.{ContactDetails, Mandate}
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditMandateDetailsForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{EditMandateDetails, EditMandateDetailsForm}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.frontend.auth.Actions
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
@@ -33,7 +34,6 @@ trait EditMandateDetailsController extends FrontendController with Actions {
 
   def acmService: AgentClientMandateService
 
-  def emailService: EmailService
 
   def view(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
@@ -56,8 +56,7 @@ trait EditMandateDetailsController extends FrontendController with Actions {
         }
       },
       editMandate => {
-        emailService.validate(editMandate.email) flatMap { isValidEmail =>
-          if (isValidEmail) {
+          if (EmailAddress.isValid(editMandate.email)) {
             acmService.fetchClientMandate(mandateId) flatMap {
               case Some(m) =>
                 val agentParty = m.agentParty.copy(contactDetails = ContactDetails(email = editMandate.email))
@@ -79,7 +78,6 @@ trait EditMandateDetailsController extends FrontendController with Actions {
             }
 
           }
-        }
       }
     )
   }
@@ -98,6 +96,5 @@ object EditMandateDetailsController extends EditMandateDetailsController {
   // $COVERAGE-OFF$
   val authConnector = FrontendAuthConnector
   val acmService = AgentClientMandateService
-  val emailService = EmailService
   // $COVERAGE-ON$
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
 import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.emailaddress._
 
 import scala.concurrent.Future
 
@@ -39,15 +40,12 @@ object CollectAgentEmailController extends CollectAgentEmailController {
   // $COVERAGE-OFF$
   val authConnector: AuthConnector = FrontendAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
   // $COVERAGE-ON$
 }
 
 trait CollectAgentEmailController extends FrontendController with Actions with MandateConstants {
 
   def dataCacheService: DataCacheService
-
-  def emailService: EmailService
 
   def addClient(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit user => implicit request =>
@@ -96,8 +94,7 @@ trait CollectAgentEmailController extends FrontendController with Actions with M
               Future.successful(BadRequest(views.html.agent.agentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
             },
             data => {
-              emailService.validate(data.email) flatMap { isValidEmail =>
-                if (isValidEmail) {
+                if (EmailAddress.isValid(data.email)) {
                   dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { cachedData =>
                     redirectUrl match {
                       case Some(redirect) => Future.successful(Redirect(redirect.url))
@@ -109,7 +106,6 @@ trait CollectAgentEmailController extends FrontendController with Actions with M
                   val errorForm = agentEmailForm.withError(key = "email", message = errorMsg).fill(data)
                   Future.successful(BadRequest(views.html.agent.agentEnterEmail(errorForm, service, redirectUrl, getBackLink(service, redirectUrl))))
                 }
-              }
             })
       }
   }

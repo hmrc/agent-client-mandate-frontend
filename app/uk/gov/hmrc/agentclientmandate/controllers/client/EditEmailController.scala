@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.binders.ContinueUrl
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.auth.{Actions, AuthContext}
@@ -43,13 +44,11 @@ object EditEmailController extends EditEmailController {
   val authConnector: AuthConnector = FrontendAuthConnector
   val mandateService: AgentClientMandateService = AgentClientMandateService
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
   // $COVERAGE-ON$
 }
 
 trait EditEmailController extends FrontendController with Actions with MandateConstants {
 
-  def emailService: EmailService
   def dataCacheService: DataCacheService
   def mandateService: AgentClientMandateService
 
@@ -101,8 +100,7 @@ trait EditEmailController extends FrontendController with Actions with MandateCo
               BadRequest(views.html.client.editEmail(service, formWithError, backLink))
           },
         data => {
-          emailService.validate(data.email) flatMap { isValidEmail =>
-            if (isValidEmail) {
+            if (EmailAddress.isValid(data.email)) {
               for {
                 cachedMandateId <- dataCacheService.fetchAndGetFormData[String]("MANDATE_ID")
               } yield {
@@ -120,7 +118,6 @@ trait EditEmailController extends FrontendController with Actions with MandateCo
                   BadRequest(views.html.client.editEmail(service, errorForm, backLink))
               }
             }
-          }
         }
       )
   }

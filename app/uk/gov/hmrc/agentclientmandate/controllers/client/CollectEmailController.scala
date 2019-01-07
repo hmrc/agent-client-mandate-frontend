@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.Future
@@ -39,14 +40,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 object CollectEmailController extends CollectEmailController {
   val authConnector: AuthConnector = FrontendAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
 }
 
 trait CollectEmailController extends FrontendController with Actions with MandateConstants {
 
   def dataCacheService: DataCacheService
-
-  def emailService: EmailService
 
   def view(service: String, redirectUrl: Option[ContinueUrl]) = AuthorisedFor(ClientRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
@@ -96,8 +94,7 @@ trait CollectEmailController extends FrontendController with Actions with Mandat
               BadRequest(views.html.client.collectEmail(service, formWithError, mode, backLink))
           },
         data => {
-          emailService.validate(data.email) flatMap { isValidEmail =>
-            if (isValidEmail) {
+            if (EmailAddress.isValid(data.email)) {
               dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
                 case Some(x) => dataCacheService.cacheFormData[ClientCache](clientFormId, x.copy(email = Some(data))) flatMap { cachedData =>
                   Future.successful(redirect(service, mode))
@@ -114,7 +111,6 @@ trait CollectEmailController extends FrontendController with Actions with Mandat
                   BadRequest(views.html.client.collectEmail(service, errorForm, mode, backLink))
               }
             }
-          }
         }
       )
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
 
     "return a BAD_REQUEST" when {
       "valid form is submitted with invalid email" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@aa.com")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaaa.com")
         submitEditMandateDetails(fakeRequest, false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
         }
@@ -134,7 +134,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
     }
     "return back to edit-client page with exception" when {
       "valid form is submitted with valid email but mandate is NOT edited" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aamail.com")
         submitEditMandateDetails(fakeRequest, false, None) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("No Mandate returned with id AS123456 for service ATED")
@@ -145,7 +145,6 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
   }
 
   val mockAuthConnector = mock[AuthConnector]
-  val mockEmailService = mock[EmailService]
   val mockAcmService = mock[AgentClientMandateService]
   val service = "ATED"
   val mandateId = "AS123456"
@@ -168,7 +167,6 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
 
   object TestEditMandateController extends EditMandateDetailsController {
     override val authConnector = mockAuthConnector
-    override val emailService = mockEmailService
     override val acmService = mockAcmService
   }
 
@@ -190,7 +188,6 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
     AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockEmailService.validate(Matchers.any())(Matchers.any())).thenReturn(Future.successful(emailValid))
     when(mockAcmService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(getMandate))
     when(mockAcmService.editMandate(Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(editMandate))
     val result = TestEditMandateController.submit(service, mandateId).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
