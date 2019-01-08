@@ -137,7 +137,8 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
         submitWithAuthorisedClient(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("This email is invalid")
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("This email is invalid")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
