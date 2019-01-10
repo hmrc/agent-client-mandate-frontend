@@ -22,7 +22,7 @@ import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService}
 import uk.gov.hmrc.agentclientmandate.utils.AuthUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm._

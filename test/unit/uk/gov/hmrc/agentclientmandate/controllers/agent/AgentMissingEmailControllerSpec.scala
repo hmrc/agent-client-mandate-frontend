@@ -28,7 +28,7 @@ import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.{AgentMissingEmailController, CollectAgentEmailController}
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
@@ -95,7 +95,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the question")
           document.getElementsByClass("error-notification").text() must include("You must answer the question")
-          verify(mockEmailService, times(0)).validate(Matchers.any())(Matchers.any())
         }
       }
 
@@ -125,7 +124,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
   }
 
   val mockAuthConnector = mock[AuthConnector]
-  val mockEmailService: EmailService = mock[EmailService]
   val mockAgentClientMandateService = mock[AgentClientMandateService]
 
   val service = "ated".toUpperCase
@@ -133,7 +131,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
 
   override def beforeEach(): Unit = {
     reset(mockAgentClientMandateService)
-    reset(mockEmailService)
     reset(mockAuthConnector)
   }
 
@@ -173,7 +170,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
     AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockEmailService.validate(Matchers.any())(Matchers.any())).thenReturn(Future.successful(isValidEmail))
     val result = TestAgentMissingEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
