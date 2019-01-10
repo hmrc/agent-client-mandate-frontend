@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
+import forms.mappings.{Constraints, Mappings}
 import play.api.data.Forms._
 import play.api.data.{Form, FormError, Mapping}
 import play.api.i18n.Messages
@@ -54,20 +55,27 @@ object FilterClientsForm {
   )
 }
 
-
 case class AgentEmail(email: String)
 
 object AgentEmail {
   implicit val formats = Json.format[AgentEmail]
 }
 
-object AgentEmailForm {
-  val lengthZero = 0
+object AgentEmailForm extends Constraints {
+  val minimumLength = 1
+  val maximumLength = 241
+
+  val emailRegex =
+    """^(?!\.)("([^"\r\\]|\\["\r\\])*"|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
+
+
   val agentEmailForm =
     Form(
       mapping(
         "email" -> text
-          .verifying(Messages("agent.enter-email.error.email"), x => x.trim.length > lengthZero)
+          .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
+          .verifying(maxLength(maximumLength, "client.email.error.email.invalid"))
+          .verifying(minLength(minimumLength, "client.email.error.email.invalid"))
       )(AgentEmail.apply)(AgentEmail.unapply)
     )
 }
