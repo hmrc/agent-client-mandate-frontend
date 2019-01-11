@@ -25,6 +25,7 @@ import play.api.Play.current
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.models.{Identification, RegisteredAddressDetails}
+import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils._
 
 import scala.annotation.tailrec
@@ -62,18 +63,15 @@ object AgentEmail {
 }
 
 object AgentEmailForm extends Constraints {
-  val maximumLength = 241
-  val minimumLength = 1
-  val emailRegex =
-    """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
+
 
   val agentEmailForm =
     Form(
       mapping(
         "email" -> text
           .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
-          .verifying(minLength(minimumLength, "client.email.error.email.empty"))
-          .verifying(maxLength(maximumLength, "client.email.error.email.too.long"))
+          .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+          .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
       )(AgentEmail.apply)(AgentEmail.unapply)
     )
 }
@@ -184,10 +182,6 @@ object EditMandateDetailsForm extends Constraints {
 
   val length0 = 0
   val length99 = 99
-  val maximumLength = 241
-  val minimumLength = 1
-  val emailRegex =
-    """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
 
   val editMandateDetailsForm =
     Form(
@@ -198,8 +192,8 @@ object EditMandateDetailsForm extends Constraints {
 
     "email" -> text
       .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
-      .verifying(minLength(minimumLength, "client.email.error.email.empty"))
-      .verifying(maxLength(maximumLength, "client.email.error.email.too.long"))
+      .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+      .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
   )(EditMandateDetails.apply)(EditMandateDetails.unapply))
 
 }
