@@ -47,7 +47,8 @@ trait EditMandateDetailsController extends FrontendController with Actions {
   }
 
   def submit(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request => EditMandateDetailsForm.validateEditEmail(editMandateDetailsForm.bindFromRequest).fold(
+    implicit authContext => implicit request =>
+      editMandateDetailsForm.bindFromRequest.fold(
       formWithError => {
         acmService.fetchClientMandate(mandateId) map {
           case Some(mandate) =>
@@ -56,28 +57,17 @@ trait EditMandateDetailsController extends FrontendController with Actions {
         }
       },
       editMandate => {
-          if (EmailAddress.isValid(editMandate.email)) {
-            acmService.fetchClientMandate(mandateId) flatMap {
-              case Some(m) =>
-                val agentParty = m.agentParty.copy(contactDetails = ContactDetails(email = editMandate.email))
-                acmService.editMandate(m.copy(clientDisplayName = editMandate.displayName,
-                  agentParty = agentParty)) map {
-                  case Some(updatedMandate) =>
-                    Redirect(routes.AgentSummaryController.view())
-                  case None => Redirect(routes.EditMandateDetailsController.view( mandateId))
-                }
-              case None => throw new RuntimeException(s"No Mandate Found with id $mandateId for service $service")
+        acmService.fetchClientMandate(mandateId) flatMap {
+          case Some(m) =>
+            val agentParty = m.agentParty.copy(contactDetails = ContactDetails(email = editMandate.email))
+            acmService.editMandate(m.copy(clientDisplayName = editMandate.displayName,
+              agentParty = agentParty)) map {
+              case Some(updatedMandate) =>
+                Redirect(routes.AgentSummaryController.view())
+              case None => Redirect(routes.EditMandateDetailsController.view( mandateId))
             }
-          } else {
-            val errorMsg = Messages("agent.enter-email.error.email.invalid-by-email-service")
-            val errorForm = editMandateDetailsForm.withError(key = "agent-enter-email-form", message = errorMsg).fill(editMandate)
-            acmService.fetchClientMandate(mandateId) map {
-              case Some(mandate) =>
-                BadRequest(views.html.agent.editClient(errorForm, service, mandateId, mandate.clientDisplayName, mandate.clientParty.map(_.name),getBackLink(service), showRemoveLink(mandate)))
-              case _ => throw new RuntimeException(s"No Mandate returned with id $mandateId for service $service")
-            }
-
-          }
+          case None => throw new RuntimeException(s"No Mandate Found with id $mandateId for service $service")
+        }
       }
     )
   }

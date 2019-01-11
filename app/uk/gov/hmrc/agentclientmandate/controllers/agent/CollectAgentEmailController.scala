@@ -94,18 +94,12 @@ trait CollectAgentEmailController extends FrontendController with Actions with M
               Future.successful(BadRequest(views.html.agent.agentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
             },
             data => {
-                if (EmailAddress.isValid(data.email)) {
-                  dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { cachedData =>
-                    redirectUrl match {
-                      case Some(redirect) => Future.successful(Redirect(redirect.url))
-                      case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
-                    }
-                  }
-                } else {
-                  val errorMsg = Messages("agent.enter-email.error.email.invalid-by-email-service")
-                  val errorForm = agentEmailForm.withError(key = "email", message = errorMsg).fill(data)
-                  Future.successful(BadRequest(views.html.agent.agentEnterEmail(errorForm, service, redirectUrl, getBackLink(service, redirectUrl))))
+              dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { cachedData =>
+                redirectUrl match {
+                  case Some(redirect) => Future.successful(Redirect(redirect.url))
+                  case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
                 }
+              }
             })
       }
   }

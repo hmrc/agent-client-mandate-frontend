@@ -62,20 +62,18 @@ object AgentEmail {
 }
 
 object AgentEmailForm extends Constraints {
-  val minimumLength = 1
   val maximumLength = 241
-
+  val minimumLength = 1
   val emailRegex =
-    """^(?!\.)("([^"\r\\]|\\["\r\\])*"|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
-
+    """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
 
   val agentEmailForm =
     Form(
       mapping(
         "email" -> text
           .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
-          .verifying(maxLength(maximumLength, "client.email.error.email.invalid"))
-          .verifying(minLength(minimumLength, "client.email.error.email.invalid"))
+          .verifying(minLength(minimumLength, "client.email.error.email.empty"))
+          .verifying(maxLength(maximumLength, "client.email.error.email.too.long"))
       )(AgentEmail.apply)(AgentEmail.unapply)
     )
 }
@@ -182,49 +180,28 @@ object CollectClientBusinessDetailsForm {
 
 case class EditMandateDetails(displayName: String, email: String)
 
-object EditMandateDetailsForm {
+object EditMandateDetailsForm extends Constraints {
 
-  val length40 = 40
   val length0 = 0
-  val length105 = 105
   val length99 = 99
-  val emailLength = 241
+  val maximumLength = 241
+  val minimumLength = 1
   val emailRegex =
-    """^(?!\.)("([^"\r\\]|\\["\r\\])*"|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$""".r
+    """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
 
-  def validateEditEmail(f: Form[EditMandateDetails]): Form[EditMandateDetails] = {
-    def validateEmailRegex(email: String) = {
-      val x = emailRegex.findFirstMatchIn(email).exists(_ => true)
-      val y = email.length == length0
-      val z = email.length > emailLength
-      if (x || y || z) {
-        f
-      } else {
-        f.withError((FormError("email", Messages("agent.enter-email.error.general.agent-enter-email-form"))))
-      }
-    }
-
-    if (!f.hasErrors) {
-      val email = f.data.get("email").getOrElse("")
-      if (email.trim.length == length0) {
-        f.withError(FormError("email", Messages("agent.enter-email.error.email")))
-      }
-      else if (email.length > length0 && email.length > emailLength) {
-        f.withError((FormError("email", Messages("agent.enter-email.error.email.max.length"))))
-      } else {
-        validateEmailRegex(email)
-      }
-    } else f
-  }
-
-
-  val editMandateDetailsForm = Form(mapping(
+  val editMandateDetailsForm =
+    Form(
+      mapping(
     "displayName" -> text
       .verifying(Messages("agent.edit-client.error.dispName"), x => x.length > length0)
       .verifying(Messages("agent.edit-client.error.dispName.length"), x => x.isEmpty || (x.nonEmpty && x.length <= length99)),
 
-    "email" -> text.verifying(Messages("agent.edit-client.error.email"), email => email.nonEmpty)
+    "email" -> text
+      .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
+      .verifying(minLength(minimumLength, "client.email.error.email.empty"))
+      .verifying(maxLength(maximumLength, "client.email.error.email.too.long"))
   )(EditMandateDetails.apply)(EditMandateDetails.unapply))
+
 }
 
 case class NRLQuestion(nrl: Option[Boolean] = None)
