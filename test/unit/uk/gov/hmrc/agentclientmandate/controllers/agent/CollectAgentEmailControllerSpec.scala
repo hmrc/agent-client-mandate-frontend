@@ -196,7 +196,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the email address question")
+          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -209,7 +209,19 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("This email is invalid")
+          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+        }
+      }
+
+      "email provided is too long" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }

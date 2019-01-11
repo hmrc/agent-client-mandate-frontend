@@ -79,16 +79,28 @@ class EditMandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite w
         submitEditMandateDetails(fakeRequest, false, getMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-notification").text() must include("You must answer the client display name question You must answer the email address question")
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
+          document.getElementsByClass("error-notification").text() must include("You must answer the client display name question Enter the email address you want to use for this client")
         }
       }
-    }
 
-    "return a BAD_REQUEST" when {
       "valid form is submitted with invalid email" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaaa.com")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaam")
         submitEditMandateDetails(fakeRequest, false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
+          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+        }
+      }
+
+      "valid form is submitted but email provided is too long" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        submitEditMandateDetails(fakeRequest, false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
+          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
         }
       }
     }
