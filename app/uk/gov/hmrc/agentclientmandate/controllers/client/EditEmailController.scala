@@ -93,31 +93,22 @@ trait EditEmailController extends FrontendController with Actions with MandateCo
 
   def submit(service: String) = AuthorisedFor(ClientRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
-      ClientEmailForm.validateEditEmail(clientEmailForm.bindFromRequest).fold(
+      clientEmailForm.bindFromRequest.fold(
         formWithError =>
           getBackLink().map{
             backLink =>
               BadRequest(views.html.client.editEmail(service, formWithError, backLink))
           },
         data => {
-            if (EmailAddress.isValid(data.email)) {
-              for {
-                cachedMandateId <- dataCacheService.fetchAndGetFormData[String]("MANDATE_ID")
-              } yield {
-                mandateService.updateClientEmail(data.email, cachedMandateId.get)
-              }
-              getBackLink().map {
-                backLink =>
-                  Redirect(backLink.get)
-              }
-            } else {
-              val errorMsg = Messages("client.edit-email.error.email.invalid-by-email-service")
-              val errorForm = clientEmailForm.withError(key = "client-edit-email-form", message = errorMsg).fill(data)
-              getBackLink().map{
-                backLink =>
-                  BadRequest(views.html.client.editEmail(service, errorForm, backLink))
-              }
-            }
+          for {
+            cachedMandateId <- dataCacheService.fetchAndGetFormData[String]("MANDATE_ID")
+          } yield {
+            mandateService.updateClientEmail(data.email, cachedMandateId.get)
+          }
+          getBackLink().map {
+            backLink =>
+              Redirect(backLink.get)
+          }
         }
       )
   }

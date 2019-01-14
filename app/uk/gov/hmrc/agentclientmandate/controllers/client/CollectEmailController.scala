@@ -94,23 +94,14 @@ trait CollectEmailController extends FrontendController with Actions with Mandat
               BadRequest(views.html.client.collectEmail(service, formWithError, mode, backLink))
           },
         data => {
-            if (EmailAddress.isValid(data.email)) {
-              dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
-                case Some(x) => dataCacheService.cacheFormData[ClientCache](clientFormId, x.copy(email = Some(data))) flatMap { cachedData =>
-                  Future.successful(redirect(service, mode))
-                }
-                case None => dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(email = Some(data))) flatMap { cachedData =>
-                  Future.successful(redirect(service, mode))
-                }
-              }
-            } else {
-              val errorMsg = Messages("client.collect-email.error.email.invalid-by-email-service")
-              val errorForm = clientEmailForm.withError(key = "client-collect-email-form", message = errorMsg).fill(data)
-              getBackLink(service, mode).map{
-                backLink =>
-                  BadRequest(views.html.client.collectEmail(service, errorForm, mode, backLink))
-              }
+          dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
+            case Some(x) => dataCacheService.cacheFormData[ClientCache](clientFormId, x.copy(email = Some(data))) flatMap { cachedData =>
+              Future.successful(redirect(service, mode))
             }
+            case None => dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(email = Some(data))) flatMap { cachedData =>
+              Future.successful(redirect(service, mode))
+            }
+          }
         }
       )
   }
