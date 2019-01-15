@@ -16,19 +16,16 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import forms.mappings.{Constraints, Mappings}
+import forms.mappings.Constraints
+import play.api.Play.current
+import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.{Form, FormError, Mapping}
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentclientmandate.models.{Identification, RegisteredAddressDetails}
-import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
-import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils._
-
-import scala.annotation.tailrec
+import uk.gov.hmrc.agentclientmandate.models.RegisteredAddressDetails
+import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, _}
+import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfTrue
 
 case class AgentSelectService(service: Option[String] = None)
 
@@ -63,8 +60,6 @@ object AgentEmail {
 }
 
 object AgentEmailForm extends Constraints {
-
-
   val agentEmailForm =
     Form(
       mapping(
@@ -82,59 +77,20 @@ object AgentMissingEmail {
   implicit val formats = Json.format[AgentMissingEmail]
 }
 
-object AgentMissingEmailForm {
-  val maxlength = 241
-  val lengthZero = 0
-  val emailRegex =
-    """^(?!\.)("([^"\r\\]|\\["\r\\])*"|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$""".r
-
-
-  def validateAgentMissingEmail(f: Form[AgentMissingEmail]): Form[AgentMissingEmail] = {
-    if (!f.hasErrors) {
-      val emailConsent = f.data.get("useEmailAddress")
-      val formErrors = emailConsent match {
-        case Some("true") => {
-          val email = f.data.get("email").getOrElse("")
-          if (email.trim.length == lengthZero) {
-            Seq(FormError("email", Messages("agent.enter-email.error.email")))
-          }
-          else if (email.length > lengthZero && email.length > maxlength) {
-            Seq(FormError("email", Messages("agent.enter-email.error.email.max.length")))
-          } else {
-            val x = emailRegex.findFirstMatchIn(email).exists(_ => true)
-            val y = email.length == lengthZero
-            val z = email.length > maxlength
-            if (x || y || z) {
-              Nil
-            } else {
-              Seq(FormError("email", Messages("agent.enter-email.error.general.agent-enter-email-form")))
-            }
-          }
-        }
-        case _ => Nil
-      }
-      addErrorsToForm(f, formErrors)
-    } else f
-  }
-
+object AgentMissingEmailForm extends Constraints  {
 
   val agentMissingEmailForm =
     Form(
-      mapping(
-        "useEmailAddress" -> optional(boolean).verifying(Messages("agent.missing-email.must_answer"), x => x.isDefined),
-        "email" -> optional(text)
-      )(AgentMissingEmail.apply)(AgentMissingEmail.unapply)
+        mapping(
+
+          "useEmailAddress" -> optional(boolean).verifying(Messages("agent.missing-email.must_answer"), x => x.isDefined),
+          "email" -> mandatoryIfTrue("useEmailAddress", text
+            .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
+            .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+            .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long")))
+
+        )(AgentMissingEmail.apply)(AgentMissingEmail.unapply)
     )
-
-  private def addErrorsToForm[A](form: Form[A], formErrors: Seq[FormError]): Form[A] = {
-    @tailrec
-    def y(f: Form[A], fe: Seq[FormError]): Form[A] = {
-      if (fe.isEmpty) f
-      else y(f.withError(fe.head), fe.tail)
-    }
-
-    y(form, formErrors)
-  }
 }
 
 case class OverseasClientQuestion(isOverseas: Option[Boolean] = None)

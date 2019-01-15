@@ -45,18 +45,12 @@ trait AgentMissingEmailController extends FrontendController with Actions {
 
   def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
-      AgentMissingEmailForm.validateAgentMissingEmail(agentMissingEmailForm.bindFromRequest).fold(
+      agentMissingEmailForm.bindFromRequest.fold(
         formWithError => Future.successful(BadRequest(views.html.agent.agentMissingEmail(formWithError, service))),
-        data =>
-            if (EmailAddress.isValid(data.email.getOrElse(""))) {
-              agentClientMandateService.updateAgentMissingEmail(data.email.get, AuthUtils.getArn, service)
-              Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))
-            } else {
-              val errorMsg = Messages("agent.enter-email.error.email.invalid-by-email-service")
-              val errorForm = agentMissingEmailForm.withError(key = "agent-enter-email-form", message = errorMsg).fill(data)
-              Future.successful(BadRequest(views.html.agent.agentMissingEmail(errorForm, service)))
-            }
-
+        data => {
+          agentClientMandateService.updateAgentMissingEmail(data.email.get, AuthUtils.getArn, service)
+          Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))
+        }
       )
   }
 

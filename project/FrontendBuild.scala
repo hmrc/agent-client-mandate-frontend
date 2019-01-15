@@ -20,6 +20,7 @@ private object AppDependencies {
   private val scalaTestPlusVersion = "2.0.1"
   private val pegdownVersion = "1.6.0"
   private val emailAddressVersion = "2.2.0"
+  private val playConditionalFormMappingVersion = "0.2.0"
 
   val compile = Seq(
     ws,
@@ -27,7 +28,8 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-partials" % playPartialsVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
     "uk.gov.hmrc" %% "http-caching-client" % httpCachingClientVersion,
-    "uk.gov.hmrc" %% "emailaddress" % emailAddressVersion
+    "uk.gov.hmrc" %% "emailaddress" % emailAddressVersion,
+    "uk.gov.hmrc" %% "play-conditional-form-mapping" % playConditionalFormMappingVersion
   )
 
   trait TestDependencies {

@@ -89,7 +89,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitEmailAuthorisedAgent(fakeRequest, true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -98,13 +98,33 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
         }
       }
 
+      " user selected option 'yes' for use email address and left email as empty" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
+        submitEmailAuthorisedAgent(fakeRequest, true) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
+        }
+      }
 
-      "invalid email is passed" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com", "useEmailAddress" -> "true")
+
+      "email field has more than expected length" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+        }
+      }
+      "invalid email is passed" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
         }
       }
     }
