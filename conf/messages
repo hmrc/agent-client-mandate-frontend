@@ -24,6 +24,11 @@ mandate.sign-out = Sign out
 ated.screen-reader.section = This section is:
 ated.screen-reader.name = this is for:
 
+client.email.error.email.empty = Enter the email address you want to use for this client
+client.email.error.email.invalid = Enter an email address in the correct format, like name@example.com
+client.email.error.email.too.long = The email address you want to use for this client must be 241 characters or less
+
+
 ##### AGENT CLIENT SUMMARY
 
 client.summary.title = {0} clients

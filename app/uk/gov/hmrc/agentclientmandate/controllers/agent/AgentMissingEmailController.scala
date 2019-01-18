@@ -22,11 +22,12 @@ import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService}
 import uk.gov.hmrc.agentclientmandate.utils.AuthUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.frontend.auth.Actions
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
@@ -36,7 +37,6 @@ import scala.concurrent.Future
 trait AgentMissingEmailController extends FrontendController with Actions {
 
   def agentClientMandateService: AgentClientMandateService
-  def emailService: EmailService
 
   def view(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit user => implicit request =>
@@ -45,19 +45,11 @@ trait AgentMissingEmailController extends FrontendController with Actions {
 
   def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
-      AgentMissingEmailForm.validateAgentMissingEmail(agentMissingEmailForm.bindFromRequest).fold(
+      agentMissingEmailForm.bindFromRequest.fold(
         formWithError => Future.successful(BadRequest(views.html.agent.agentMissingEmail(formWithError, service))),
         data => {
-          emailService.validate(data.email.get) map { isValidEmail =>
-            if (isValidEmail) {
-              agentClientMandateService.updateAgentMissingEmail(data.email.get, AuthUtils.getArn, service)
-              Redirect(routes.AgentSummaryController.view(Some(service)))
-            } else {
-              val errorMsg = Messages("agent.enter-email.error.email.invalid-by-email-service")
-              val errorForm = agentMissingEmailForm.withError(key = "agent-enter-email-form", message = errorMsg).fill(data)
-              BadRequest(views.html.agent.agentMissingEmail(errorForm, service))
-            }
-          }
+          agentClientMandateService.updateAgentMissingEmail(data.email.get, AuthUtils.getArn, service)
+          Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))
         }
       )
   }
@@ -68,6 +60,5 @@ object AgentMissingEmailController extends AgentMissingEmailController {
   // $COVERAGE-OFF$
   val agentClientMandateService = AgentClientMandateService
   val authConnector: AuthConnector = FrontendAuthConnector
-  val emailService: EmailService = EmailService
   // $COVERAGE-ON$
 }

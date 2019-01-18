@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
+import forms.mappings.Constraints
 import play.api.data.{Form, FormError}
 import play.api.data.Forms._
 import play.api.i18n.Messages
@@ -23,6 +24,7 @@ import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.models.Mandate
+import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, maximumEmailLength, minimumEmailLength}
 
 import scala.annotation.tailrec
 
@@ -32,45 +34,14 @@ object ClientEmail {
   implicit val formats = Json.format[ClientEmail]
 }
 
-object ClientEmailForm {
-
-  val emailLength = 241
-  val lengthZero = 0
-  val emailRegex =
-    """^(?!\.)("([^"\r\\]|\\["\r\\])*"|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$""".r
-
-  def validateEditEmail(f: Form[ClientEmail]): Form[ClientEmail] = {
-    def validateEmailRegex(email: String) = {
-      val x = emailRegex.findFirstMatchIn(email).exists(_ => true)
-      val y = email.length == lengthZero
-      val z = email.length > emailLength
-      if (x || y || z) {
-        f
-      } else {
-        f.withError((FormError("email", Messages("client.enter-email.error.general.agent-enter-email-form"))))
-      }
-    }
-
-    if (!f.hasErrors) {
-      val email = f.data.get("email").getOrElse("")
-      if (email.trim.length == lengthZero) {
-        f.withError(FormError("email", Messages("client.enter-email.error.email")))
-      }
-      else if (email.length > lengthZero && email.length > emailLength) {
-        f.withError((FormError("email", Messages("client.enter-email.error.email.max.length"))))
-      } else {
-        validateEmailRegex(email)
-      }
-    } else f
-  }
-
-
+object ClientEmailForm extends Constraints {
   val clientEmailForm =
     Form(
       mapping(
         "email" -> text
-          .verifying(Messages("client.collect-email.error.email"), x => x.trim.length > lengthZero)
-          .verifying(Messages("client.collect-email.error.email.length"), x => x.isEmpty || (x.nonEmpty && x.length <= emailLength))
+          .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
+          .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+          .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
       )(ClientEmail.apply)(ClientEmail.unapply)
     )
 

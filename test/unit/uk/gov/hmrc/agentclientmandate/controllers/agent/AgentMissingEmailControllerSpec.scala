@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.{AgentMissingEmailController, CollectAgentEmailController}
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
@@ -89,24 +89,42 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitEmailAuthorisedAgent(fakeRequest, true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the question")
           document.getElementsByClass("error-notification").text() must include("You must answer the question")
-          verify(mockEmailService, times(0)).validate(Matchers.any())(Matchers.any())
+        }
+      }
+
+      " user selected option 'yes' for use email address and left email as empty" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
+        submitEmailAuthorisedAgent(fakeRequest, true) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
         }
       }
 
 
-      "invalid email is passed" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@invalid.com", "useEmailAddress" -> "true")
+      "email field has more than expected length" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("This email is invalid")
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+        }
+      }
+      "invalid email is passed" in {
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
         }
       }
     }
@@ -117,7 +135,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
-          verify(mockEmailService, times(1)).validate(Matchers.any())(Matchers.any())
           verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -127,7 +144,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
   }
 
   val mockAuthConnector = mock[AuthConnector]
-  val mockEmailService: EmailService = mock[EmailService]
   val mockAgentClientMandateService = mock[AgentClientMandateService]
 
   val service = "ated".toUpperCase
@@ -135,14 +151,12 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
 
   override def beforeEach(): Unit = {
     reset(mockAgentClientMandateService)
-    reset(mockEmailService)
     reset(mockAuthConnector)
   }
 
   object TestAgentMissingEmailController extends AgentMissingEmailController {
     override val authConnector = mockAuthConnector
     override val agentClientMandateService = mockAgentClientMandateService
-    override val emailService = mockEmailService
   }
 
   def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
@@ -176,7 +190,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with OneServerPerSuite w
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
     AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockEmailService.validate(Matchers.any())(Matchers.any())).thenReturn(Future.successful(isValidEmail))
     val result = TestAgentMissingEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

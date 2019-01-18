@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.config.{FrontendAppConfig, FrontendAuthConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.{DataCacheService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayNameForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
@@ -38,7 +38,6 @@ object ClientDisplayNameController extends ClientDisplayNameController {
   // $COVERAGE-OFF$
   val authConnector: AuthConnector = FrontendAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
   // $COVERAGE-ON$
 }
 

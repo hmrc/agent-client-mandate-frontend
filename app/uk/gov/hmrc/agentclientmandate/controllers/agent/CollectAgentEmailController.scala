@@ -21,7 +21,7 @@ import play.api.i18n.Messages
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.config.{FrontendAppConfig, FrontendAuthConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.{DataCacheService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmailForm._
@@ -32,6 +32,7 @@ import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
 import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.emailaddress._
 
 import scala.concurrent.Future
 
@@ -39,15 +40,12 @@ object CollectAgentEmailController extends CollectAgentEmailController {
   // $COVERAGE-OFF$
   val authConnector: AuthConnector = FrontendAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
   // $COVERAGE-ON$
 }
 
 trait CollectAgentEmailController extends FrontendController with Actions with MandateConstants {
 
   def dataCacheService: DataCacheService
-
-  def emailService: EmailService
 
   def addClient(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
     implicit user => implicit request =>
@@ -96,18 +94,10 @@ trait CollectAgentEmailController extends FrontendController with Actions with M
               Future.successful(BadRequest(views.html.agent.agentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
             },
             data => {
-              emailService.validate(data.email) flatMap { isValidEmail =>
-                if (isValidEmail) {
-                  dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { cachedData =>
-                    redirectUrl match {
-                      case Some(redirect) => Future.successful(Redirect(redirect.url))
-                      case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
-                    }
-                  }
-                } else {
-                  val errorMsg = Messages("agent.enter-email.error.email.invalid-by-email-service")
-                  val errorForm = agentEmailForm.withError(key = "email", message = errorMsg).fill(data)
-                  Future.successful(BadRequest(views.html.agent.agentEnterEmail(errorForm, service, redirectUrl, getBackLink(service, redirectUrl))))
+              dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { cachedData =>
+                redirectUrl match {
+                  case Some(redirect) => Future.successful(Redirect(redirect.url))
+                  case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
                 }
               }
             })

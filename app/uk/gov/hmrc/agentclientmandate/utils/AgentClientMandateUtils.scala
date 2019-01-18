@@ -39,6 +39,11 @@ object AgentClientMandateUtils {
   private val NINE = 9
   private val TEN = 10
 
+  val emailRegex =
+    """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
+  val maximumEmailLength = 241
+  val minimumEmailLength = 1
+
   def validateUTR(utr: Option[String]): Boolean = {
     utr match {
       case Some(x) =>

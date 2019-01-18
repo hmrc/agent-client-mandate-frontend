@@ -21,7 +21,7 @@ import play.api.libs.json.Format
 import play.api.mvc.{AnyContent, Request}
 import uk.gov.hmrc.agentclientmandate.config.{FrontendAppConfig, FrontendAuthConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.ClientRegime
-import uk.gov.hmrc.agentclientmandate.service.{DataCacheService, EmailService}
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, YesNoQuestionForm}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
@@ -31,6 +31,7 @@ import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.binders.ContinueUrl
 
 import scala.concurrent.Future
@@ -39,14 +40,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 object CollectEmailController extends CollectEmailController {
   val authConnector: AuthConnector = FrontendAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
-  val emailService: EmailService = EmailService
 }
 
 trait CollectEmailController extends FrontendController with Actions with MandateConstants {
 
   def dataCacheService: DataCacheService
-
-  def emailService: EmailService
 
   def view(service: String, redirectUrl: Option[ContinueUrl]) = AuthorisedFor(ClientRegime(Some(service)), GGConfidence).async {
     implicit authContext => implicit request =>
@@ -96,23 +94,12 @@ trait CollectEmailController extends FrontendController with Actions with Mandat
               BadRequest(views.html.client.collectEmail(service, formWithError, mode, backLink))
           },
         data => {
-          emailService.validate(data.email) flatMap { isValidEmail =>
-            if (isValidEmail) {
-              dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
-                case Some(x) => dataCacheService.cacheFormData[ClientCache](clientFormId, x.copy(email = Some(data))) flatMap { cachedData =>
-                  Future.successful(redirect(service, mode))
-                }
-                case None => dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(email = Some(data))) flatMap { cachedData =>
-                  Future.successful(redirect(service, mode))
-                }
-              }
-            } else {
-              val errorMsg = Messages("client.collect-email.error.email.invalid-by-email-service")
-              val errorForm = clientEmailForm.withError(key = "client-collect-email-form", message = errorMsg).fill(data)
-              getBackLink(service, mode).map{
-                backLink =>
-                  BadRequest(views.html.client.collectEmail(service, errorForm, mode, backLink))
-              }
+          dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
+            case Some(x) => dataCacheService.cacheFormData[ClientCache](clientFormId, x.copy(email = Some(data))) flatMap { cachedData =>
+              Future.successful(redirect(service, mode))
+            }
+            case None => dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(email = Some(data))) flatMap { cachedData =>
+              Future.successful(redirect(service, mode))
             }
           }
         }
