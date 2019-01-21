@@ -14,79 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings
+package unit.uk.gov.hmrc.agentclientmandate.controllers.mappings
 
 
 
-import java.time.LocalDate
-
-import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.data.validation.{Invalid, Valid}
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.generators.Generators
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 
-class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks with Generators with Constraints {
-
-
-  "firstError" must {
-
-    "return Valid when all constraints pass" in {
-      val result = firstError(maxLength(10, "error.length"), regexp("""^\w+$""", "error.regexp"))("foo")
-      result mustEqual Valid
-    }
-
-    "return Invalid when the first constraint fails" in {
-      val result = firstError(maxLength(10, "error.length"), regexp("""^\w+$""", "error.regexp"))("a" * 11)
-      result mustEqual Invalid("error.length")
-    }
-
-    "return Invalid when the second constraint fails" in {
-      val result = firstError(maxLength(10, "error.length"), regexp("""^\w+$""", "error.regexp"))("")
-      result mustEqual Invalid("error.regexp")
-    }
-
-    "return Invalid for the first error when both constraints fail" in {
-      val result = firstError(maxLength(-1, "error.length"), regexp("""^\w+$""", "error.regexp"))("")
-      result mustEqual Invalid("error.length")
-    }
-  }
-
-  "minimumValue" must {
-
-    "return Valid for a number greater than the threshold" in {
-      val result = minimumValue(1, "error.min").apply(2)
-      result mustEqual Valid
-    }
-
-    "return Valid for a number equal to the threshold" in {
-      val result = minimumValue(1, "error.min").apply(1)
-      result mustEqual Valid
-    }
-
-    "return Invalid for a number below the threshold" in {
-      val result = minimumValue(1, "error.min").apply(0)
-      result mustEqual Invalid("error.min", 1)
-    }
-  }
-
-  "maximumValue" must {
-
-    "return Valid for a number less than the threshold" in {
-      val result = maximumValue(1, "error.max").apply(0)
-      result mustEqual Valid
-    }
-
-    "return Valid for a number equal to the threshold" in {
-      val result = maximumValue(1, "error.max").apply(1)
-      result mustEqual Valid
-    }
-
-    "return Invalid for a number above the threshold" in {
-      val result = maximumValue(1, "error.max").apply(2)
-      result mustEqual Invalid("error.max", 1)
-    }
-  }
+class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks with Constraints {
 
   "regexp" must {
 
@@ -138,69 +75,4 @@ class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks wit
 
   }
 
-  "maxDate" must {
-
-    "return Valid for a date before or equal to the maximum" in {
-
-      val gen: Gen[(LocalDate, LocalDate)] = for {
-        max  <- datesBetween(LocalDate.of(2000, 1, 1), LocalDate.of(3000, 1, 1))
-        date <- datesBetween(LocalDate.of(2000, 1, 1), max)
-      } yield (max, date)
-
-      forAll(gen) {
-        case (max, date) =>
-
-          val result = maxDate(max, "error.future")(date)
-          result mustEqual Valid
-      }
-    }
-
-    "return Invalid for a date after the maximum" in {
-
-      val gen: Gen[(LocalDate, LocalDate)] = for {
-        max  <- datesBetween(LocalDate.of(2000, 1, 1), LocalDate.of(3000, 1, 1))
-        date <- datesBetween(max.plusDays(1), LocalDate.of(3000, 1, 2))
-      } yield (max, date)
-
-      forAll(gen) {
-        case (max, date) =>
-
-          val result = maxDate(max, "error.future", "foo")(date)
-          result mustEqual Invalid("error.future", "foo")
-      }
-    }
-  }
-
-  "minDate" must {
-
-    "return Valid for a date after or equal to the minimum" in {
-
-      val gen: Gen[(LocalDate, LocalDate)] = for {
-        min  <- datesBetween(LocalDate.of(2000, 1, 1), LocalDate.of(3000, 1, 1))
-        date <- datesBetween(min, LocalDate.of(3000, 1, 1))
-      } yield (min, date)
-
-      forAll(gen) {
-        case (min, date) =>
-
-          val result = minDate(min, "error.past", "foo")(date)
-          result mustEqual Valid
-      }
-    }
-
-    "return Invalid for a date before the minimum" in {
-
-      val gen: Gen[(LocalDate, LocalDate)] = for {
-        min  <- datesBetween(LocalDate.of(2000, 1, 2), LocalDate.of(3000, 1, 1))
-        date <- datesBetween(LocalDate.of(2000, 1, 1), min.minusDays(1))
-      } yield (min, date)
-
-      forAll(gen) {
-        case (min, date) =>
-
-          val result = minDate(min, "error.past", "foo")(date)
-          result mustEqual Invalid("error.past", "foo")
-      }
-    }
-  }
 }
