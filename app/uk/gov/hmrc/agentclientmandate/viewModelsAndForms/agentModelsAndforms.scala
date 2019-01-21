@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import forms.mappings.Constraints
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 import play.api.Play.current
 import play.api.data.Form
 import play.api.data.Forms._

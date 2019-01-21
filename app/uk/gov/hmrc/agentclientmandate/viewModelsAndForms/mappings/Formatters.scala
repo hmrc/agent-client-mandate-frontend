@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package forms.mappings
+package uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings
 
 import play.api.data.FormError
 import play.api.data.format.Formatter
