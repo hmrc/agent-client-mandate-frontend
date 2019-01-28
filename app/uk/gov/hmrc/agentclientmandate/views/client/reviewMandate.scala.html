@@ -63,7 +63,7 @@
          </div>
 
          <div class="grid grid-1-6 cya-change">
-           <a href='@routes.CollectEmailController.edit()' id="edit-client-own-email">
+           <a href='@routes.CollectEmailController.edit()' id="edit-client-own-email" data-journey-click="Link - click:@Messages("client.review-agent.title"):@Messages("client.review-agent.own.email") - @Messages("edit-link")">
              @Messages("edit-link")
              <span class="visuallyhidden">@Messages("client.review-agent.own.email")</span>
            </a>
@@ -80,9 +80,9 @@
          </div>
 
          <div class="grid grid-1-6 cya-change">
-           <a href='@routes.SearchMandateController.view()' id="edit-agent-reference-number">
+           <a href='@routes.SearchMandateController.view()' id="edit-agent-reference-number" data-journey-click="Link - click:@Messages("client.review-agent.title"):@Messages("client.review-agent.agent-reference") - @Messages("edit-link")">
              @Messages("edit-link")
-             <span class="visuallyhidden">>@Messages("client.review-agent.agent-reference")</span>
+             <span class="visuallyhidden">@Messages("client.review-agent.agent-reference")</span>
            </a>
          </div>
        </div>
@@ -91,7 +91,7 @@
 
      <p id="agent-disclaimer">@Messages("client.review-agent.disclaimer", mandate.agentParty.name)</p>
 
-     <button class="button" id="submit" type="submit">
+     <button class="button" id="submit" type="submit" data-journey-click="Button - click:@Messages("client.review-agent.title"):@Messages("client.review-agent.submit")">
        @Messages("client.review-agent.submit")
      </button>
 
