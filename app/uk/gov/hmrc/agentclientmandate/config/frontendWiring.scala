@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.Mode.Mode
+import play.api.{Configuration, Play}
 import uk.gov.hmrc.http.cache.client.SessionCache
 import uk.gov.hmrc.http.{HttpDelete, HttpGet, HttpPost, HttpPut}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector => Auditing}
@@ -26,17 +30,35 @@ import uk.gov.hmrc.play.http.ws.{WSDelete, WSGet, WSPost, WSPut}
 
 object FrontendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
+
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
+
+
 }
 
-trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete with AppName
+trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete with AppName {
+
+
+  override protected def actorSystem: ActorSystem = Play.current.actorSystem
+
+  override protected def configuration: Option[Config] = Some{Play.current.configuration.underlying}
+
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
+
+}
 
 object WSHttp extends WSHttp {
   override val hooks = NoneRequired
+
 }
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {
   val serviceUrl = baseUrl("auth")
   lazy val http = WSHttp
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }
 
 object AgentClientMandateSessionCache extends SessionCache with AppName with ServicesConfig {
@@ -44,9 +66,19 @@ object AgentClientMandateSessionCache extends SessionCache with AppName with Ser
   override lazy val defaultSource = appName
   override lazy val baseUri = baseUrl("session-cache")
   override lazy val domain = getConfString("session-cache.domain", throw new Exception(s"Could not find config 'session-cache.domain'"))
+
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }
 
 object FrontendDelegationConnector extends DelegationConnector with ServicesConfig {
   val serviceUrl = baseUrl("delegation")
   lazy val http = WSHttp
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

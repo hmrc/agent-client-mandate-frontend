@@ -17,7 +17,8 @@
 package uk.gov.hmrc.agentclientmandate.connectors
 
 
-import play.api.Logger
+import play.api.Mode.Mode
+import play.api.{Configuration, Logger, Play}
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.config.WSHttp
@@ -31,6 +32,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait BusinessCustomerConnector extends ServicesConfig with RawResponseReads {
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 
   def serviceUrl: String
 
@@ -64,4 +69,5 @@ object BusinessCustomerConnector extends BusinessCustomerConnector {
   val updateRegistrationDetailsURI = "update"
   val http = WSHttp
   // $COVERAGE-ON$
+
 }

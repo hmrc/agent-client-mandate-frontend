@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
+import play.api.{Configuration, Play}
+import play.api.Mode.Mode
 import play.api.Play.{configuration, current}
 import uk.gov.hmrc.play.config.ServicesConfig
 
@@ -39,6 +41,11 @@ trait AppConfig {
   def serviceSignOutUrl(service: Option[String]): String
   def nonUkUri(service: String, backLinkUrl: String): String
   def addNonUkClientCorrespondenceUri(service: String, backLinkUrl: String): String
+
+  protected def mode: Mode = Play.current.mode
+
+  protected def runModeConfiguration: Configuration = Play.current.configuration
+
 }
 
 object FrontendAppConfig extends AppConfig with ServicesConfig {
@@ -50,6 +57,7 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
 
 
   override lazy val defaultBetaFeedbackUrl = s"$contactHost/contact/beta-feedback"
+
   override def betaFeedbackUrl(service: Option[String], returnUri: String) = {
     val feedbackUrl = service match {
       case Some(delegatedService) if (!delegatedService.isEmpty()) =>
@@ -58,6 +66,7 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
     }
     feedbackUrl + "?return=" + returnUri
   }
+
   override lazy val urBannerToggle: Boolean = loadConfig("urBanner.toggle").toBoolean
   lazy val urBannerLink: String = loadConfig("urBanner.link")
   override lazy val analyticsToken = loadConfig("google-analytics.token")
@@ -70,17 +79,26 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
   override lazy val defaultTimeoutSeconds: Int = loadConfig("defaultTimeoutSeconds").toInt
 
   override def nonUkUri(service: String, backLinkUrl: String): String = {
-    val forwardUrl = s"""${configuration.getString("microservice.services.business-customer-frontend.nonUK-uri").
-      getOrElse("")}/${service.toLowerCase}"""
-    val returnUrl = s"""${configuration.getString("microservice.services.business-customer-frontend.nonUK-return-uri").
-      getOrElse("")}/${service.toLowerCase}"""
+    val forwardUrl =
+      s"""${
+        configuration.getString("microservice.services.business-customer-frontend.nonUK-uri").
+          getOrElse("")
+      }/${service.toLowerCase}"""
+    val returnUrl =
+      s"""${
+        configuration.getString("microservice.services.business-customer-frontend.nonUK-return-uri").
+          getOrElse("")
+      }/${service.toLowerCase}"""
 
     forwardUrl + "?backLinkUrl=" + mandateFrontendHost + backLinkUrl
   }
 
   override def addNonUkClientCorrespondenceUri(service: String, backLinkUrl: String): String = {
-    val forwardUrl = s"""${configuration.getString(s"microservice.services.ated-subscription-frontend.subscriptionUrl").
-      getOrElse("")}"""
+    val forwardUrl =
+      s"""${
+        configuration.getString(s"microservice.services.ated-subscription-frontend.subscriptionUrl").
+          getOrElse("")
+      }"""
     forwardUrl + "?backLinkUrl=" + mandateFrontendHost + backLinkUrl
   }
 
@@ -96,6 +114,8 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
   override lazy val mandateFrontendHost = configuration.getString(s"microservice.services.agent-client-mandate-frontend.host").getOrElse("")
 
   override lazy val servicesUsed: List[String] = {
-    configuration.getStringList("microservice.servicesUsed").map (_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))
+    configuration.getStringList("microservice.servicesUsed").map(_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))
   }
 }
+
+
