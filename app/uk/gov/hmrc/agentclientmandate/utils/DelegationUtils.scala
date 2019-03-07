@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
+import play.api.{Configuration, Play}
+import play.api.Mode.Mode
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
@@ -53,4 +55,8 @@ object DelegationUtils extends ServicesConfig {
   def getDelegatedServiceHomeUrl(service: String): String = {
     getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
   }
+  // $COVERAGE-OFF$
+  override protected def mode: Mode = Play.current.mode
+  // $COVERAGE-ON$
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

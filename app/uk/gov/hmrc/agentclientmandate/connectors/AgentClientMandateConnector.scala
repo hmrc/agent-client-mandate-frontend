@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentclientmandate.connectors
 
-import play.api.Logger
+import play.api.Mode.Mode
+import play.api.{Configuration, Logger, Play}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.agentclientmandate.config.WSHttp
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, CreateMandateDto, GGRelationshipDto, Mandate}
@@ -25,6 +26,7 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.frontend.auth.AuthContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 
 trait AgentClientMandateConnector extends ServicesConfig with RawResponseReads {
@@ -38,6 +40,10 @@ trait AgentClientMandateConnector extends ServicesConfig with RawResponseReads {
   val importExistingUri = "importExisting"
   val editMandate = "edit"
   val deleteMandate = "delete"
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 
   def http: CoreGet with CorePost with CoreDelete
 
@@ -172,4 +178,5 @@ object AgentClientMandateConnector extends AgentClientMandateConnector {
   val serviceUrl = baseUrl("agent-client-mandate")
   val http = WSHttp
   // $COVERAGE-ON$
+
 }

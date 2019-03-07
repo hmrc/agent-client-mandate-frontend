@@ -39,7 +39,7 @@ object FrontendGlobal
 
   override def onStart(app: Application) {
     super.onStart(app)
-    ApplicationCrypto.verifyConfiguration()
+    new ApplicationCrypto(Play .current.configuration.underlying).verifyConfiguration()
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html = {
@@ -62,7 +62,7 @@ object LoggingFilter extends FrontendLoggingFilter with MicroserviceFilterSuppor
   override def controllerNeedsLogging(controllerName: String) = ControllerConfiguration.paramsForController(controllerName).needsLogging
 }
 
-object AuditFilter extends FrontendAuditFilter with RunMode with AppName with MicroserviceFilterSupport {
+object AuditFilter extends FrontendAuditFilter with AppName with MicroserviceFilterSupport {
 
   override lazy val maskedFormFields = Seq("password")
 
@@ -71,4 +71,6 @@ object AuditFilter extends FrontendAuditFilter with RunMode with AppName with Mi
   override lazy val auditConnector = FrontendAuditConnector
 
   override def controllerNeedsAuditing(controllerName: String) = ControllerConfiguration.paramsForController(controllerName).needsAuditing
+
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
 }
