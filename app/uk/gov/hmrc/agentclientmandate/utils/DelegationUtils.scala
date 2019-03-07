@@ -55,8 +55,8 @@ object DelegationUtils extends ServicesConfig {
   def getDelegatedServiceHomeUrl(service: String): String = {
     getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
   }
-
+  // $COVERAGE-OFF$
   override protected def mode: Mode = Play.current.mode
-
+  // $COVERAGE-ON$
   override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

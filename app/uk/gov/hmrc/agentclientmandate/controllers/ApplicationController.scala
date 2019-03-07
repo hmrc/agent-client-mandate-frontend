@@ -32,11 +32,10 @@ object ApplicationController extends ApplicationController {
 }
 
 trait ApplicationController extends FrontendController with RunMode with Actions {
-
+  // $COVERAGE-OFF$
   override protected def mode: Mode = Play.current.mode
-
   override protected def runModeConfiguration: Configuration = Play.current.configuration
-
+  // $COVERAGE-ON$
   def keepAlive = UnauthorisedAction { implicit request =>
     Ok("OK")
   }
