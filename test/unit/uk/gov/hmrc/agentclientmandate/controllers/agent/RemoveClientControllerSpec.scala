@@ -23,53 +23,56 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.RemoveClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 
-class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
-  val mockAgentClientMandateService = mock[AgentClientMandateService]
-  val mockAuthConnector = mock[AuthConnector]
-  val service = "ATED"
-  val mandateId = "1"
-  val agentName = "Acme"
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val service: String = "ATED"
+  val mandateId: String = "1"
+  val agentName: String = "Acme"
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))), currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "ACME Limited")
+  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "ACME Limited")
 
   object TestRemoveClientController extends RemoveClientController {
-    override val authConnector = mockAuthConnector
-    override val acmService = mockAgentClientMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val acmService: AgentClientMandateService = mockAgentClientMandateService
   }
 
-  override def beforeEach = {
+  override def beforeEach: Unit = {
     reset(mockAgentClientMandateService)
   }
 
   def viewWithAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestRemoveClientController.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
   def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestRemoveClientController.view(service, "1").apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -77,8 +80,7 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestRemoveClientController.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -86,8 +88,7 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def showConfirmationWithAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestRemoveClientController.showConfirmation(service, "Acme Ltd").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -95,24 +96,9 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestRemoveClientController.confirm(service, "1").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
-  }
-
-  "RemoveClientController" must {
-    "not return NOT_FOUND at route " when {
-      "GET /mandate/agent/remove-client/:service/:id" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/remove-client/$mandateId")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
-
-    "POST /mandate/agent/reject-client/1" in {
-      val result = route(FakeRequest(POST, s"/mandate/agent/remove-client/$mandateId/$agentName")).get
-      status(result) mustNot be(NOT_FOUND)
-    }
   }
 
 
@@ -140,8 +126,7 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
     "agent requests(GET) for 'remove client question' view" in {
 
-      val hc = new HeaderCarrier()
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
 
       viewWithAuthorisedAgent { result =>
@@ -158,8 +143,7 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
   "returns BAD_REQUEST" when {
     "invalid form is submitted" in {
-      val hc = new HeaderCarrier()
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
 
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
@@ -174,9 +158,8 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
   "submitting form " when {
     "submitted with false will redirect to agent summary" in {
-      val hc = new HeaderCarrier()
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(SEE_OTHER)
@@ -185,10 +168,9 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
     }
 
     "submitted with true will redirect to confirmation" in {
-      when(mockAgentClientMandateService.removeClient(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(true)
-      val hc = new HeaderCarrier()
+      when(mockAgentClientMandateService.removeClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(true)
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(SEE_OTHER)
@@ -197,17 +179,17 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
     }
 
     "submitted with true throws exception" in {
-      when(mockAgentClientMandateService.removeClient(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(false)
+      when(mockAgentClientMandateService.removeClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(false)
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
-      implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
-      AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
 
-      val thrown = the[RuntimeException] thrownBy await(TestRemoveClientController.confirm(service, "ABC123").apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
+      val thrown = the[RuntimeException] thrownBy await(TestRemoveClientController.confirm(service, "ABC123")
+        .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
 
       thrown.getMessage must include("Client removal Failed")
     }
@@ -217,8 +199,7 @@ class RemoveClientControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
     "agent requests(GET) for 'client remove confirmation' view" in {
 
-      val hc = new HeaderCarrier()
-      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any())(Matchers.any(), Matchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(mandate))
 
       showConfirmationWithAuthorisedAgent { result =>

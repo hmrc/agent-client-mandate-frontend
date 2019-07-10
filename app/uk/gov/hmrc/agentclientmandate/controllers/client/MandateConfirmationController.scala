@@ -16,31 +16,36 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.ClientRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.Mandate
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
 
 object MandateConfirmationController extends MandateConfirmationController {
-  val authConnector = FrontendAuthConnector
-  val dataCacheService = DataCacheService
+  // $COVERAGE-OFF$
+  val dataCacheService: DataCacheService.type = DataCacheService
+  override def authConnector: AuthConnector = ConcreteAuthConnector
+  // $COVERAGE-ON$
 }
 
-trait MandateConfirmationController extends FrontendController with Actions with MandateConstants {
+trait MandateConfirmationController extends FrontendController with MandateConstants with AuthorisedWrappers {
 
   def dataCacheService: DataCacheService
 
-  def view(service: String) = AuthorisedFor(ClientRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-      dataCacheService.fetchAndGetFormData[Mandate](clientApprovedMandateId) map {
-        case Some(x) => Ok(views.html.client.mandateConfirmation(x.agentParty.name, x.subscription.service.name))
-        case None => Redirect(routes.ReviewMandateController.view())
+  def view(service: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withOrgCredId(Some(service)) { _ =>
+        dataCacheService.fetchAndGetFormData[Mandate](clientApprovedMandateId) map {
+          case Some(x) => Ok(views.html.client.mandateConfirmation(x.agentParty.name, x.subscription.service.name))
+          case None => Redirect(routes.ReviewMandateController.view())
+        }
       }
   }
 

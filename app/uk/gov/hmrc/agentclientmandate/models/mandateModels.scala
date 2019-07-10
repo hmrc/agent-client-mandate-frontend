@@ -18,22 +18,23 @@ package uk.gov.hmrc.agentclientmandate.models
 
 import org.joda.time.DateTime
 import play.api.libs.json._
+import uk.gov.hmrc.agentclientmandate.models
 import uk.gov.hmrc.agentclientmandate.models.PartyType.PartyType
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 
 case class ContactDetails(email: String, phone: Option[String] = None)
 
 object ContactDetails {
-  implicit val formats = Json.format[ContactDetails]
+  implicit val formats: OFormat[ContactDetails] = Json.format[ContactDetails]
 }
 
 object PartyType extends Enumeration {
   type PartyType = Value
 
-  val Individual = Value
-  val Organisation = Value
+  val Individual: models.PartyType.Value = Value
+  val Organisation: models.PartyType.Value = Value
 
-  implicit val enumFormat = new Format[PartyType] {
+  implicit val enumFormat: Format[PartyType] = new Format[PartyType] {
     def reads(json: JsValue) = JsSuccess(PartyType.withName(json.as[String]))
 
     def writes(enum: PartyType) = JsString(enum.toString)
@@ -43,22 +44,22 @@ object PartyType extends Enumeration {
 case class Party(id: String, name: String, `type`: PartyType, contactDetails: ContactDetails)
 
 object Party {
-  implicit val formats = Json.format[Party]
+  implicit val formats: OFormat[Party] = Json.format[Party]
 }
 
 object Status extends Enumeration {
   type Status = Value
 
-  val New = Value
-  val Approved = Value
-  val Active = Value
-  val Rejected = Value
-  val Expired = Value
-  val Cancelled = Value
-  val PendingCancellation = Value
-  val PendingActivation = Value
+  val New: models.Status.Value = Value
+  val Approved: models.Status.Value = Value
+  val Active: models.Status.Value = Value
+  val Rejected: models.Status.Value = Value
+  val Expired: models.Status.Value = Value
+  val Cancelled: models.Status.Value = Value
+  val PendingCancellation: models.Status.Value = Value
+  val PendingActivation: models.Status.Value = Value
 
-  implicit val enumFormat = new Format[Status] {
+  implicit val enumFormat: Format[Status] = new Format[Status] {
     def reads(json: JsValue) = JsSuccess(Status.withName(json.as[String]))
 
     def writes(enum: Status) = JsString(enum.toString)
@@ -68,25 +69,25 @@ object Status extends Enumeration {
 case class MandateStatus(status: Status, timestamp: DateTime, updatedBy: String)
 
 object MandateStatus {
-  implicit val formats = Json.format[MandateStatus]
+  implicit val formats: OFormat[MandateStatus] = Json.format[MandateStatus]
 }
 
 case class Service(id: String, name: String)
 
 object Service {
-  implicit val formats = Json.format[Service]
+  implicit val formats: OFormat[Service] = Json.format[Service]
 }
 
 case class Subscription(referenceNumber: Option[String] = None, service: Service)
 
 object Subscription {
-  implicit val formats = Json.format[Subscription]
+  implicit val formats: OFormat[Subscription] = Json.format[Subscription]
 }
 
 case class User(credId: String, name: String, groupId: Option[String] = None)
 
 object User {
-  implicit val formats = Json.format[User]
+  implicit val formats: OFormat[User] = Json.format[User]
 }
 
 case class Mandate(id: String,
@@ -101,17 +102,17 @@ case class Mandate(id: String,
                    clientDisplayName: String)
 
 object Mandate {
-  implicit val formats = Json.format[Mandate]
+  implicit val formats: OFormat[Mandate] = Json.format[Mandate]
 }
 
 case class ClientDetails(agentName: String, changeAgentLink: String, email: String, changeEmailLink: String)
 
 object ClientDetails {
-  implicit val formats = Json.format[ClientDetails]
+  implicit val formats: OFormat[ClientDetails] = Json.format[ClientDetails]
 }
 
 case class OldMandateReference(mandateId: String, atedRefNumber: String)
 
 object OldMandateReference {
-  implicit val formats = Json.format[OldMandateReference]
+  implicit val formats: OFormat[OldMandateReference] = Json.format[OldMandateReference]
 }

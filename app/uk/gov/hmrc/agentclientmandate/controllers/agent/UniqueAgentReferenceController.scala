@@ -16,35 +16,36 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
 
 object UniqueAgentReferenceController extends UniqueAgentReferenceController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
   // $COVERAGE-ON$
 }
 
-trait UniqueAgentReferenceController extends FrontendController with Actions with MandateConstants {
+trait UniqueAgentReferenceController extends FrontendController with MandateConstants with AuthorisedWrappers {
 
   def dataCacheService: DataCacheService
 
-  def view(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
+  def view(service: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { _ =>
       dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
         case Some(x) => Ok(views.html.agent.uniqueAgentReference(x, service))
         case None => Redirect(routes.SelectServiceController.view())
       }
+    }
   }
 
 }

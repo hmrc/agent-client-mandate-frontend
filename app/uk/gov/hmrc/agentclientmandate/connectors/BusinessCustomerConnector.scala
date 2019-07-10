@@ -18,15 +18,13 @@ package uk.gov.hmrc.agentclientmandate.connectors
 
 
 import play.api.Mode.Mode
-import play.api.{Configuration, Logger, Play}
 import play.api.http.Status._
 import play.api.libs.json.Json
+import play.api.{Configuration, Logger, Play}
 import uk.gov.hmrc.agentclientmandate.config.WSHttp
-import uk.gov.hmrc.agentclientmandate.models.UpdateRegistrationDetailsRequest
-import uk.gov.hmrc.agentclientmandate.utils.AuthUtils
+import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, UpdateRegistrationDetailsRequest}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.frontend.auth.AuthContext
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,9 +43,9 @@ trait BusinessCustomerConnector extends ServicesConfig with RawResponseReads {
 
   def http: CoreGet with CorePost
 
-  def updateRegistrationDetails(safeId: String, updateRegistrationDetails: UpdateRegistrationDetailsRequest)
-                               (implicit hc: HeaderCarrier, ac: AuthContext): Future[HttpResponse] = {
-    val authLink = AuthUtils.getAuthLink
+  def updateRegistrationDetails(safeId: String, updateRegistrationDetails: UpdateRegistrationDetailsRequest, authRetrievals: AgentAuthRetrievals)
+                               (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val authLink = authRetrievals.mandateConnectorUri
     val postUrl = s"""$serviceUrl$authLink/$baseUri/$updateRegistrationDetailsURI/$safeId"""
     val jsonData = Json.toJson(updateRegistrationDetails)
     http.POST(postUrl, jsonData) map { response =>
@@ -63,11 +61,12 @@ trait BusinessCustomerConnector extends ServicesConfig with RawResponseReads {
 }
 
 object BusinessCustomerConnector extends BusinessCustomerConnector {
+
   // $COVERAGE-OFF$
-  val serviceUrl = baseUrl("business-customer")
-  val baseUri = "business-customer"
-  val updateRegistrationDetailsURI = "update"
-  val http = WSHttp
+  val serviceUrl: String = baseUrl("business-customer")
+  val baseUri: String = "business-customer"
+  val updateRegistrationDetailsURI: String = "update"
+  val http: WSHttp.type = WSHttp
   // $COVERAGE-ON$
 
 }

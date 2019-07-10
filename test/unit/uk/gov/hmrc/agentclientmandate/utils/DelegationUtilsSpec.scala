@@ -16,22 +16,21 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.play.frontend.auth.{AuthContext, TaxIdentifiers}
-import unit.uk.gov.hmrc.agentclientmandate.builders.AuthBuilder
+import uk.gov.hmrc.domain.{AtedUtr, Generator}
+import uk.gov.hmrc.play.frontend.auth.TaxIdentifiers
 
-class DelegationUtilsSpec extends PlaySpec with OneServerPerSuite {
+class DelegationUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
-  val atedUtr = new Generator().nextAtedUtr
+  val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   "DelegationUtils" must {
 
     "createDelegationContext" must {
       "returns delegation context" in {
-        implicit val ac: AuthContext = AuthBuilder.createRegisteredAgentAuthContext("user-id", "user-name")
-        val result = DelegationUtils.createDelegationContext("ated", atedUtr.utr, "Client-Name")
+        val result = DelegationUtils.createDelegationContext("ated", atedUtr.utr, "Client-Name", Some("user-name"), "internalID")
         result.attorneyName must be("user-name")
         result.principalName must be("Client-Name")
       }
@@ -60,8 +59,10 @@ class DelegationUtilsSpec extends PlaySpec with OneServerPerSuite {
 
     "getDelegatedServiceHomeUrl" must {
       "returns delegated service home url for specific service" in {
-        DelegationUtils.getDelegatedServiceHomeUrl("ated") must be("https://www.gov.uk/guidance/register-for-the-annual-tax-on-enveloped-dwellings-online-service")
-        DelegationUtils.getDelegatedServiceHomeUrl("ATED") must be("https://www.gov.uk/guidance/register-for-the-annual-tax-on-enveloped-dwellings-online-service")
+        DelegationUtils.getDelegatedServiceHomeUrl("ated") must
+          be("https://www.gov.uk/guidance/register-for-the-annual-tax-on-enveloped-dwellings-online-service")
+        DelegationUtils.getDelegatedServiceHomeUrl("ATED") must
+          be("https://www.gov.uk/guidance/register-for-the-annual-tax-on-enveloped-dwellings-online-service")
       }
     }
   }

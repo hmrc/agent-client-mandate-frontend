@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.utils
 
 import play.api.Play
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class FeatureSwitch(name: String, enabled: Boolean)
 
@@ -25,20 +25,16 @@ object FeatureSwitch {
 
   import play.api.Play.current
 
-  def forName(name: String) = {
+  def forName(name: String): FeatureSwitch = {
     FeatureSwitch(name, isEnabled(name))
   }
 
-  def isEnabled(name: String) = {
+  def isEnabled(name: String): Boolean = {
     val sysPropValue = sys.props.get(systemPropertyName(name))
     sysPropValue match {
       case Some(x) => x.toBoolean
       case None => Play.configuration.getBoolean(confPropertyName(name)).getOrElse(false)
     }
-  }
-
-  def enable(switch: FeatureSwitch): FeatureSwitch = {
-    setProp(switch.name, value = true)
   }
 
   def disable(switch: FeatureSwitch): FeatureSwitch = setProp(switch.name, value = false)
@@ -48,16 +44,20 @@ object FeatureSwitch {
     forName(name)
   }
 
+  def enable(switch: FeatureSwitch): FeatureSwitch = {
+    setProp(switch.name, value = true)
+  }
+
   def confPropertyName(name: String) = s"features.$name"
 
   def systemPropertyName(name: String) = s"features.$name"
 
-  implicit val format = Json.format[FeatureSwitch]
+  implicit val format: OFormat[FeatureSwitch] = Json.format[FeatureSwitch]
 }
 
 object MandateFeatureSwitches {
 
-  def singleService = FeatureSwitch.forName("single_service")
+  def singleService: FeatureSwitch = FeatureSwitch.forName("single_service")
 
   def byName(name: String): Option[FeatureSwitch] = name match {
     case "single_service" => Some(singleService)

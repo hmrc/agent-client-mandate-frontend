@@ -19,20 +19,26 @@ package unit.uk.gov.hmrc.agentclientmandate.connectors
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import play.api.libs.json.Json
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.BusinessCustomerConnector
 import uk.gov.hmrc.agentclientmandate.models._
-import uk.gov.hmrc.play.frontend.auth.AuthContext
-import uk.gov.hmrc.play.http.ws.{WSGet, WSPost}
-import unit.uk.gov.hmrc.agentclientmandate.builders.AuthBuilder.createRegisteredAgentAuthContext
-
-import scala.concurrent.Future
 import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpResponse}
 
-class BusinessCustomerConnectorSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+import scala.concurrent.Future
+
+class BusinessCustomerConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+
+  val testAgentAuthRetrievals = AgentAuthRetrievals(
+    "agentRef",
+    "agentCode",
+    Some("agentFriendlyName"),
+    "providerId",
+    "internalId"
+  )
 
   "BusinessCustomerConnector" must {
 
@@ -46,10 +52,14 @@ class BusinessCustomerConnectorSpec extends PlaySpec with OneServerPerSuite with
     "return status OK" when {
       "business customer service responds with a HttpResponse OK" in {
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val ac: AuthContext = createRegisteredAgentAuthContext("agent", "agentId")
-        val updateRegDetails = UpdateRegistrationDetailsRequest(false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),RegisteredAddressDetails("address1","address2",None,None,None,"FR"),EtmpContactDetails(None,None,None,None),true,true,Some(Identification("idnumber","FR","issuingInstitution")))
-        when(mockWSHttp.POST[UpdateRegistrationDetailsRequest, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(responseJson))))
-        val result = await(TestBusinessCustomerConnector.updateRegistrationDetails("safeId", updateRegDetails))
+
+        val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),
+          RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
+          EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
+        when(mockWSHttp.POST[UpdateRegistrationDetailsRequest, HttpResponse]
+          (Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(responseJson))))
+        val result = await(TestBusinessCustomerConnector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(OK)
       }
     }
@@ -58,10 +68,14 @@ class BusinessCustomerConnectorSpec extends PlaySpec with OneServerPerSuite with
     "return response" when {
       "business customer service responds with a HttpResponse INTERNAL_SERVER_ERROR" in {
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val ac: AuthContext = createRegisteredAgentAuthContext("agent", "agentId")
-        val updateRegDetails = UpdateRegistrationDetailsRequest(false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),RegisteredAddressDetails("address1","address2",None,None,None,"FR"),EtmpContactDetails(None,None,None,None),true,true,Some(Identification("idnumber","FR","issuingInstitution")))
-        when(mockWSHttp.POST[UpdateRegistrationDetailsRequest, HttpResponse](Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson = Some(responseJson))))
-        val result = await(TestBusinessCustomerConnector.updateRegistrationDetails("safeId", updateRegDetails))
+
+        val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),
+          RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
+          EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
+        when(mockWSHttp.POST[UpdateRegistrationDetailsRequest, HttpResponse]
+          (Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson = Some(responseJson))))
+        val result = await(TestBusinessCustomerConnector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(INTERNAL_SERVER_ERROR)
       }
     }
@@ -75,13 +89,13 @@ class BusinessCustomerConnectorSpec extends PlaySpec with OneServerPerSuite with
     reset(mockWSHttp)
   }
 
-  val responseJson = Json.parse("""{"valid": true}""")
+  val responseJson: JsValue = Json.parse("""{"valid": true}""")
 
   object TestBusinessCustomerConnector extends BusinessCustomerConnector {
-    override val serviceUrl = baseUrl("business-customer")
-    override val http = mockWSHttp
-    override val baseUri = "business-customer"
-    override val updateRegistrationDetailsURI = "update"
+    override val serviceUrl: String = baseUrl("business-customer")
+    override val http: CoreGet with CorePost = mockWSHttp
+    override val baseUri: String = "business-customer"
+    override val updateRegistrationDetailsURI: String = "update"
   }
 
 }

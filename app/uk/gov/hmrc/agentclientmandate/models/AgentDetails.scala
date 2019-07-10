@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentclientmandate.models
 
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class EtmpContactDetails(phoneNumber: Option[String] = None,
                               mobileNumber: Option[String] = None,
@@ -26,7 +26,7 @@ case class EtmpContactDetails(phoneNumber: Option[String] = None,
                               emailAddress: Option[String] = None)
 
 object EtmpContactDetails {
-  implicit val formats = Json.format[EtmpContactDetails]
+  implicit val formats: OFormat[EtmpContactDetails] = Json.format[EtmpContactDetails]
 }
 
 case class Individual(firstName: String,
@@ -35,7 +35,7 @@ case class Individual(firstName: String,
                       dateOfBirth: LocalDate)
 
 object Individual {
-  implicit val formats = Json.format[Individual]
+  implicit val formats: OFormat[Individual] = Json.format[Individual]
 }
 
 case class Organisation(organisationName: String,
@@ -43,7 +43,7 @@ case class Organisation(organisationName: String,
                         organisationType: Option[String] = None)
 
 object Organisation {
-  implicit val formats = Json.format[Organisation]
+  implicit val formats: OFormat[Organisation] = Json.format[Organisation]
 }
 
 
@@ -56,7 +56,7 @@ case class BusinessRegistrationDisplayDetails(businessType: String,
 case class Identification(idNumber: String, issuingInstitution: String, issuingCountryCode: String)
 
 object Identification {
-  implicit val formats = Json.format[Identification]
+  implicit val formats: OFormat[Identification] = Json.format[Identification]
 }
 
 
@@ -67,16 +67,16 @@ case class AgentDetails(safeId: String,
                         addressDetails: RegisteredAddressDetails,
                         contactDetails: EtmpContactDetails,
                         identification: Option[Identification]) {
-  // $COVERAGE-OFF$
+
   def agentName: String = {
     if (isAnIndividual) s"${individual.map(_.firstName).getOrElse("")} ${individual.map(_.lastName).getOrElse("")}"
     else organisation.map(_.organisationName).getOrElse("")
-    // $COVERAGE-ON$
+
   }
 }
 
 object AgentDetails {
-  implicit val formats = Json.format[AgentDetails]
+  implicit val formats: OFormat[AgentDetails] = Json.format[AgentDetails]
 }
 
 case class UpdateRegistrationDetailsRequest(isAnIndividual: Boolean,
@@ -89,5 +89,5 @@ case class UpdateRegistrationDetailsRequest(isAnIndividual: Boolean,
                                             identification: Option[Identification] = None)
 
 object UpdateRegistrationDetailsRequest {
-  implicit val formats = Json.format[UpdateRegistrationDetailsRequest]
+  implicit val formats: OFormat[UpdateRegistrationDetailsRequest] = Json.format[UpdateRegistrationDetailsRequest]
 }

@@ -17,13 +17,13 @@
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
 import org.joda.time.DateTime
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentclientmandate.models._
-import uk.gov.hmrc.agentclientmandate.models.Status.Status
+import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class AgentClientMandateUtilsSpec extends PlaySpec with OneServerPerSuite {
+class AgentClientMandateUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
   "AgentClientMandateUtils" must {
     "validateUTR" must {
@@ -89,10 +89,12 @@ class AgentClientMandateUtilsSpec extends PlaySpec with OneServerPerSuite {
   val mandate: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "updatedby"), MandateStatus(Status.Active, DateTime.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "updatedby"),
+    MandateStatus(Status.Active, DateTime.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
 
   val mandate1: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name")
 }

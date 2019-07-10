@@ -21,12 +21,12 @@ import play.api.data.Forms._
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class YesNoQuestion(yesNo: Option[Boolean] = None)
 
 object YesNoQuestion {
-  implicit val formats = Json.format[YesNoQuestion]
+  implicit val formats: OFormat[YesNoQuestion] = Json.format[YesNoQuestion]
 }
 
 class YesNoQuestionForm(_param: String) {

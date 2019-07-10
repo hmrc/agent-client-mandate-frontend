@@ -22,38 +22,25 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
-import uk.gov.hmrc.agentclientmandate.controllers.agent.{HasClientRegisteredBeforeController, NRLQuestionController, PaySAQuestionController}
+import uk.gov.hmrc.agentclientmandate.controllers.agent.{HasClientRegisteredBeforeController, PaySAQuestionController}
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientPermission, PrevRegistered}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class HasClientRegisteredBeforeControllerSpec extends PlaySpec with OneServerPerSuite with BeforeAndAfterEach with MockitoSugar {
+class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar {
 
   "HasClientRegisteredBeforeController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/client-registered-previously/:callingPage" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/client-registered-previously/callingPage")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-      "POST /mandate/agent/client-registered-previously/callingPage/ATED" in {
-        val result = route(FakeRequest(POST, s"/mandate/agent/client-registered-previously/callingPage")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED agent" when {
       "agent requests(GET) for 'has previously registered question page' view" in {
@@ -135,17 +122,17 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with OneServerPer
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockBusinessCustomerConnector = mock[BusinessCustomerFrontendConnector]
-  val mockAtedSubscriptionConnector = mock[AtedSubscriptionFrontendConnector]
-  val service = "ATED"
-  val mockDataCacheService = mock[DataCacheService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
+  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val service: String = "ATED"
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestHasClientRegisteredBeforeController extends HasClientRegisteredBeforeController {
-    override val authConnector = mockAuthConnector
-    override val businessCustomerConnector = mockBusinessCustomerConnector
-    override val atedSubscriptionConnector = mockAtedSubscriptionConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val businessCustomerConnector: BusinessCustomerFrontendConnector = mockBusinessCustomerConnector
+    override val atedSubscriptionConnector: AtedSubscriptionFrontendConnector = mockAtedSubscriptionConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
   override def beforeEach(): Unit = {
@@ -155,9 +142,8 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with OneServerPer
   }
 
   def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestHasClientRegisteredBeforeController.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -165,30 +151,31 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with OneServerPer
   def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestHasClientRegisteredBeforeController.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def viewWithAuthorisedAgent(serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedAgent
+  (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    when(mockBusinessCustomerConnector.clearCache(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(HttpResponse(200)))
-    when(mockAtedSubscriptionConnector.clearCache(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(HttpResponse(200)))
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    when(mockBusinessCustomerConnector.clearCache(Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(HttpResponse(OK)))
+    when(mockAtedSubscriptionConnector.clearCache(Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(HttpResponse(OK)))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](Matchers.any())
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(prevReg))
     val result = TestHasClientRegisteredBeforeController.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def submitWithAuthorisedAgent(callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
+  def submitWithAuthorisedAgent
+  (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](Matchers.any())
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(prevReg))
     val result = TestHasClientRegisteredBeforeController.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))

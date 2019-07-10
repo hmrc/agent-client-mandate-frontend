@@ -23,32 +23,23 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.MandateConfirmationController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class MandateConfirmationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "MandateConfirmationController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/client/confirmation" in {
-        val result = route(FakeRequest(GET, "/mandate/client/confirmation")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
@@ -108,13 +99,13 @@ class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite 
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
-  val service = "ATED"
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val service: String = "ATED"
 
   object TestMandateConfirmationController extends MandateConfirmationController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
   override def beforeEach(): Unit = {
@@ -123,9 +114,8 @@ class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite 
   }
 
   def viewUnAuthenticatedClient(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestMandateConfirmationController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -134,8 +124,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite 
   def viewUnAuthorisedClient(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestMandateConfirmationController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -143,9 +132,11 @@ class MandateConfirmationControllerSpec extends PlaySpec with OneServerPerSuite 
   def viewAuthorisedClient(cachedData: Option[Mandate] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[Mandate](Matchers.eq(TestMandateConfirmationController.clientApprovedMandateId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[Mandate]
+      (Matchers.eq(TestMandateConfirmationController.clientApprovedMandateId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestMandateConfirmationController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }

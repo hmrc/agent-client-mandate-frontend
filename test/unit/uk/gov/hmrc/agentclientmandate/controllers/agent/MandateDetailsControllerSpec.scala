@@ -22,39 +22,37 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.{MandateDetailsController, OverseasClientQuestionController, PaySAQuestionController}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 
-class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "MandateDetailsController" must {
-
-    "not return NOT_FOUND at route " when {
-      "GET /mandate/agent/details/:service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/details/overseas")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "return 'mandate details' view for AUTHORISED agent" when {
 
       "agent requests(GET) for check client details view and email has been cached previously and it's from PaySA" in {
-        when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
-        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
-        when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("callingPage"))
+        when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(TestMandateDetailsController.agentEmailFormId))
+          (Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
+          (Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
+        when(mockDataCacheService.cacheFormData[String]
+          (Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent(PaySAQuestionController.controllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -70,9 +68,14 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
       }
 
       "agent requests(GET) for check client details view and email has been cached previously and it's from Overseas" in {
-        when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
-        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
-        when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("callingPage"))
+        when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
+          (Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
+          (Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
+        when(mockDataCacheService.cacheFormData[String]
+          (Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent(OverseasClientQuestionController.controllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -91,9 +94,14 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
     "redirect to 'collect agent email' view for AUTHORISED agent" when {
 
       "agent requests(GET) for check client details view and email has NOT been cached previously" in {
-        when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
-        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
-        when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("callingPage"))
+        when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
+          (Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
+        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
+          (Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
+        when(mockDataCacheService.cacheFormData[String]
+          (Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/add-client"))
@@ -104,9 +112,13 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
     "redirect to 'client display name' view for AUTHORISED agent" when {
 
       "agent requests(GET) for check client details view and display name has NOT been cached previously" in {
-        when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
-        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
-        when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("callingPage"))
+        when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
+          (Matchers.eq(TestMandateDetailsController.agentEmailFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+        when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
+          (Matchers.eq(TestMandateDetailsController.clientDisplayNameFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
+        when(mockDataCacheService.cacheFormData[String]
+          (Matchers.eq(TestMandateDetailsController.callingPageCacheId), Matchers.any())(Matchers.any(), Matchers.any()))
+          .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/client-display-name"))
@@ -135,31 +147,31 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
-  val mockMandateService = mock[AgentClientMandateService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
   object TestMandateDetailsController extends MandateDetailsController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
-    override val mandateService = mockMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
+    override val mandateService: AgentClientMandateService = mockMandateService
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
     reset(mockMandateService)
   }
 
-  val service = "ated"
-  val agentEmail = AgentEmail("aa@mail.com")
-  val mandateId = "AS12345678"
+  val service: String = "ated"
+  val agentEmail: AgentEmail = AgentEmail("aa@mail.com")
+  val mandateId: String = "AS12345678"
 
   def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestMandateDetailsController.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -167,8 +179,8 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
   def viewWithAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestMandateDetailsController.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -176,9 +188,9 @@ class MandateDetailsControllerSpec extends PlaySpec with OneServerPerSuite with 
   def submitWithAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockMandateService.createMandate(Matchers.eq(service))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(mandateId))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockMandateService.createMandate(Matchers.eq(service), Matchers.any())(Matchers.any())).thenReturn(Future.successful(mandateId))
     val fakeRequest = FakeRequest().withFormUrlEncodedBody()
     val result = TestMandateDetailsController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
     test(result)

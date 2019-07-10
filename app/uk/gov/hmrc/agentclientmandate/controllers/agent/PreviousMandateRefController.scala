@@ -20,52 +20,58 @@ import play.api.Play.current
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig._
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.models.{Mandate, OldMandateReference}
+import uk.gov.hmrc.agentclientmandate.config.{ConcreteAuthConnector, FrontendAuthConnector}
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.models.OldMandateReference
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.MandateReferenceForm.mandateRefForm
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail, MandateReference}
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
 
 object PreviousMandateRefController extends PreviousMandateRefController {
-  val authConnector: AuthConnector = FrontendAuthConnector
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
   val mandateService: AgentClientMandateService = AgentClientMandateService
+  // $COVERAGE-ON$
 }
 
-trait PreviousMandateRefController extends FrontendController with Actions with MandateConstants {
+trait PreviousMandateRefController extends FrontendController with AuthorisedWrappers with MandateConstants {
 
   def dataCacheService: DataCacheService
 
   def mandateService: AgentClientMandateService
 
-  def view(service: String, callingPage: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext =>
-      implicit request =>
+  def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) map { a =>
           a.flatMap(_.mandate) match {
             case Some(x) => Ok(views.html.agent.searchPreviousMandate(service, mandateRefForm.fill(MandateReference(x.id)), callingPage, getBackLink(service, callingPage)))
             case None => Ok(views.html.agent.searchPreviousMandate(service, mandateRefForm, callingPage, getBackLink(service, callingPage)))
           }
         }
+      }
   }
 
-  def submit(service: String, callingPage: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext =>
-      implicit request =>
+  def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { authRetrievals =>
         mandateRefForm.bindFromRequest.fold(
-          formWithErrors => Future.successful(BadRequest(views.html.agent.searchPreviousMandate(service, formWithErrors, callingPage, getBackLink(service, callingPage)))),
+          formWithErrors => {
+            val result = BadRequest(views.html.agent.searchPreviousMandate(service, formWithErrors, callingPage, getBackLink(service, callingPage)))
+            Future.successful(result)
+          },
           data => {
-            mandateService.fetchClientMandate(data.mandateRef.toUpperCase) flatMap {
+            mandateService.fetchClientMandate(data.mandateRef.toUpperCase, authRetrievals) flatMap {
               case Some(x) =>
                 dataCacheService.cacheFormData[OldMandateReference](oldNonUkMandate, OldMandateReference(x.id,
                   x.subscription.referenceNumber.getOrElse(throw new RuntimeException("No Client Ref no. found!"))))
@@ -79,17 +85,17 @@ trait PreviousMandateRefController extends FrontendController with Actions with 
             }
           }
         )
+      }
   }
 
-  def getOldMandateFromSession(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext =>
+  def getOldMandateFromSession(service: String): Action[AnyContent] = Action.async {
       implicit request =>
         dataCacheService.fetchAndGetFormData[OldMandateReference](oldNonUkMandate).map { mandateRef =>
           Ok(Json.toJson(mandateRef))
         }
   }
 
-  private def getBackLink(service: String, callingPage: String) = {
+  private def getBackLink(service: String, callingPage: String): Some[String] = {
     Some(routes.HasClientRegisteredBeforeController.view(callingPage).url)
   }
 }

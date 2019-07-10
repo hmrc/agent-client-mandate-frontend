@@ -22,33 +22,25 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.CollectEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "CollectEmailController" must {
-
-    "not return NOT_FOUND at route " when {
-      "GET /mandate/client/email" in {
-        val result = route(FakeRequest(GET, "/mandate/client/email")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
@@ -192,7 +184,8 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -203,9 +196,11 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+          document.getElementsByClass("error-notification").text() must
+            include("The email address you want to use for this client must be 241 characters or less")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -213,13 +208,14 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
       "invalid email id is passed" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
-        submitWithAuthorisedClient(fakeRequest, isValidEmail = false) { result =>
+        submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -228,15 +224,15 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestCollectEmailController extends CollectEmailController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
   }
@@ -245,9 +241,8 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
 
   def viewWithUnAuthenticatedClient(redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestCollectEmailController.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -255,10 +250,11 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("/api/anywhere")))
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("/api/anywhere")))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestCollectEmailController.edit(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -266,12 +262,13 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[ContinueUrl])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.cacheFormData[ContinueUrl](Matchers.eq(TestCollectEmailController.backLinkId),
       Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(backLink.get))
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(backLink.get.url)))
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some(backLink.get.url)))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestCollectEmailController.back(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -279,15 +276,17 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestCollectEmailController.backLinkId),
       Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("/test/test"))
     redirectUrl match {
-      case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(x.url)))
-      case _ => when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("")))
+      case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String]
+        (Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(x.url)))
+      case _ => when(mockDataCacheService.fetchAndGetFormData[String]
+        (Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("")))
     }
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestCollectEmailController.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -299,10 +298,15 @@ class CollectEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mo
                                  mode: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("/api/anywhere")))
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId), Matchers.eq(returnCache))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(returnCache))
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[String]
+      (Matchers.eq(TestCollectEmailController.backLinkId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("/api/anywhere")))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestCollectEmailController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockDataCacheService.cacheFormData[ClientCache]
+      (Matchers.eq(TestCollectEmailController.clientFormId), Matchers.eq(returnCache))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(returnCache))
     val result = TestCollectEmailController.submit(service, mode).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

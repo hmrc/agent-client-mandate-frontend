@@ -21,32 +21,26 @@ import java.util.UUID
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
+import play.api.mvc.{AnyContentAsJson, Result}
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateAddressDetailsController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthBuilder, SessionBuilder}
-import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
-import play.api.mvc.{AnyContentAsFormUrlEncoded, AnyContentAsJson, Result}
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetails
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class UpdateAddressDetailsControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class UpdateAddressDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "UpdateAddressDetailsController" should {
-
-    "not respond with NOT_FOUND status" when {
-      "GET /mandate/agent/details/edit/abc/businessDetails is invoked" in {
-        val result = route(FakeRequest(GET, "/mandate/agent/details/edit/businessDetails")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "redirect to unathorised page" when {
       "the user is UNAUTHORISED" in {
@@ -114,40 +108,45 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with OneServerPerSuite
       }
     }
   }
-  val cachedData = Some(AgentBuilder.buildAgentDetails)
-  val agentDetails = AgentBuilder.buildAgentDetails
-  val updateRegDetails = Some(UpdateRegistrationDetailsRequest(false, None, Some(Organisation("Org name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"), EtmpContactDetails(None, None, None, None), true, true, None))
+  val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
+  val updateRegDetails: Option[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+    Some(Organisation("Org name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
+    EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockAgentClientMandateService = mock[AgentClientMandateService]
-  val mockDataCacheService = mock[DataCacheService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestUpdateAddressDetailsController extends UpdateAddressDetailsController {
-    override val authConnector = mockAuthConnector
+    override val authConnector: AuthConnector = mockAuthConnector
     override val dataCacheService: DataCacheService = mockDataCacheService
     override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
     reset(mockAgentClientMandateService)
   }
 
-  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
+  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestUpdateAddressDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any) {
+  def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[AgentDetails](Matchers.eq(TestUpdateAddressDetailsController.agentDetailsFormId))(Matchers.any(), Matchers.any())) thenReturn Future.successful(cachedData)
-    when(mockAgentClientMandateService.fetchAgentDetails()(Matchers.any(), Matchers.any())) thenReturn (Future.successful(agentDetails))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[AgentDetails]
+      (Matchers.eq(TestUpdateAddressDetailsController.agentDetailsFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn (Future.successful(cachedData))
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(agentDetails))
     val result = TestUpdateAddressDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -155,7 +154,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with OneServerPerSuite
   def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestUpdateAddressDetailsController.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -164,8 +163,9 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with OneServerPerSuite
                             (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockAgentClientMandateService.updateRegisteredDetails(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(updatedRegDetails))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockAgentClientMandateService.updateRegisteredDetails(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(updatedRegDetails))
     val result = TestUpdateAddressDetailsController.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
     test(result)
   }

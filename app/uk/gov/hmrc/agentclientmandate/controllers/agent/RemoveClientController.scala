@@ -16,68 +16,70 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Logger
-import play.api.mvc.Action
-import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig._
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.controller.FrontendController
-import uk.gov.hmrc.agentclientmandate.views
-import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.isNonUkClient
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
+import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
-trait RemoveClientController extends FrontendController with Actions {
+trait RemoveClientController extends FrontendController with AuthorisedWrappers {
 
   def acmService: AgentClientMandateService
 
-  def view(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-
-      acmService.fetchClientMandateClientName(mandateId).map(
-        mandate => Ok(views.html.agent.removeClient(new YesNoQuestionForm("agent.remove-client.error").yesNoQuestionForm,
-          service, mandate.clientDisplayName, mandateId, getBackLink(service)))
-      )
+  def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { authRetrievals =>
+        acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
+          mandate => Ok(views.html.agent.removeClient(new YesNoQuestionForm("agent.remove-client.error").yesNoQuestionForm,
+            service, mandate.clientDisplayName, mandateId, getBackLink(service)))
+        )
+      }
   }
 
-  def confirm(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-      val form = new YesNoQuestionForm("agent.remove-client.error")
-      form.yesNoQuestionForm.bindFromRequest.fold(
-        formWithError =>
-          acmService.fetchClientMandateClientName(mandateId).map(
-            mandate =>  BadRequest(views.html.agent.removeClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
-          ),
-        data => {
-          val removeClient = data.yesNo.getOrElse(false)
-          if (removeClient) {
-            acmService.removeClient(mandateId).map { removedClient =>
-              if (removedClient) {
-                Redirect(routes.RemoveClientController.showConfirmation(mandateId))
-              }
-              else {
-                throw new RuntimeException(s"Client removal Failed with id $mandateId for service $service")
+  def confirm(service: String, mandateId: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { authRetrievals =>
+        val form = new YesNoQuestionForm("agent.remove-client.error")
+        form.yesNoQuestionForm.bindFromRequest.fold(
+          formWithError =>
+            acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
+              mandate => BadRequest(views.html.agent.removeClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
+            ),
+          data => {
+            val removeClient = data.yesNo.getOrElse(false)
+            if (removeClient) {
+              acmService.removeClient(mandateId, authRetrievals).map { removedClient =>
+                if (removedClient) {
+                  Redirect(routes.RemoveClientController.showConfirmation(mandateId))
+                }
+                else {
+                  throw new RuntimeException(s"Client removal Failed with id $mandateId for service $service")
+                }
               }
             }
+            else {
+              Future.successful(Redirect(routes.AgentSummaryController.view()))
+            }
           }
-          else {
-            Future.successful(Redirect(routes.AgentSummaryController.view()))
-          }
-        }
-      )
+        )
+      }
   }
 
-  def showConfirmation(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-      acmService.fetchClientMandateClientName(mandateId).map(
-        mandate =>  Ok(views.html.agent.removeClientConfirmation(service, mandate.id,  mandate.clientDisplayName, isNonUkClient(mandate)))
-      )
+  def showConfirmation(service: String, mandateId: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { authRetrievals =>
+        acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
+          mandate => Ok(views.html.agent.removeClientConfirmation(service, mandate.id, mandate.clientDisplayName, isNonUkClient(mandate)))
+        )
+      }
     }
 
   private def getBackLink(service: String) = {
@@ -88,7 +90,7 @@ trait RemoveClientController extends FrontendController with Actions {
 
 object RemoveClientController extends RemoveClientController {
   // $COVERAGE-OFF$
-  val authConnector = FrontendAuthConnector
-  val acmService = AgentClientMandateService
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val acmService: AgentClientMandateService = AgentClientMandateService
   // $COVERAGE-ON$
 }

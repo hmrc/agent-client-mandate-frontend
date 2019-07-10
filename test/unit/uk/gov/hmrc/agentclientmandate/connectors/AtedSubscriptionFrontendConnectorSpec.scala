@@ -19,8 +19,9 @@ package unit.uk.gov.hmrc.agentclientmandate.connectors
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Play
 import play.api.mvc.Request
 import play.api.test.FakeRequest
@@ -28,13 +29,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.frontend.auth.AuthContext
 import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
-import unit.uk.gov.hmrc.agentclientmandate.builders.AuthBuilder._
 
 import scala.concurrent.Future
 
-class AtedSubscriptionFrontendConnectorSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AtedSubscriptionFrontendConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   trait MockedVerbs extends CoreGet
   val mockWSHttp: CoreGet = mock[MockedVerbs]
@@ -43,21 +42,20 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec with OneServerPerSu
     reset(mockWSHttp)
   }
 
-  implicit val ac: AuthContext = createRegisteredAgentAuthContext("agent", "agentId")
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: Request[_] = FakeRequest(GET, "")
 
   object TestAtedSubscriptionFrontendConnector extends AtedSubscriptionFrontendConnector
   {
     override def http: CoreGet = mockWSHttp
-    override def crypto: (String) => String = new SessionCookieCryptoFilter(new ApplicationCrypto(Play.current.configuration.underlying)).encrypt _
+    override def crypto: String => String = new SessionCookieCryptoFilter(new ApplicationCrypto(Play.current.configuration.underlying)).encrypt _
   }
 
   "AtedSubscriptionFrontendConnector" must {
     "clear cache" in {
       when(mockWSHttp.GET[HttpResponse]
         (Matchers.any())
-        (Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(200)))
+        (Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
 
       val response = TestAtedSubscriptionFrontendConnector.clearCache("")
       await(response).status must be(OK)

@@ -17,20 +17,19 @@
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
 import play.api.Logger
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
 import uk.gov.hmrc.agentclientmandate.models.Mandate
 import uk.gov.hmrc.play.frontend.auth.Actions
 import uk.gov.hmrc.play.frontend.controller.{FrontendController, UnauthorisedAction}
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
 
 trait PerformanceTestSupportController extends FrontendController with Actions {
 
   def agentClientMandateConnector: AgentClientMandateConnector
 
-  // $COVERAGE-OFF$
-  def createMandate() = UnauthorisedAction.async { implicit request =>
+
+  def createMandate(): Action[AnyContent] = UnauthorisedAction.async { implicit request =>
     Logger.debug("inserting test mandate")
      agentClientMandateConnector.testOnlyCreateMandate(request.body.asJson.get.as[Mandate]).map { x =>
        Logger.debug("inserted test mandate")
@@ -38,19 +37,19 @@ trait PerformanceTestSupportController extends FrontendController with Actions {
      }
   }
 
-  def deleteMandate(mandateId: String) = UnauthorisedAction.async { implicit request =>
+  def deleteMandate(mandateId: String): Action[AnyContent] = UnauthorisedAction.async { implicit request =>
     Logger.debug(s"deleting mandate: $mandateId")
     agentClientMandateConnector.testOnlyDeleteMandate(mandateId).map { x =>
       Logger.debug("deleted mandate")
       Ok
     }
   }
-  // $COVERAGE-ON$
+
 }
 
 object PerformanceTestSupportController extends PerformanceTestSupportController {
-  // $COVERAGE-OFF$
-  val agentClientMandateConnector = AgentClientMandateConnector
-  val authConnector = FrontendAuthConnector
-  // $COVERAGE-ON$
+
+  val agentClientMandateConnector: AgentClientMandateConnector = AgentClientMandateConnector
+  val authConnector: FrontendAuthConnector.type = FrontendAuthConnector
+
 }

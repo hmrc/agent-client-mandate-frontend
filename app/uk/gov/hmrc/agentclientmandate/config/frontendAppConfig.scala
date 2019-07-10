@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
-import play.api.{Configuration, Play}
 import play.api.Mode.Mode
 import play.api.Play.{configuration, current}
+import play.api.{Configuration, Play}
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.collection.JavaConverters._
@@ -58,7 +58,7 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
 
   override lazy val defaultBetaFeedbackUrl = s"$contactHost/contact/beta-feedback"
 
-  override def betaFeedbackUrl(service: Option[String], returnUri: String) = {
+  override def betaFeedbackUrl(service: Option[String], returnUri: String): String = {
     val feedbackUrl = service match {
       case Some(delegatedService) if (!delegatedService.isEmpty()) =>
         configuration.getString(s"microservice.delegated-service.${delegatedService.toLowerCase}.beta-feedback-url").getOrElse(defaultBetaFeedbackUrl)
@@ -69,8 +69,8 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
 
   override lazy val urBannerToggle: Boolean = loadConfig("urBanner.toggle").toBoolean
   lazy val urBannerLink: String = loadConfig("urBanner.link")
-  override lazy val analyticsToken = loadConfig("google-analytics.token")
-  override lazy val analyticsHost = loadConfig("google-analytics.host")
+  override lazy val analyticsToken: String = loadConfig("google-analytics.token")
+  override lazy val analyticsHost: String = loadConfig("google-analytics.host")
   override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   override lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
@@ -82,11 +82,6 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
     val forwardUrl =
       s"""${
         configuration.getString("microservice.services.business-customer-frontend.nonUK-uri").
-          getOrElse("")
-      }/${service.toLowerCase}"""
-    val returnUrl =
-      s"""${
-        configuration.getString("microservice.services.business-customer-frontend.nonUK-return-uri").
           getOrElse("")
       }/${service.toLowerCase}"""
 
@@ -111,7 +106,7 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
     }
   }
 
-  override lazy val mandateFrontendHost = configuration.getString(s"microservice.services.agent-client-mandate-frontend.host").getOrElse("")
+  override lazy val mandateFrontendHost: String = configuration.getString(s"microservice.services.agent-client-mandate-frontend.host").getOrElse("")
 
   override lazy val servicesUsed: List[String] = {
     configuration.getStringList("microservice.servicesUsed").map(_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))

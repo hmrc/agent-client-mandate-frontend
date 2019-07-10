@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class RegisteredAddressDetails(addressLine1: String,
                                       addressLine2: String,
@@ -25,5 +25,5 @@ case class RegisteredAddressDetails(addressLine1: String,
                                       postalCode: Option[String]=None,
                                       countryCode: String)
 object RegisteredAddressDetails {
-    implicit val formats = Json.format[RegisteredAddressDetails]
+    implicit val formats: OFormat[RegisteredAddressDetails] = Json.format[RegisteredAddressDetails]
 }

@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentclientmandate.controllers.auth
+package helpers
 
-import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls._
-import uk.gov.hmrc.play.frontend.auth.GovernmentGateway
+import uk.gov.hmrc.domain.{AgentBusinessUtr, Generator}
 
-case class AgentGovernmentGateway(service: String) extends GovernmentGateway {
+import scala.util.Random
 
-  override val loginURL = s"$companyAuthHost/$loginPath"
-  override def continueURL = s"$loginCallbackAgent/$service"
+class AgentBusinessUtrGenerator(random: Random = new Random) extends Generator {
 
-  override val defaultTimeoutSeconds = 1800
+  def this(seed: Int) = this(new scala.util.Random(seed))
+
+  val OneMillion = 1000000
+
+  def nextAgentBusinessUtr: AgentBusinessUtr = {
+    val suffix = f"${random.nextInt(OneMillion)}%07d"
+    val weighting = s"ARN$suffix"
+    val checkCharacter = calculateCheckCharacter(weighting)
+    AgentBusinessUtr(f"${checkCharacter}ARN$suffix")
+  }
 
 }

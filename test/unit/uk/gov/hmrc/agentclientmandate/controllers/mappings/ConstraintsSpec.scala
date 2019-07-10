@@ -25,6 +25,8 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 
 class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks with Constraints {
 
+  val maxVal: Int = 10
+
   "regexp" must {
 
     "return Valid for an input that matches the expression" in {
@@ -41,22 +43,22 @@ class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks wit
   "maxLength" must {
 
     "return Valid for a string shorter than the allowed length" in {
-      val result = maxLength(10, "error.length")("a" * 9)
+      val result = maxLength(maxVal, "error.length")("a" * 9)
       result mustEqual Valid
     }
 
     "return Valid for an empty string" in {
-      val result = maxLength(10, "error.length")("")
+      val result = maxLength(maxVal, "error.length")("")
       result mustEqual Valid
     }
 
     "return Valid for a string equal to the allowed length" in {
-      val result = maxLength(10, "error.length")("a" * 10)
+      val result = maxLength(maxVal, "error.length")("a" * 10)
       result mustEqual Valid
     }
 
     "return Invalid for a string longer than the allowed length" in {
-      val result = maxLength(10, "error.length")("a" * 11)
+      val result = maxLength(maxVal, "error.length")("a" * 11)
       result mustEqual Invalid("error.length")
     }
   }
@@ -64,12 +66,12 @@ class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks wit
   "minLength" must {
 
     "return Valid for a string longer than the allowed length" in {
-      val result = minLength(10, "error.length")("abc@aaa.com")
+      val result = minLength(maxVal, "error.length")("abc@aaa.com")
       result mustEqual Valid
     }
 
     "return inValid for an empty string" in {
-      val result = minLength(10, "error.length")("")
+      val result = minLength(maxVal, "error.length")("")
       result mustEqual Invalid("error.length")
     }
 

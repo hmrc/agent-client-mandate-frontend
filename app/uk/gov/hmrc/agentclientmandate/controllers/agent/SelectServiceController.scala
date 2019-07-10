@@ -16,53 +16,35 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
+import uk.gov.hmrc.agentclientmandate.utils.MandateFeatureSwitches._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentSelectServiceForm.selectServiceForm
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import uk.gov.hmrc.agentclientmandate.utils.MandateFeatureSwitches._
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
-import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
-import uk.gov.hmrc.agentclientmandate.utils.AuthUtils
 
 import scala.concurrent.Future
 
 object SelectServiceController extends SelectServiceController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
-  val agentClientMandateService = AgentClientMandateService
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val agentClientMandateService: AgentClientMandateService = AgentClientMandateService
   // $COVERAGE-ON$
 }
 
-trait SelectServiceController extends FrontendController with Actions {
+trait SelectServiceController extends FrontendController with AuthorisedWrappers {
 
   def agentClientMandateService: AgentClientMandateService
 
-  def view = AuthorisedFor(AgentRegime(), GGConfidence).async {
-    implicit authContext => implicit request =>
-      if(singleService.enabled) {
-        agentClientMandateService.doesAgentHaveMissingEmail("ated", AuthUtils.getArn).map { agentHasMissingEmail =>
-            if (agentHasMissingEmail) {
-              Redirect(routes.AgentMissingEmailController.view())
-            }
-            else {
-              Redirect(routes.AgentSummaryController.view())
-            }
-        }
-      }
-      else Future.successful(Ok(views.html.agent.selectService(selectServiceForm)))
-  }
-
-  def submit = AuthorisedFor(AgentRegime(), GGConfidence).async {
-    implicit authContext => implicit request => selectServiceForm.bindFromRequest.fold(
-      formWithError => Future.successful(BadRequest(views.html.agent.selectService(formWithError))),
-      selectedService => {
-        val service = selectedService.service.get
-        agentClientMandateService.doesAgentHaveMissingEmail(service, AuthUtils.getArn).map { agentHasMissingEmail =>
+  def view: Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(None) { authRetrievals =>
+      if (singleService.enabled) {
+        agentClientMandateService.doesAgentHaveMissingEmail("ated", authRetrievals).map { agentHasMissingEmail =>
           if (agentHasMissingEmail) {
             Redirect(routes.AgentMissingEmailController.view())
           }
@@ -71,7 +53,27 @@ trait SelectServiceController extends FrontendController with Actions {
           }
         }
       }
-    )
+      else Future.successful(Ok(views.html.agent.selectService(selectServiceForm)))
+    }
+  }
+
+  def submit: Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(None) { authRetrievals =>
+      selectServiceForm.bindFromRequest.fold(
+        formWithError => Future.successful(BadRequest(views.html.agent.selectService(formWithError))),
+        selectedService => {
+          val service = selectedService.service.get
+          agentClientMandateService.doesAgentHaveMissingEmail(service, authRetrievals).map { agentHasMissingEmail =>
+            if (agentHasMissingEmail) {
+              Redirect(routes.AgentMissingEmailController.view())
+            }
+            else {
+              Redirect(routes.AgentSummaryController.view())
+            }
+          }
+        }
+      )
+    }
   }
 
 }

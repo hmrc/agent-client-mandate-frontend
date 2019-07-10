@@ -18,33 +18,25 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
 
-import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgencyDetailsController
 import uk.gov.hmrc.agentclientmandate.models.AgentDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
 
-class AgencyDetailsControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
    "AgencyDetailsController" should {
-
-     "not respond with NOT_FOUND status" when {
-       "GET /mandate/agent/details/edit/abc is invoked" in {
-         val result = route(FakeRequest(GET, "/mandate/agent/edit")).get
-         status(result) mustNot be(NOT_FOUND)
-       }
-     }
 
      "redirect to unathorised page" when {
        "the user is UNAUTHORISED" in {
@@ -66,36 +58,38 @@ class AgencyDetailsControllerSpec extends PlaySpec with OneServerPerSuite with M
 
    }
 
-  val agentDetails = AgentBuilder.buildAgentDetails
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockAgentClientMandateService = mock[AgentClientMandateService]
-  val mockDataCacheService = mock[DataCacheService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestAgencyDetailsController extends AgencyDetailsController {
-    override val authConnector = mockAuthConnector
+    override val authConnector: AuthConnector = mockAuthConnector
     override val dataCacheService: DataCacheService = mockDataCacheService
     override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
   }
 
-  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
+  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestAgencyDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def getWithAuthorisedUser(agentDetails: AgentDetails, service: String)(test: Future[Result] => Any) {
+  def getWithAuthorisedUser(agentDetails: AgentDetails, service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val cachedData = AgentBuilder.buildAgentDetails
-    when(mockDataCacheService.cacheFormData[AgentDetails](Matchers.eq(TestAgencyDetailsController.agentDetailsFormId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockAgentClientMandateService.fetchAgentDetails()(Matchers.any(), Matchers.any())) thenReturn(Future.successful(agentDetails))
+    when(mockDataCacheService.cacheFormData[AgentDetails]
+      (Matchers.eq(TestAgencyDetailsController.agentDetailsFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())).thenReturn(Future.successful(agentDetails))
     val result = TestAgencyDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }

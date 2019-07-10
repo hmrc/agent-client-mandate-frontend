@@ -16,49 +16,47 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Logger
 import play.api.Play.current
-import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService}
-import uk.gov.hmrc.agentclientmandate.utils.AuthUtils
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentMissingEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
-trait AgentMissingEmailController extends FrontendController with Actions {
+trait AgentMissingEmailController extends FrontendController with AuthorisedWrappers {
 
   def agentClientMandateService: AgentClientMandateService
 
-  def view(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit user => implicit request =>
+  def view(service: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { _ =>
       Future.successful(Ok(views.html.agent.agentMissingEmail(agentMissingEmailForm, service)))
+    }
   }
 
-  def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
+  def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
       agentMissingEmailForm.bindFromRequest.fold(
         formWithError => Future.successful(BadRequest(views.html.agent.agentMissingEmail(formWithError, service))),
         data => {
-          agentClientMandateService.updateAgentMissingEmail(data.email.get, AuthUtils.getArn, service)
+          agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
           Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))
         }
       )
+    }
   }
-
 }
 
 object AgentMissingEmailController extends AgentMissingEmailController {
+
   // $COVERAGE-OFF$
-  val agentClientMandateService = AgentClientMandateService
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val agentClientMandateService: AgentClientMandateService.type = AgentClientMandateService
+  val authConnector: AuthConnector = ConcreteAuthConnector
   // $COVERAGE-ON$
+
 }

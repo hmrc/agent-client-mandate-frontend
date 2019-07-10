@@ -16,51 +16,52 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
-import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils._
 
 import scala.concurrent.Future
 
 object RejectClientController extends RejectClientController {
   // $COVERAGE-OFF$
-  val authConnector = FrontendAuthConnector
-  val acmService = AgentClientMandateService
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val acmService: AgentClientMandateService = AgentClientMandateService
   // $COVERAGE-ON$
 }
 
-trait RejectClientController extends FrontendController with Actions {
+trait RejectClientController extends FrontendController with AuthorisedWrappers {
 
   def acmService: AgentClientMandateService
 
-  def view(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-      acmService.fetchClientMandateClientName(mandateId).map(
+  def view(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
+      acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
         mandate => Ok(views.html.agent.rejectClient(service,
           new YesNoQuestionForm("agent.reject-client.error").yesNoQuestionForm,
           mandate.clientDisplayName, mandateId, getBackLink(service)))
       )
+    }
   }
 
-  def submit(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
+  def submit(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
       val form = new YesNoQuestionForm("agent.reject-client.error")
       form.yesNoQuestionForm.bindFromRequest.fold(
         formWithError =>
-          acmService.fetchClientMandateClientName(mandateId).map(
+          acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
             mandate => BadRequest(views.html.agent.rejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))
           ),
         data => {
           val rejectClient = data.yesNo.getOrElse(false)
           if (rejectClient) {
-            acmService.rejectClient(mandateId).map { rejectedClient =>
+            acmService.rejectClient(mandateId, authRetrievals).map { rejectedClient =>
               if (rejectedClient) {
                 Redirect(routes.RejectClientController.confirmation(mandateId))
               }
@@ -74,15 +75,16 @@ trait RejectClientController extends FrontendController with Actions {
           }
         }
       )
+    }
   }
 
-  def confirmation(service: String, mandateId: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-      acmService.fetchClientMandateClientName(mandateId).map(
+  def confirmation(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
+      acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
         mandate =>
           Ok(views.html.agent.rejectClientConfirmation(service, mandate.clientDisplayName))
       )
-
+    }
   }
 
   private def getBackLink(service: String) = {

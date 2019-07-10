@@ -23,32 +23,26 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.EditEmailController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "EditEmailController" must {
-
-    "not return NOT_FOUND at route " when {
-      "GET /mandate/client/details/:clientId/:service" in {
-        val result = route(FakeRequest(GET, "/mandate/client/details/clientId/service")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
       "client requests(GET) for collect email view" in {
@@ -79,7 +73,11 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
 
     "get clients mandate details" when {
       "find the mandate" in {
-        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))), currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+          agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+          clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+          currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+          clientDisplayName = "client display name")
         getDetailsWithAuthorisedClient(Some(mandate), ContinueUrl("/api/anywhere")) { result =>
           status(result) must be(OK)
         }
@@ -92,7 +90,11 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
       }
 
       "mandate is not active" in {
-        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))), currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+          agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+          clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+          currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+          clientDisplayName = "client display name")
         getDetailsWithAuthorisedClient(Some(mandate), ContinueUrl("/api/anywhere")) { result =>
           status(result) must be(NOT_FOUND)
         }
@@ -114,7 +116,8 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -125,22 +128,25 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+          document.getElementsByClass("error-notification").text() must
+            include("The email address you want to use for this client must be 241 characters or less")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
 
       "invalid email id is passed" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
-        submitWithAuthorisedClient(fakeRequest, isValidEmail = false) { result =>
+        submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](Matchers.eq(TestEditEmailController.clientFormId))(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
       }
@@ -161,8 +167,9 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any()))
+        .thenReturn(Future.successful(None))
       val result = TestEditEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       status(result) must be(BAD_REQUEST)
       verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())
@@ -172,17 +179,17 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockMandateService = mock[AgentClientMandateService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
   object TestEditEmailController extends EditEmailController {
-    override val mandateService = mockMandateService
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val mandateService: AgentClientMandateService = mockMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
     reset(mockMandateService)
@@ -190,22 +197,25 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
 
   val service = "ATED"
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))), currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name")
 
-  def viewWithUnAuthenticatedClient(continueUrl: ContinueUrl)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
+  def viewWithUnAuthenticatedClient(continueUrl: ContinueUrl)(test: Future[Result] => Any): Unit = {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestEditEmailController.view("mandateId", "service", continueUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def getDetailsWithAuthorisedClient(mandate: Option[Mandate], continueUrl: ContinueUrl)(test: Future[Result] => Any) {
+  def getDetailsWithAuthorisedClient(mandate: Option[Mandate], continueUrl: ContinueUrl)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(mandate)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(mandate)
     val result = TestEditEmailController.getClientMandateDetails("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -213,13 +223,13 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
   def viewWithAuthorisedClient(continueUrl: ContinueUrl)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.cacheFormData[String](Matchers.eq(TestEditEmailController.backLinkId),
       Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("/api/anywhere"))
     when(mockDataCacheService.cacheFormData[String](Matchers.eq("MANDATE_ID"),
       Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful("mandateId"))
-    when(mockMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(Some(mandate))
+    when(mockMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(Some(mandate))
     val result = TestEditEmailController.view("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -229,9 +239,11 @@ class EditEmailControllerSpec extends PlaySpec with OneServerPerSuite with Mocki
                                  redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("/api/anywhere")))
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq("MANDATE_ID"))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("mandateId")))
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestEditEmailController.backLinkId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("/api/anywhere")))
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq("MANDATE_ID"))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("mandateId")))
     val result = TestEditEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

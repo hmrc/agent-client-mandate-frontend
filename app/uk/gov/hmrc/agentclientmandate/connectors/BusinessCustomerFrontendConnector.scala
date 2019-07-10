@@ -17,16 +17,15 @@
 package uk.gov.hmrc.agentclientmandate.connectors
 
 import play.api.Mode.Mode
-import play.api.{Configuration, Play}
 import play.api.mvc.Request
+import play.api.{Configuration, Play}
 import uk.gov.hmrc.agentclientmandate.config.WSHttp
 import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.http.{CoreGet, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.frontend.auth.AuthContext
 import uk.gov.hmrc.play.frontend.filters.SessionCookieCryptoFilter
-import uk.gov.hmrc.play.partials.HeaderCarrierForPartialsConverter
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.play.partials.HeaderCarrierForPartialsConverter
 
 import scala.concurrent.Future
 
@@ -41,7 +40,7 @@ trait BusinessCustomerFrontendConnector extends ServicesConfig with RawResponseR
 
   override protected def runModeConfiguration: Configuration = Play.current.configuration
 
-  def clearCache(service: String)(implicit request: Request[_], ac: AuthContext): Future[HttpResponse] = {
+  def clearCache(service: String)(implicit request: Request[_]): Future[HttpResponse] = {
     val getUrl = s"$serviceUrl/$businessCustomerUri/$clearCacheUri/$service"
     http.GET[HttpResponse](getUrl)
   }
@@ -49,9 +48,10 @@ trait BusinessCustomerFrontendConnector extends ServicesConfig with RawResponseR
 }
 
 object BusinessCustomerFrontendConnector extends BusinessCustomerFrontendConnector {
+
   // $COVERAGE-OFF$
-  val http = WSHttp
-  override def crypto: (String) => String = new SessionCookieCryptoFilter(new ApplicationCrypto(Play.current.configuration.underlying)).encrypt _
+  val http: WSHttp.type = WSHttp
+  override def crypto: String => String = new SessionCookieCryptoFilter(new ApplicationCrypto(Play.current.configuration.underlying)).encrypt _
   // $COVERAGE-ON$
 
 }

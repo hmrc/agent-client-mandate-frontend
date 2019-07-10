@@ -19,23 +19,24 @@ package unit.uk.gov.hmrc.agentclientmandate.services
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import play.api.libs.json.Json
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.libs.json.{JsValue, Json, OFormat}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.config.AgentClientMandateSessionCache
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class DataCacheServiceSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class DataCacheServiceSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   case class FormData(name: String)
 
   object FormData {
-    implicit val formats = Json.format[FormData]
+    implicit val formats: OFormat[FormData] = Json.format[FormData]
   }
 
   "DataCacheService" must {
@@ -89,11 +90,11 @@ class DataCacheServiceSpec extends PlaySpec with OneServerPerSuite with MockitoS
 
   val formData = FormData("some-data")
 
-  val formDataJson = Json.toJson(formData)
+  val formDataJson: JsValue = Json.toJson(formData)
 
   val cacheMap = CacheMap(id = formId, Map("date" -> formDataJson))
 
-  val mockSessionCache = mock[SessionCache]
+  val mockSessionCache: SessionCache = mock[SessionCache]
 
   override def beforeEach: Unit = {
     reset(mockSessionCache)

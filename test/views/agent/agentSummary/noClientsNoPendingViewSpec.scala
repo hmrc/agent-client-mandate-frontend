@@ -18,26 +18,24 @@ package views.agent.agentSummary
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
-import org.scalatestplus.play.OneServerPerSuite
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.models._
-import uk.gov.hmrc.agentclientmandate.service.Mandates
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class noClientsNoPendingViewSpec extends FeatureSpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
+class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
-  val agentDetails = AgentBuilder.buildAgentDetails
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateId = "12345678"
-  val time1 = DateTime.now()
-  val service = "ATED"
-  val atedUtr = new Generator().nextAtedUtr
+  val time1: DateTime = DateTime.now()
+  val service: String = "ATED"
+  val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   implicit val request = FakeRequest()
   implicit val messages : play.api.i18n.Messages = play.api.i18n.Messages.Implicits.applicationMessages
