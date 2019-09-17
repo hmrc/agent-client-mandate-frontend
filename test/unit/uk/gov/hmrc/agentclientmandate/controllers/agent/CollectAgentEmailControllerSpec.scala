@@ -22,38 +22,26 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName, ClientMandateDisplayDetails}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 
-class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "CollectAgentEmailController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/email/:service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/email")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-      "POST /mandate/agent/email/:service" in {
-        val result = route(FakeRequest(POST, s"/mandate/agent/email")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
@@ -205,7 +193,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
 
       "invalid email id is passed" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+        submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
@@ -217,11 +205,12 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
 
       "email provided is too long" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+        submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+          document.getElementsByClass("error-notification").text() must
+            include("The email address you want to use for this client must be 241 characters or less")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -238,13 +227,13 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-  val service = "ated".toUpperCase
-  val formId1 = "agent-email"
-  val agentEmail = AgentEmail("aa@aa.com")
-  val agentRefCacheId = "agent-ref-id"
+  val service: String = "ated".toUpperCase
+  val formId1: String = "agent-email"
+  val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
+  val agentRefCacheId: String = "agent-ref-id"
 
   override def beforeEach(): Unit = {
     reset(mockDataCacheService)
@@ -254,17 +243,16 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
   def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.eq(agentRefCacheId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(clientMandateDisplayDetails))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.eq(agentRefCacheId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(clientMandateDisplayDetails))
     val result = TestCollectAgentEmailController.addClient(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
   def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestCollectAgentEmailController.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -272,8 +260,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
   def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestCollectAgentEmailController.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -281,8 +268,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
   def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(formId1))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
     val result = TestCollectAgentEmailController.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -291,20 +277,21 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
   def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(formId1))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectAgentEmailController.callingPageCacheId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("callingPage")))
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectAgentEmailController.callingPageCacheId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("callingPage")))
     val result = TestCollectAgentEmailController.editFromSummary(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def submitEmailAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
+  def submitEmailAuthorisedAgent
+  (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.cacheFormData[AgentEmail](Matchers.eq(formId1), Matchers.eq(agentEmail))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(agentEmail))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.cacheFormData[AgentEmail](Matchers.eq(formId1), Matchers.eq(agentEmail))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(agentEmail))
     val result = TestCollectAgentEmailController.submit(service, redirectUrl).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
@@ -312,16 +299,15 @@ class CollectAgentEmailControllerSpec extends PlaySpec with OneServerPerSuite wi
   def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
     val result = TestCollectAgentEmailController.getAgentEmail(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
   object TestCollectAgentEmailController extends CollectAgentEmailController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
 }

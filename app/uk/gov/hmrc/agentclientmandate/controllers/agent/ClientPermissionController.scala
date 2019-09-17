@@ -16,66 +16,73 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Logger
-import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig._
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
-import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
+import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HttpResponse
 
 object ClientPermissionController extends ClientPermissionController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val businessCustomerConnector: BusinessCustomerFrontendConnector = BusinessCustomerFrontendConnector
   val atedSubscriptionConnector: AtedSubscriptionFrontendConnector = AtedSubscriptionFrontendConnector
   val dataCacheService: DataCacheService = DataCacheService
-
   // $COVERAGE-ON$
 }
 
-trait ClientPermissionController extends FrontendController with Actions with MandateConstants {
+trait ClientPermissionController extends FrontendController with AuthorisedWrappers with MandateConstants {
 
   def businessCustomerConnector: BusinessCustomerFrontendConnector
   def atedSubscriptionConnector: AtedSubscriptionFrontendConnector
   def dataCacheService: DataCacheService
 
-  def view(service: String, callingPage: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit user => implicit request =>
-      for {
-        clientPermission <- dataCacheService.fetchAndGetFormData[ClientPermission](clientPermissionFormId)
-        clearBcResp <- businessCustomerConnector.clearCache(service)
-        serviceResp <- {
-          if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
-          else Future.successful(HttpResponse(OK))
-        }
-      } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(service, callingPage)))
+  def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        for {
+          clientPermission <- dataCacheService.fetchAndGetFormData[ClientPermission](clientPermissionFormId)
+          _ <- businessCustomerConnector.clearCache(service)
+          _ <- {
+            if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
+            else Future.successful(HttpResponse(OK))
+          }
+        } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(service, callingPage)))
+      }
   }
 
 
-  def submit(service: String, callingPage: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence) {
-    implicit user => implicit request =>
-      clientPermissionForm.bindFromRequest.fold(
-        formWithErrors => BadRequest(views.html.agent.clientPermission(formWithErrors, service, callingPage, getBackLink(service, callingPage))),
-        data => {
-          dataCacheService.cacheFormData[ClientPermission](clientPermissionFormId, data)
-          if (data.hasPermission.getOrElse(false))
-            Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
-          else
-            Redirect(routes.AgentSummaryController.view(Some(service)))
-        }
-      )
+  def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        clientPermissionForm.bindFromRequest.fold(
+          formWithErrors => {
+            val result = BadRequest(views.html.agent.clientPermission(formWithErrors, service, callingPage, getBackLink(service, callingPage)))
+            Future.successful(result)
+          },
+          data => {
+            dataCacheService.cacheFormData[ClientPermission](clientPermissionFormId, data)
+            val result = if (data.hasPermission.getOrElse(false)) {
+              Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
+            } else {
+              Redirect(routes.AgentSummaryController.view(Some(service)))
+            }
+
+            Future.successful(result)
+          }
+        )
+      }
   }
 
   private def getBackLink(service: String, callingPage: String) = {

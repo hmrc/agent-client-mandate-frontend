@@ -23,8 +23,9 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,24 +33,15 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.SearchMandateController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "SearchMandateController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/client/search" in {
-        val result = route(FakeRequest(GET, "/mandate/client/search")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
@@ -115,7 +107,8 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
         }
       }
 
-      "valid form is submitted but with mandate having spaces, mandate is found from backend, cache object exists and update of cache with mandate is successful" in {
+      "valid form is submitted but with mandate having spaces, mandate is found from backend," +
+        "cache object exists and update of cache with mandate is successful" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
         val clientParty = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
@@ -162,7 +155,7 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("You must answer unique authorisation number question")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -175,7 +168,7 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("A unique authorisation number cannot be more than 8 characters")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -187,8 +180,9 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
-          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          document.getElementsByClass("error-notification").text() must
+            include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
+          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -201,8 +195,9 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("The unique authorisation number you entered has already been used. Check the number, or enter a different number.")
-          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          document.getElementsByClass("error-notification").text() must
+            include("The unique authorisation number you entered has already been used. Check the number, or enter a different number.")
+          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -212,7 +207,8 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
 
   }
 
-  val mandateId = "ABC123"
+  val mandateId: String = "ABC123"
+
   val mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
@@ -221,6 +217,7 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
     statusHistory = Nil, subscription = Subscription(referenceNumber = None,
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")
+
   val mandate1 = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
@@ -229,16 +226,17 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
     statusHistory = Nil, subscription = Subscription(referenceNumber = None,
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")
-  val service = "ATED"
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
-  val mockMandateService = mock[AgentClientMandateService]
+  val service: String = "ATED"
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
   object TestSearchMandateController extends SearchMandateController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
-    override val mandateService = mockMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
+    override val mandateService: AgentClientMandateService = mockMandateService
   }
 
   override def beforeEach(): Unit = {
@@ -248,9 +246,8 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
   }
 
   def viewUnAuthenticatedClient(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestSearchMandateController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -258,9 +255,10 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
   def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestSearchMandateController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -271,10 +269,12 @@ class SearchMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
                                  returnCache: ClientCache = ClientCache())(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(mandate))
-    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(returnCache))
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(mandate))
+    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(returnCache))
     val result = TestSearchMandateController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

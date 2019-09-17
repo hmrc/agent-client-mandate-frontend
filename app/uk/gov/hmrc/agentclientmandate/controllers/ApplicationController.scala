@@ -16,28 +16,16 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers
 
-import play.api.{Configuration, Play}
-import play.api.Mode.Mode
 import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.play.config.RunMode
 import uk.gov.hmrc.play.frontend.auth.Actions
 import uk.gov.hmrc.play.frontend.controller.{FrontendController, UnauthorisedAction}
 
-
-
 object ApplicationController extends ApplicationController {
-  val authConnector = FrontendAuthConnector
-
-
+  val authConnector: FrontendAuthConnector.type = FrontendAuthConnector
 }
 
-trait ApplicationController extends FrontendController with RunMode with Actions {
-  // $COVERAGE-OFF$
-  override protected def mode: Mode = Play.current.mode
-  override protected def runModeConfiguration: Configuration = Play.current.configuration
-  // $COVERAGE-ON$
+trait ApplicationController extends FrontendController with Actions {
   def keepAlive = UnauthorisedAction { implicit request =>
     Ok("OK")
   }
-
 }

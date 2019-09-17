@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
-import play.api.data.{Form, FormError}
+import play.api.Play.current
+import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentclientmandate.models.Mandate
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, maximumEmailLength, minimumEmailLength}
-
-import scala.annotation.tailrec
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 
 case class ClientEmail(email: String)
 
 object ClientEmail {
-  implicit val formats = Json.format[ClientEmail]
+  implicit val formats: OFormat[ClientEmail] = Json.format[ClientEmail]
 }
 
 object ClientEmailForm extends Constraints {
@@ -49,7 +47,7 @@ object ClientEmailForm extends Constraints {
     case class MandateReference(mandateRef: String)
 
     object MandateReference {
-      implicit val formats = Json.format[MandateReference]
+      implicit val formats: OFormat[MandateReference] = Json.format[MandateReference]
     }
 
     object MandateReferenceForm {
@@ -73,5 +71,5 @@ object ClientEmailForm extends Constraints {
                           )
 
     object ClientCache {
-      implicit val formats = Json.format[ClientCache]
+      implicit val formats: OFormat[ClientCache] = Json.format[ClientCache]
       }

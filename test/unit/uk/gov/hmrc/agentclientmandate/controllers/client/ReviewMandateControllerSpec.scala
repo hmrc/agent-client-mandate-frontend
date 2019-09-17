@@ -23,8 +23,9 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,22 +33,15 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.ReviewMandateController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class ReviewMandateControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "ReviewMandateController" must {
-
-    "not return NOT_FOUND at route " when {
-      "GET /mandate/client/review" in {
-        val result = route(FakeRequest(GET, "/mandate/client/review")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
@@ -121,12 +115,12 @@ class ReviewMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestReviewMandateController extends ReviewMandateController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
   override def beforeEach(): Unit = {
@@ -134,12 +128,11 @@ class ReviewMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
     reset(mockDataCacheService)
   }
 
-  val service = "ATED"
+  val service: String = "ATED"
 
   def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestReviewMandateController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -147,10 +140,12 @@ class ReviewMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
   def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestReviewMandateController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestReviewMandateController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(ClientCache()))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestReviewMandateController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestReviewMandateController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(ClientCache()))
     val result = TestReviewMandateController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -158,8 +153,8 @@ class ReviewMandateControllerSpec extends PlaySpec with OneServerPerSuite with M
   def submitWithAuthorisedClient(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedClient(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     val result = TestReviewMandateController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(FakeRequest().withFormUrlEncodedBody(), userId))
     test(result)
   }

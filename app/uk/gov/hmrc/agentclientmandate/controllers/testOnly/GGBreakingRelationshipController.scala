@@ -17,32 +17,40 @@
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
 import play.api.Logger
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.controller.FrontendController
-import uk.gov.hmrc.agentclientmandate.views
-import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-object GGBreakingRelationshipController extends FrontendController with Actions {
+import scala.concurrent.Future
+
+object GGBreakingRelationshipController extends FrontendController with AuthorisedWrappers {
 
   def agentClientMandateConnector: AgentClientMandateConnector = AgentClientMandateConnector
-  override val authConnector = FrontendAuthConnector
+  override val authConnector: ConcreteAuthConnector.type = ConcreteAuthConnector
 
-  def view() = AuthorisedFor(AgentRegime(None), GGConfidence) {
-    implicit authContext => implicit request =>
-      Ok(views.html.testOnly.checkBreakingRelationships())
+  def view(): Action[AnyContent] = Action.async {implicit request =>
+    withAgentRefNumber(None) { _ =>
+      val result = Ok(views.html.testOnly.checkBreakingRelationships())
+      Future.successful(result)
+    }
   }
 
-  def submit() = AuthorisedFor(AgentRegime(None), GGConfidence).async {
-    implicit authContext => implicit request =>
-      agentClientMandateConnector.remove(request.body.asFormUrlEncoded.get.apply("mandateId").head).map { x =>
-        Logger.info("********" + x.body + "*************")
-        Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view())
+  def submit(): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(None) { agentAuthRetrievals =>
+        agentClientMandateConnector.remove(
+          request.body.asFormUrlEncoded.get.apply("mandateId").head,
+          agentAuthRetrievals
+        ).map { x =>
+          Logger.info("********" + x.body + "*************")
+          Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view())
+        }
       }
-
   }
 
 }

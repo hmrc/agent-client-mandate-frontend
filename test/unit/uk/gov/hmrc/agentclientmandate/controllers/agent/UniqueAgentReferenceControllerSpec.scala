@@ -22,33 +22,24 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UniqueAgentReferenceController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 
-class UniqueAgentReferenceControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "UniqueAgentReferenceController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/unique-reference/:service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/unique-reference")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
@@ -95,16 +86,16 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with OneServerPerSuite
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
-  val service = "ated"
-  val mandateId = "ABC123"
-  val agentLastUsedEmail = "a.b@mail.com"
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val service: String = "ated"
+  val mandateId: String = "ABC123"
+  val agentLastUsedEmail: String = "a.b@mail.com"
 
 
   object TestUniqueAgentReferenceController extends UniqueAgentReferenceController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 
   override def beforeEach(): Unit = {
@@ -113,9 +104,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with OneServerPerSuite
   }
 
   def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestUniqueAgentReferenceController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -123,8 +113,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with OneServerPerSuite
   def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestUniqueAgentReferenceController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -132,8 +122,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with OneServerPerSuite
   def viewWithAuthorisedAgent(clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.eq(TestUniqueAgentReferenceController.agentRefCacheId))
       (Matchers.any(), Matchers.any())).thenReturn(Future.successful(clientDisplayDetails))

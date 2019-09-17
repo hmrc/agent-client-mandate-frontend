@@ -16,46 +16,56 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion._
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
+
+import scala.concurrent.Future
 
 
 object PaySAQuestionController extends PaySAQuestionController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val controllerId: String = "paySA"
   // $COVERAGE-ON$
 }
 
-trait PaySAQuestionController extends FrontendController with Actions {
+trait PaySAQuestionController extends FrontendController with AuthorisedWrappers {
 
   val controllerId: String
 
-  def view(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence) {
-    implicit user => implicit request =>
-      Ok(views.html.agent.paySAQuestion(paySAQuestionForm, service, getBackLink(service)))
+  def view(service: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        val result = Ok(views.html.agent.paySAQuestion(paySAQuestionForm, service, getBackLink(service)))
+        Future.successful(result)
+      }
   }
 
-
-  def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence) {
-    implicit user => implicit request =>
-      paySAQuestionForm.bindFromRequest.fold(
-        formWithErrors => BadRequest(views.html.agent.paySAQuestion(formWithErrors, service, getBackLink(service))),
-        data => {
-          if (data.paySA.getOrElse(false))
-            Redirect(routes.MandateDetailsController.view(controllerId)
-            )
-          else
-            Redirect(routes.ClientPermissionController.view(controllerId))
-        }
-      )
+  def submit(service: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        paySAQuestionForm.bindFromRequest.fold(
+          formWithErrors => {
+            val result = BadRequest(views.html.agent.paySAQuestion(formWithErrors, service, getBackLink(service)))
+            Future.successful(result)
+          },
+          data => {
+            val result = if (data.paySA.getOrElse(false)) {
+              Redirect(routes.MandateDetailsController.view(controllerId))
+            } else {
+              Redirect(routes.ClientPermissionController.view(controllerId))
+            }
+            Future.successful(result)
+          }
+        )
+      }
   }
 
 

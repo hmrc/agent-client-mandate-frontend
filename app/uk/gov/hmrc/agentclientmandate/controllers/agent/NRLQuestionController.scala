@@ -16,56 +16,68 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestionForm._
-import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
 import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestionForm._
+import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.frontend.controller.FrontendController
+
+import scala.concurrent.Future
 
 object NRLQuestionController extends NRLQuestionController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val controllerId: String = "nrl"
   val dataCacheService: DataCacheService = DataCacheService
   // $COVERAGE-ON$
 }
 
-trait NRLQuestionController extends FrontendController with Actions with MandateConstants {
+trait NRLQuestionController extends FrontendController with AuthorisedWrappers with MandateConstants {
   def dataCacheService: DataCacheService
 
   val controllerId: String
 
-  def view(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit user => implicit request =>
-      dataCacheService.fetchAndGetFormData[NRLQuestion](nrlFormId) map {
-        case Some(data) => Ok(views.html.agent.nrl_question(nrlQuestionForm.fill(data), service, getBackLink(service)))
-        case _=> Ok(views.html.agent.nrl_question(nrlQuestionForm, service, getBackLink(service)))
+  def view(service: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        dataCacheService.fetchAndGetFormData[NRLQuestion](nrlFormId) map {
+          case Some(data) => Ok(views.html.agent.nrl_question(nrlQuestionForm.fill(data), service, getBackLink(service)))
+          case _ => Ok(views.html.agent.nrl_question(nrlQuestionForm, service, getBackLink(service)))
+        }
       }
   }
 
 
-  def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence) {
-    implicit user => implicit request =>
-      nrlQuestionForm.bindFromRequest.fold(
-        formWithErrors => BadRequest(views.html.agent.nrl_question(formWithErrors, service, getBackLink(service))),
-        data => {
-          dataCacheService.cacheFormData[NRLQuestion](nrlFormId, data)
-          if (data.nrl.getOrElse(false))
-            Redirect(routes.PaySAQuestionController.view())
-          else
-            Redirect(routes.ClientPermissionController.view( controllerId))
-        }
-      )
+  def submit(service: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      withAgentRefNumber(Some(service)) { _ =>
+        nrlQuestionForm.bindFromRequest.fold(
+          formWithErrors => {
+            val result = BadRequest(views.html.agent.nrl_question(formWithErrors, service, getBackLink(service)))
+            Future.successful(result)
+          },
+          data => {
+            dataCacheService.cacheFormData[NRLQuestion](nrlFormId, data)
+            val result = if (data.nrl.getOrElse(false)) {
+              Redirect(routes.PaySAQuestionController.view())
+            } else {
+              Redirect(routes.ClientPermissionController.view(controllerId))
+            }
+
+            Future.successful(result)
+          }
+        )
+      }
   }
 
-  private def getBackLink(service: String) = {
+  private def getBackLink(service: String): Some[String] = {
     Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.OverseasClientQuestionController.view().url)
   }
 }

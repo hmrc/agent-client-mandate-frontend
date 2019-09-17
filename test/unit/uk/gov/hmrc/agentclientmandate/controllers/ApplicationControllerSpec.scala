@@ -16,13 +16,12 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import play.api.i18n.Messages
-import play.api.libs.json.Json
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-class ApplicationControllerSpec extends PlaySpec with OneServerPerSuite {
+class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
   val service = "ATED"
 
   "ApplicationController" must {

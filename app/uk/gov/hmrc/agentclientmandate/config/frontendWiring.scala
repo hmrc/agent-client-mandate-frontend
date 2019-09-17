@@ -20,8 +20,10 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import play.api.Mode.Mode
 import play.api.{Configuration, Play}
+import uk.gov.hmrc.auth.core.PlayAuthConnector
 import uk.gov.hmrc.http.cache.client.SessionCache
-import uk.gov.hmrc.http.{HttpDelete, HttpGet, HttpPost, HttpPut}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector => Auditing}
 import uk.gov.hmrc.play.config.{AppName, ServicesConfig}
 import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
@@ -48,24 +50,35 @@ trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost wi
 }
 
 object WSHttp extends WSHttp {
-  override val hooks = NoneRequired
+  override val hooks: Seq[AnyRef with HttpHook] = NoneRequired
 
 }
 
 object FrontendAuthConnector extends AuthConnector with ServicesConfig {
-  val serviceUrl = baseUrl("auth")
-  lazy val http = WSHttp
-
-  override protected def mode: Mode = Play.current.mode
+  val serviceUrl: String = baseUrl("auth")
+  lazy val http: WSHttp.type = WSHttp
 
   override protected def runModeConfiguration: Configuration = Play.current.configuration
+
+  override protected def mode: Mode = Play.current.mode
+}
+
+
+object ConcreteAuthConnector extends PlayAuthConnector with ServicesConfig {
+  override val serviceUrl: String = baseUrl("auth")
+
+  override def http: CorePost = WSHttp
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
+
+  override protected def mode: Mode = Play.current.mode
 }
 
 object AgentClientMandateSessionCache extends SessionCache with AppName with ServicesConfig {
-  override lazy val http = WSHttp
-  override lazy val defaultSource = appName
-  override lazy val baseUri = baseUrl("session-cache")
-  override lazy val domain = getConfString("session-cache.domain", throw new Exception(s"Could not find config 'session-cache.domain'"))
+  override lazy val http: WSHttp.type = WSHttp
+  override lazy val defaultSource: String = appName
+  override lazy val baseUri: String = baseUrl("session-cache")
+  override lazy val domain: String = getConfString("session-cache.domain", throw new Exception(s"Could not find config 'session-cache.domain'"))
 
   override protected def appNameConfiguration: Configuration = Play.current.configuration
 
@@ -75,8 +88,8 @@ object AgentClientMandateSessionCache extends SessionCache with AppName with Ser
 }
 
 object FrontendDelegationConnector extends DelegationConnector with ServicesConfig {
-  val serviceUrl = baseUrl("delegation")
-  lazy val http = WSHttp
+  val serviceUrl: String = baseUrl("delegation")
+  lazy val http: WSHttp.type = WSHttp
 
   override protected def mode: Mode = Play.current.mode
 

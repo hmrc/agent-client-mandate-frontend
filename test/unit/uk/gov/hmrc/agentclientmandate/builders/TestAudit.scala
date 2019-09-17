@@ -37,10 +37,10 @@ class TestAudit() extends Audit("test", FrontendAuditConnector) {
 
   def capturedDataEvents: Seq[DataEvent] = dataEvents.toArray(new Array[DataEvent](0)).toSeq
 
-  def captureDataEvent(event: DataEvent) = {
+  def captureDataEvent(event: DataEvent): Unit = {
     this.dataEvents.add(event)
     ()
   }
 
-  override def sendDataEvent: (DataEvent) => Unit = captureDataEvent
+  override def sendDataEvent: DataEvent => Unit = captureDataEvent
 }

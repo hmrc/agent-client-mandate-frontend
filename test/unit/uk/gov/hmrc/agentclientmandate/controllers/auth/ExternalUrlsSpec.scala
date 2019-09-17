@@ -16,10 +16,11 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers.auth
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls
 
-class ExternalUrlsSpec extends PlaySpec with OneServerPerSuite {
+class ExternalUrlsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
   "ExternalUrls" must {
     "contain companyAuthHost" in {

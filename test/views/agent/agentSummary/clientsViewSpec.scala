@@ -18,27 +18,26 @@ package views.agent.agentSummary
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
-import org.scalatestplus.play.OneServerPerSuite
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.Mandates
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClients
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class clientsViewSpec extends FeatureSpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
+class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
-  val agentDetails = AgentBuilder.buildAgentDetails
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateId = "12345678"
-  val time1 = DateTime.now()
+  val time1: DateTime = DateTime.now()
   val service = "ATED"
-  val atedUtr = new Generator().nextAtedUtr
+  val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   val clientParty = Party("12345678", "test client", PartyType.Individual, ContactDetails("a.a@a.com", None))
   val clientParty1 = Party("12345679", "test client1", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
@@ -46,11 +45,28 @@ class clientsViewSpec extends FeatureSpec with OneServerPerSuite with MockitoSug
   val clientParty3 = Party("12345671", "test client3", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
   val clientParty4 = Party("12345671", "test client4", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
 
-  val mandateNew: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty1), currentStatus = MandateStatus(Status.New, time1, "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 1")
-  val mandateActive: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty), currentStatus = MandateStatus(Status.Active, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 2")
-  val mandateApproved: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty3), currentStatus = MandateStatus(Status.Approved, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 3")
-  val mandatePendingCancellation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123458", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty4), currentStatus = MandateStatus(Status.PendingCancellation, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 4")
-  val mandatePendingActivation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123451", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty2), currentStatus = MandateStatus(Status.PendingActivation, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
+  val mandateNew: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty1), currentStatus = MandateStatus(Status.New, time1, "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 1")
+  val mandateActive: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty), currentStatus = MandateStatus(Status.Active, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")),Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name 2")
+  val mandateApproved: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty3), currentStatus = MandateStatus(Status.Approved, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name 3")
+  val mandatePendingCancellation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123458", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty4), currentStatus = MandateStatus(Status.PendingCancellation, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 4")
+  val mandatePendingActivation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123451", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty2), currentStatus = MandateStatus(Status.PendingActivation, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
   implicit val messages : play.api.i18n.Messages = play.api.i18n.Messages.Implicits.applicationMessages
@@ -151,7 +167,7 @@ class clientsViewSpec extends FeatureSpec with OneServerPerSuite with MockitoSug
       When("The agent views the mandates")
       implicit val request = FakeRequest()
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, None, "", filterClientsForm, true)
+      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, None, "", filterClientsForm, isUpdate = true)
 
       val document = Jsoup.parse(html.toString())
 
@@ -177,7 +193,7 @@ class clientsViewSpec extends FeatureSpec with OneServerPerSuite with MockitoSug
       Given("agent visits page and client has cancelled mandate")
       When("agent views the mandates")
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, Some(List("AAA")), "", filterClientsForm, true)
+      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, Some(List("AAA")), "", filterClientsForm, isUpdate = true)
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")

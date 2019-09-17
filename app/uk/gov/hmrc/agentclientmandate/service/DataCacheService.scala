@@ -33,7 +33,7 @@ trait DataCacheService {
   }
 
   def cacheFormData[T](formId: String, formData: T)(implicit hc: HeaderCarrier, formats: Format[T]): Future[T] = {
-    sessionCache.cache[T](formId, formData).map(cacheMap => formData)
+    sessionCache.cache[T](formId, formData).map(_ => formData)
   }
 
   def clearCache()(implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -43,7 +43,7 @@ trait DataCacheService {
 }
 
 object DataCacheService extends DataCacheService {
-  // $COVERAGE-OFF$
+
   val sessionCache: SessionCache = AgentClientMandateSessionCache
-  // $COVERAGE-ON$
+
 }

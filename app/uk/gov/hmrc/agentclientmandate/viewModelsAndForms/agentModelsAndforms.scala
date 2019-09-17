@@ -22,7 +22,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentclientmandate.models.RegisteredAddressDetails
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, _}
 import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfTrue
@@ -41,7 +41,7 @@ object AgentSelectServiceForm {
 case class FilterClients(displayName: Option[String], showAllClients: String)
 
 object FilterClients {
-  implicit val formats = Json.format[FilterClients]
+  implicit val formats: OFormat[FilterClients] = Json.format[FilterClients]
 }
 
 object FilterClientsForm {
@@ -56,7 +56,7 @@ object FilterClientsForm {
 case class AgentEmail(email: String)
 
 object AgentEmail {
-  implicit val formats = Json.format[AgentEmail]
+  implicit val formats: OFormat[AgentEmail] = Json.format[AgentEmail]
 }
 
 object AgentEmailForm extends Constraints {
@@ -74,7 +74,7 @@ object AgentEmailForm extends Constraints {
 case class AgentMissingEmail(useEmailAddress: Option[Boolean] = None, email: Option[String] = None)
 
 object AgentMissingEmail {
-  implicit val formats = Json.format[AgentMissingEmail]
+  implicit val formats: OFormat[AgentMissingEmail] = Json.format[AgentMissingEmail]
 }
 
 object AgentMissingEmailForm extends Constraints  {
@@ -96,7 +96,7 @@ object AgentMissingEmailForm extends Constraints  {
 case class OverseasClientQuestion(isOverseas: Option[Boolean] = None)
 
 object OverseasClientQuestion {
-  implicit val formats = Json.format[OverseasClientQuestion]
+  implicit val formats: OFormat[OverseasClientQuestion] = Json.format[OverseasClientQuestion]
 }
 
 object OverseasClientQuestionForm {
@@ -111,7 +111,7 @@ object OverseasClientQuestionForm {
 case class CollectClientBusinessDetails(businessName: String, utr: String)
 
 object CollectClientBusinessDetails {
-  implicit val formats = Json.format[CollectClientBusinessDetails]
+  implicit val formats: OFormat[CollectClientBusinessDetails] = Json.format[CollectClientBusinessDetails]
 }
 
 object CollectClientBusinessDetailsForm {
@@ -157,7 +157,7 @@ object EditMandateDetailsForm extends Constraints {
 case class NRLQuestion(nrl: Option[Boolean] = None)
 
 object NRLQuestionForm {
-  implicit val formats = Json.format[NRLQuestion]
+  implicit val formats: OFormat[NRLQuestion] = Json.format[NRLQuestion]
 
   val nrlQuestionForm = Form(
     mapping(
@@ -182,7 +182,7 @@ object PaySAQuestion {
 case class ClientPermission(hasPermission: Option[Boolean] = None)
 
 object ClientPermissionForm {
-  implicit val formats = Json.format[ClientPermission]
+  implicit val formats: OFormat[ClientPermission] = Json.format[ClientPermission]
 
   val clientPermissionForm = Form(
     mapping(
@@ -195,7 +195,7 @@ object ClientPermissionForm {
 case class PrevRegistered(prevRegistered: Option[Boolean] = None)
 
 object PrevRegisteredForm {
-  implicit val formats = Json.format[PrevRegistered]
+  implicit val formats: OFormat[PrevRegistered] = Json.format[PrevRegistered]
 
   val prevRegisteredForm = Form(
     mapping(
@@ -209,14 +209,14 @@ object PrevRegisteredForm {
 case class ClientDisplayName(name: String)
 
 object ClientDisplayName {
-  implicit val formats = Json.format[ClientDisplayName]
+  implicit val formats: OFormat[ClientDisplayName] = Json.format[ClientDisplayName]
 }
 
 
 case class ClientMandateDisplayDetails(name: String, mandateId: String, agentLastUsedEmail: String)
 
 object ClientMandateDisplayDetails {
-  implicit val formats = Json.format[ClientMandateDisplayDetails]
+  implicit val formats: OFormat[ClientMandateDisplayDetails] = Json.format[ClientMandateDisplayDetails]
 }
 
 object ClientDisplayNameForm {
@@ -235,7 +235,7 @@ object ClientDisplayNameForm {
 case class EditAgentAddressDetails(agentName: String, address: RegisteredAddressDetails)
 
 object EditAgentAddressDetails {
-  implicit val formats = Json.format[EditAgentAddressDetails]
+  implicit val formats: OFormat[EditAgentAddressDetails] = Json.format[EditAgentAddressDetails]
 }
 
 object EditAgentAddressDetailsForm {
@@ -275,7 +275,7 @@ object EditAgentAddressDetailsForm {
     )(EditAgentAddressDetails.apply)(EditAgentAddressDetails.unapply)
   )
 
-  def validateCountryNonUKAndPostcode(agentData: Form[EditAgentAddressDetails]) = {
+  def validateCountryNonUKAndPostcode(agentData: Form[EditAgentAddressDetails]): Unit = {
     val country = agentData.data.get("businessAddress.country") map {
       _.trim
     } filterNot {
@@ -297,7 +297,7 @@ case class OverseasCompany(hasBusinessUniqueId: Option[Boolean] = Some(false),
                            issuingCountryCode: Option[String] = None)
 
 object OverseasCompany {
-  implicit val formats = Json.format[OverseasCompany]
+  implicit val formats: OFormat[OverseasCompany] = Json.format[OverseasCompany]
 }
 
 object NonUkIdentificationForm {
@@ -326,7 +326,7 @@ object NonUkIdentificationForm {
     validateNonUkIdentifiersInstitution(validateNonUkIdentifiersCountry(validateNonUkIdentifiersId(registrationData)))
   }
 
-  def validateNonUkIdentifiersInstitution(registrationData: Form[OverseasCompany]) = {
+  def validateNonUkIdentifiersInstitution(registrationData: Form[OverseasCompany]): Form[OverseasCompany] = {
     val hasBusinessUniqueId = registrationData.data.get("hasBusinessUniqueId") map {
       _.trim
     } filterNot {
@@ -346,7 +346,7 @@ object NonUkIdentificationForm {
     }
   }
 
-  def validateNonUkIdentifiersCountry(registrationData: Form[OverseasCompany]) = {
+  def validateNonUkIdentifiersCountry(registrationData: Form[OverseasCompany]): Form[OverseasCompany] = {
     val hasBusinessUniqueId = registrationData.data.get("hasBusinessUniqueId") map {
       _.trim
     } filterNot {
@@ -368,7 +368,7 @@ object NonUkIdentificationForm {
     }
   }
 
-  def validateNonUkIdentifiersId(registrationData: Form[OverseasCompany]) = {
+  def validateNonUkIdentifiersId(registrationData: Form[OverseasCompany]): Form[OverseasCompany] = {
     val hasBusinessUniqueId = registrationData.data.get("hasBusinessUniqueId") map {
       _.trim
     } filterNot {

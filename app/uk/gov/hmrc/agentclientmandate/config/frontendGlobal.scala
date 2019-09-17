@@ -24,18 +24,18 @@ import play.api.mvc.Request
 import play.api.{Application, Configuration, Play}
 import play.twirl.api.Html
 import uk.gov.hmrc.crypto.ApplicationCrypto
-import uk.gov.hmrc.play.config.{AppName, ControllerConfig, RunMode}
+import uk.gov.hmrc.play.config.{AppName, ControllerConfig}
 import uk.gov.hmrc.play.frontend.bootstrap.DefaultFrontendGlobal
+import uk.gov.hmrc.play.frontend.filters.{FrontendAuditFilter, FrontendLoggingFilter, MicroserviceFilterSupport}
 
 import scala.collection.JavaConverters._
-import uk.gov.hmrc.play.frontend.filters.{ FrontendAuditFilter, FrontendLoggingFilter, MicroserviceFilterSupport }
 
 object FrontendGlobal
   extends DefaultFrontendGlobal {
 
-  override val auditConnector = FrontendAuditConnector
-  override val loggingFilter = LoggingFilter
-  override val frontendAuditFilter = AuditFilter
+  override val auditConnector: FrontendAuditConnector.type = FrontendAuditConnector
+  override val loggingFilter: LoggingFilter.type = LoggingFilter
+  override val frontendAuditFilter: AuditFilter.type = AuditFilter
 
   override def onStart(app: Application) {
     super.onStart(app)
@@ -44,7 +44,8 @@ object FrontendGlobal
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): Html = {
     val bitsFromPath = rh.path.split("/")
-    val servicesUsed = configuration.getStringList("microservice.servicesUsed").map (_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))
+    val servicesUsed = configuration.getStringList("microservice.servicesUsed")
+      .map (_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))
 
     val service = bitsFromPath.filter(servicesUsed.contains(_))
 
@@ -55,22 +56,22 @@ object FrontendGlobal
 }
 
 object ControllerConfiguration extends ControllerConfig {
-  lazy val controllerConfigs = Play.current.configuration.underlying.as[Config]("controllers")
+  lazy val controllerConfigs: Config = Play.current.configuration.underlying.as[Config]("controllers")
 }
 
 object LoggingFilter extends FrontendLoggingFilter with MicroserviceFilterSupport {
-  override def controllerNeedsLogging(controllerName: String) = ControllerConfiguration.paramsForController(controllerName).needsLogging
+  override def controllerNeedsLogging(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsLogging
 }
 
 object AuditFilter extends FrontendAuditFilter with AppName with MicroserviceFilterSupport {
 
-  override lazy val maskedFormFields = Seq("password")
+  override lazy val maskedFormFields: Seq[String] = Seq("password")
 
-  override lazy val applicationPort = None
+  override lazy val applicationPort: None.type = None
 
-  override lazy val auditConnector = FrontendAuditConnector
+  override lazy val auditConnector: FrontendAuditConnector.type = FrontendAuditConnector
 
-  override def controllerNeedsAuditing(controllerName: String) = ControllerConfiguration.paramsForController(controllerName).needsAuditing
+  override def controllerNeedsAuditing(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuditing
 
   override protected def appNameConfiguration: Configuration = Play.current.configuration
 }

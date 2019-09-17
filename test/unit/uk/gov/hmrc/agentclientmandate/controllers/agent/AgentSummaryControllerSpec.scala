@@ -23,31 +23,27 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService, Mandates}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.domain.{AtedUtr, Generator}
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
 
   "AgentClientSummaryController" must {
-    "not return NOT_FOUND at route " when {
-      "Get /mandate/agent/summary/:service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/summary")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "return page with UR banner" when {
       "the UR banner toggle is activated" in {
@@ -151,16 +147,15 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
     "redirect to delegated service specific page" when {
       "agent selects and begins delegation on a particular client" in {
 
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(Some(mandateActive))
         }
 
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-        AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+        AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(()))
+        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
         val result = TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
@@ -168,16 +163,15 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
 
       "agent selects and begins delegation but client does not exist" in {
 
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(Some(mandateActive.copy(clientParty = None)))
         }
 
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-        AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+        AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(()))
+        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
         val result = TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
@@ -186,16 +180,15 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
       "agent selects client but it fails as we have no serviceId" in {
 
         val mandateWithNoSubscription = mandateActive.copy(subscription = mandateActive.subscription.copy(referenceNumber = None))
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(Some(mandateWithNoSubscription))
         }
 
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-        AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+        AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(()))
+        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
 
         val thrown = the[RuntimeException] thrownBy await(TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId)))
         thrown.getMessage must include(s"[AgentSummaryController][doDelegation] Failed to doDelegation to for mandateId 1 for service $service")
@@ -214,10 +207,9 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
       "could not accept client" in {
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-        AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+        AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(false)
         }
 
@@ -228,13 +220,12 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
       "could not fetch mandate when accepting client" in {
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
-        implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-        AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+        AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(true)
         }
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
           Future.successful(None)
         }
 
@@ -267,38 +258,38 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
     }
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockAgentClientMandateService = mock[AgentClientMandateService]
-  val mockDelegationConnector = mock[DelegationConnector]
-  val mockDataCacheService = mock[DataCacheService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
   object TestAgentSummaryController extends AgentSummaryController {
-    override val authConnector = mockAuthConnector
-    override val agentClientMandateService = mockAgentClientMandateService
-    override val delegationConnector = mockDelegationConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
+    override val dataCacheService: DataCacheService = mockDataCacheService
+    override val delegationConnector: DelegationConnector = mockDelegationConnector
   }
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockAgentClientMandateService)
     reset(mockDelegationConnector)
     reset(mockDataCacheService)
   }
 
-  val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
-  val agentDetails = AgentBuilder.buildAgentDetails
+  val registeredAddressDetails: RegisteredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
-  val mandateId = "12345678"
-  val time1 = DateTime.now()
-  val service = "ATED"
-  val atedUtr = new Generator().nextAtedUtr
+  val mandateId: String = "12345678"
+  val time1: DateTime = DateTime.now()
+  val service: String = "ATED"
+  val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
-  val clientParty = Party("12345678", "test client", PartyType.Individual, ContactDetails("a.a@a.com", None))
-  val clientParty1 = Party("12345679", "test client1", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
-  val clientParty2 = Party("12345671", "test client2", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
-  val clientParty3 = Party("12345671", "test client3", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
-  val clientParty4 = Party("12345671", "test client4", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
+  val clientParty: Party = Party("12345678", "test client", PartyType.Individual, ContactDetails("a.a@a.com", None))
+  val clientParty1: Party = Party("12345679", "test client1", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
+  val clientParty2: Party = Party("12345671", "test client2", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
+  val clientParty3: Party = Party("12345671", "test client3", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
+  val clientParty4: Party = Party("12345671", "test client4", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
 
   val mandateNew: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty1), currentStatus = MandateStatus(Status.New, time1, "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 1")
 
@@ -313,16 +304,15 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def viewAuthorisedAgent(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails()(Matchers.any(), Matchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
     when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(Some("text"))
     when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(None)
+    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(None)
 
     val result = TestAgentSummaryController.view(service, tabName).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -331,19 +321,18 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def activateClientByAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.acceptClient(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
       Future.successful(true)
     }
-    when(mockAgentClientMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
       Future.successful(Some(mandateActive))
     }
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
       Future.successful(Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
     }
-    when(mockAgentClientMandateService.fetchAgentDetails()(Matchers.any(), Matchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
 
     when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
 
@@ -354,16 +343,15 @@ class AgentSummaryControllerSpec extends PlaySpec with OneServerPerSuite with Mo
   def updateAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails()(Matchers.any(), Matchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
     when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(Some("text"))
     when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(None)
+    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(None)
 
     val result = TestAgentSummaryController.update(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)

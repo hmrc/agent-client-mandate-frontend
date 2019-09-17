@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
 import org.joda.time.DateTime
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.agentclientmandate.utils.DateUtils
 

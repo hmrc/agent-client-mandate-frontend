@@ -22,37 +22,24 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.SelectServiceController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "SelectServiceController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/service")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-      "POST /mandate/agent/service" in {
-        val result = route(FakeRequest(POST, s"/mandate/agent/service")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
@@ -94,7 +81,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
 
     "agent requests(GET) for 'select service question' view and single service feature is enabled" when {
       "redirect to 'summary page for ated' view for AUTHORISED agent" in {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(false))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn (Future.successful(false))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/summary"))
@@ -102,7 +90,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
       }
 
       "redirect to 'missing email' view for AUTHORISED agent" in {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(true))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn (Future.successful(true))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
@@ -112,7 +101,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
 
     "valid form is submitted" when {
       "redirect to 'agent summary page for service' Page" in {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(false))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn (Future.successful(false))
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -121,7 +111,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
       }
 
       "redirect to 'missing email' Page" in {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn (Future.successful(true))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn (Future.successful(true))
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -144,12 +135,12 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
 
   }
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockAgentClientMandateService = mock[AgentClientMandateService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
   object TestSelectServiceController extends SelectServiceController {
-    override val authConnector = mockAuthConnector
-    override val agentClientMandateService = mockAgentClientMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
   }
 
   override def beforeEach(): Unit = {
@@ -159,9 +150,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
   }
 
   def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestSelectServiceController.view().apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -169,8 +159,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
   def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestSelectServiceController.view().apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -178,8 +168,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
   def viewWithAuthorisedAgent(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestSelectServiceController.view().apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -187,8 +177,8 @@ class SelectServiceControllerSpec extends PlaySpec with OneServerPerSuite with M
   def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val result = TestSelectServiceController.submit().apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }

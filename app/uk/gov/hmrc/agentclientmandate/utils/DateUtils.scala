@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.DateTime
 
 object DateUtils {
 

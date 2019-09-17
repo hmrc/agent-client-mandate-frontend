@@ -20,18 +20,18 @@ import uk.gov.hmrc.agentclientmandate.models._
 
 object AgentBuilder {
 
-  def buildAgentDetails = {
+  def buildAgentDetails: AgentDetails = {
     val registeredAddressDetails = RegisteredAddressDetails("address1", "address2", None, None, None, "FR")
     val contactDetails = EtmpContactDetails()
-    AgentDetails("safeId", false, None,
+    AgentDetails("safeId", isAnIndividual = false, None,
       Some(Organisation("Org Name", Some(true), Some("org_type"))),
       registeredAddressDetails, contactDetails, Some(Identification("IdNumber", "issuingCountry", "FR")))
   }
 
-  def buildUkAgentDetails = {
+  def buildUkAgentDetails: AgentDetails = {
     val registeredAddressDetails = RegisteredAddressDetails("address1", "address2", None, None, None, "GB")
     val contactDetails = EtmpContactDetails()
-    AgentDetails("safeId", false, None,
+    AgentDetails("safeId", isAnIndividual = false, None,
       Some(Organisation("Org Name", Some(true), Some("org_type"))),
       registeredAddressDetails, contactDetails, None)
   }

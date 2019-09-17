@@ -16,14 +16,20 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
-import uk.gov.hmrc.play.frontend.auth.GovernmentGateway
-import ExternalUrls._
+import org.apache.commons.codec.binary.Base64.encodeBase64String
+import org.apache.commons.codec.digest.DigestUtils
 
-case class ClientGovernmentGateway(service: String) extends GovernmentGateway {
+object OrgAuthUtil {
+  def hash(value: String): String = {
+    val sha1: Array[Byte] = DigestUtils.sha1(value)
+    val encoded = encodeBase64String(sha1)
 
-  override val loginURL = s"$companyAuthHost/$loginPath"
-  override def continueURL = s"$loginCallbackClient/$service"
+    urlSafe(encoded)
+  }
 
-  override val defaultTimeoutSeconds = 1800
-
+  private def urlSafe(encoded: String): String = {
+    encoded.replace("=", "")
+      .replace("/", "_")
+      .replace("+", "-")
+  }
 }

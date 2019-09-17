@@ -16,41 +16,40 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
-import uk.gov.hmrc.agentclientmandate.controllers.auth.AgentRegime
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.auth.Actions
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
-import scala.concurrent.Future
 
 
 object MandateDetailsController extends MandateDetailsController {
   // $COVERAGE-OFF$
-  val authConnector: AuthConnector = FrontendAuthConnector
+  val authConnector: AuthConnector = ConcreteAuthConnector
   val dataCacheService: DataCacheService = DataCacheService
   val mandateService: AgentClientMandateService = AgentClientMandateService
   // $COVERAGE-ON$
 }
 
-trait MandateDetailsController extends FrontendController with Actions with MandateConstants {
+trait MandateDetailsController extends FrontendController with AuthorisedWrappers with MandateConstants {
 
   def dataCacheService: DataCacheService
 
   def mandateService: AgentClientMandateService
 
-  def view(service: String, callingPage: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
+  def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { _ =>
       for {
         agentEmail <- dataCacheService.fetchAndGetFormData[AgentEmail](agentEmailFormId)
         clientDisplayName <- dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId)
         _ <- dataCacheService.cacheFormData[String](callingPageCacheId, callingPage)
-      } yield  {
+      } yield {
         agentEmail match {
           case Some(email) =>
             clientDisplayName match {
@@ -60,18 +59,16 @@ trait MandateDetailsController extends FrontendController with Actions with Mand
           case _ => Redirect(routes.CollectAgentEmailController.addClient())
         }
       }
-  }
-
-  def submit(service: String) = AuthorisedFor(AgentRegime(Some(service)), GGConfidence).async {
-    implicit authContext => implicit request =>
-    for {
-      mandateId <- mandateService.createMandate(service)
-    } yield {
-      Redirect(routes.UniqueAgentReferenceController.view())
     }
   }
 
-  private def getBackLink(service: String, callingPage: String) = {
+  def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
+      mandateService.createMandate(service, authRetrievals) map (_ => Redirect(routes.UniqueAgentReferenceController.view()))
+    }
+  }
+
+  private def getBackLink(service: String, callingPage: String): Some[String] = {
     callingPage match {
       case PaySAQuestionController.controllerId => Some(routes.PaySAQuestionController.view().url)
       case _ => Some(routes.OverseasClientQuestionController.view().url)

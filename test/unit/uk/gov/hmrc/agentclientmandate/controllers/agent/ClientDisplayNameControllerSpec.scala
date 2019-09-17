@@ -22,43 +22,25 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import play.api.libs.json.Json
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientDisplayNameController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.binders.ContinueUrl
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class ClientDisplayNameControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "ClientDisplayNameController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/client-display-name/:service" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/client-display-name")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-      "GET /mandate/agent/client-display-name/:service?redirectUrl=http://" in {
-        val result = route(FakeRequest(GET, s"/mandate/agent/client-display-name?redirectUrl=http://")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-      "POST /mandate/agent/client-display-name/:service" in {
-        val result = route(FakeRequest(POST, s"/mandate/agent/client-display-name")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-    }
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
@@ -171,7 +153,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with OneServerPerSuite wi
       }
 
       "clientDisplayName field value is too long" in {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEEFFFFFFFFFFGGGGGGGGGGHHHHHHHHHHIIIIIIIIIIJJJJJJJJJJ")
+        val fakeRequest = FakeRequest()
+          .withFormUrlEncodedBody("clientDisplayName" -> "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEEFFFFFFFFFFGGGGGGGGGGHHHHHHHHHHIIIIIIIIIIJJJJJJJJJJ")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -190,11 +173,11 @@ class ClientDisplayNameControllerSpec extends PlaySpec with OneServerPerSuite wi
     }
   }
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-  val service = "ated".toUpperCase
-  val clientDisplayName = ClientDisplayName("client display name")
+  val service: String = "ated".toUpperCase
+  val clientDisplayName: ClientDisplayName = ClientDisplayName("client display name")
 
   override def beforeEach(): Unit = {
     reset(mockDataCacheService)
@@ -202,9 +185,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with OneServerPerSuite wi
   }
 
   def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockUnAuthenticatedClient(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestClientDisplayNameController.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -212,56 +194,55 @@ class ClientDisplayNameControllerSpec extends PlaySpec with OneServerPerSuite wi
   def viewClientDisplayNameUnAuthorisedAgent()(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createInvalidAuthContext(userId, "name")
-    AuthBuilder.mockUnAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestClientDisplayNameController.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def viewClientDisplayNameAuthorisedAgent(cachedData:  Option[ClientDisplayName] = None, redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
+  def viewClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
     val result = TestClientDisplayNameController.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def editClientDisplayNameAuthorisedAgent(cachedData:  Option[ClientDisplayName] = None, redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
+  def editClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestClientDisplayNameController.callingPageCacheId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some("callingPage")))
+    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestClientDisplayNameController.callingPageCacheId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(Some("callingPage")))
     val result = TestClientDisplayNameController.editFromSummary(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-
-  def submitClientDisplayNameAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
+  def submitClientDisplayNameAuthorisedAgent
+  (request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[ContinueUrl] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.cacheFormData[ClientDisplayName](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(clientDisplayName))
-    val result = TestClientDisplayNameController.submit(service, redirectUrl).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.cacheFormData[ClientDisplayName]
+      (Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(clientDisplayName))
+    val result = TestClientDisplayNameController.submit(service, redirectUrl)
+      .apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
 
-  def retrieveClientDisplayNameFromSessionAuthorisedAgent(cachedData:  Option[ClientDisplayName] = None)(test: Future[Result] => Any) {
+  def retrieveClientDisplayNameFromSessionAuthorisedAgent(cachedData: Option[ClientDisplayName] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
     val result = TestClientDisplayNameController.getClientDisplayName(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
   object TestClientDisplayNameController extends ClientDisplayNameController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
   }
 }

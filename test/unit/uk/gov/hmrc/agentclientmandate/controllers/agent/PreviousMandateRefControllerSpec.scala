@@ -23,33 +23,25 @@ import org.jsoup.Jsoup
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousMandateRefController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientDisplayName, ClientEmail}
-import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthBuilder, SessionBuilder}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
-class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "PreviousMandateRefController" must {
-
-    "not return NOT_FOUND at route " when {
-
-      "GET /mandate/agent/search-previous/nrl/ATED" in {
-        val result = route(FakeRequest(GET, "/mandate/agent/search-previous/nrl")).get
-        status(result) mustNot be(NOT_FOUND)
-      }
-
-    }
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
@@ -108,11 +100,13 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
         val returnCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
+          redirectLocation(result) must be(Some(
+            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
         }
       }
 
-      "valid form is submitted but with mandate having spaces, mandate is found from backend, cache object exists and update of cache with mandate is successful" in {
+      "valid form is submitted but with mandate having spaces, mandate is found from backend, " +
+        "cache object exists and update of cache with mandate is successful" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
         val clientParty = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
@@ -121,7 +115,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
         val returnCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
+          redirectLocation(result) must be(Some(
+            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
         }
       }
 
@@ -135,7 +130,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("You must answer unique authorisation number question")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -148,7 +143,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("A unique authorisation number cannot be more than 8 characters")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -160,8 +155,9 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
-          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())
+          document.getElementsByClass("error-notification").text() must
+            include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
+          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
         }
@@ -209,14 +205,14 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
 
   val oldMandateReference = OldMandateReference("mandateId", "atedRefNum")
 
-  val mockAuthConnector = mock[AuthConnector]
-  val mockDataCacheService = mock[DataCacheService]
-  val mockMandateService = mock[AgentClientMandateService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
   object TestPreviousMandateRefController extends PreviousMandateRefController {
-    override val authConnector = mockAuthConnector
-    override val dataCacheService = mockDataCacheService
-    override val mandateService = mockMandateService
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
+    override val mandateService: AgentClientMandateService = mockMandateService
   }
 
   override def beforeEach(): Unit = {
@@ -226,9 +222,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
   }
 
   def viewUnAuthenticatedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = TestPreviousMandateRefController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
@@ -236,9 +231,10 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
   def viewWithAuthorisedAgent(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createRegisteredAgentAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestPreviousMandateRefController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestPreviousMandateRefController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestPreviousMandateRefController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -249,11 +245,16 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
                                 returnCache: ClientCache = ClientCache())(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestPreviousMandateRefController.clientFormId))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(mandate))
-    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestPreviousMandateRefController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(returnCache))
-    when(mockDataCacheService.cacheFormData[OldMandateReference](Matchers.eq(TestPreviousMandateRefController.oldNonUkMandate), Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(oldMandateReference))
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestPreviousMandateRefController.clientFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(mandate))
+    when(mockDataCacheService.cacheFormData[ClientCache]
+      (Matchers.eq(TestPreviousMandateRefController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(returnCache))
+    when(mockDataCacheService.cacheFormData[OldMandateReference]
+      (Matchers.eq(TestPreviousMandateRefController.oldNonUkMandate), Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(oldMandateReference))
     val result = TestPreviousMandateRefController.submit(service, "callingPage").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
@@ -262,9 +263,10 @@ class PreviousMandateRefControllerSpec extends PlaySpec with OneServerPerSuite w
   def retrieveOldMandateFromSessionAuthorisedAgent(cachedData:Option[OldMandateReference] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val user = AuthBuilder.createOrgAuthContext(userId, "name")
-    AuthBuilder.mockAuthorisedAgent(userId, mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[OldMandateReference](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
+
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[OldMandateReference](Matchers.any())(Matchers.any(), Matchers.any()))
+      .thenReturn(Future.successful(cachedData))
     val result = TestPreviousMandateRefController.getOldMandateFromSession(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
