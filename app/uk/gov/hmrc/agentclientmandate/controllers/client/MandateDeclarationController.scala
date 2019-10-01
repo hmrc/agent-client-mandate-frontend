@@ -16,34 +16,28 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-
-object MandateDeclarationController extends MandateDeclarationController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  val mandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-}
-
-trait MandateDeclarationController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-
-  def mandateService: AgentClientMandateService
+@Singleton
+class MandateDeclarationController @Inject()(
+                                             val dataCacheService: DataCacheService,
+                                             val mandateService: AgentClientMandateService,
+                                             val authConnector: AuthConnector,
+                                             mcc: MessagesControllerComponents,
+                                             implicit val ec: ExecutionContext,
+                                             implicit val appConfig: AppConfig
+                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

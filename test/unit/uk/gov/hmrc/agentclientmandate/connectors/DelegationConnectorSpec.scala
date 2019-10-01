@@ -16,37 +16,36 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
-import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
-import uk.gov.hmrc.domain.AtedUtr
-import uk.gov.hmrc.http.{CorePut, HeaderCarrier, HttpResponse, Upstream4xxResponse, Upstream5xxResponse}
-import uk.gov.hmrc.play.frontend.auth.{Link, TaxIdentifiers}
-import org.mockito.Matchers
-import org.mockito.Mockito._
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.frontend.auth.connectors.DelegationServiceException
+import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
+import uk.gov.hmrc.agentclientmandate.models.{Link, PrincipalTaxIdentifiers, StartDelegationContext}
+import uk.gov.hmrc.domain.AtedUtr
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
 class DelegationConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
-  trait MockedVerbs extends CorePut
-  val mockWSHttp: MockedVerbs = mock[MockedVerbs]
+  val mockDefaultHttpClient = mock[DefaultHttpClient]
+  val mockServicesConfig = mock[ServicesConfig]
 
   trait Setup {
-    val connector: DelegationConnector = new DelegationConnector {
-      override val http: CorePut = mockWSHttp
-
-      override protected def serviceUrl: String = "serviceUrl"
-    }
+    val connector: DelegationConnector = new DelegationConnector(
+      mockDefaultHttpClient,
+      mockServicesConfig
+    )
   }
 
   override def beforeEach(): Unit = {
-    reset(mockWSHttp)
+    reset(mockDefaultHttpClient)
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -55,7 +54,7 @@ class DelegationConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with 
     "principalName",
     "attorneyName",
     Link("url", "text"),
-    TaxIdentifiers(
+    PrincipalTaxIdentifiers(
       ated = Some(AtedUtr("XN1200000100001"))
     ),
     "internalId"
@@ -64,8 +63,8 @@ class DelegationConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with 
   "startDelegation" should {
     "create a new delegation" when {
       "supplied with a delegation context" in new Setup {
-        when(mockWSHttp.PUT[StartDelegationContext, HttpResponse](Matchers.any(), Matchers.any())
-          (Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(Future.successful(HttpResponse(CREATED)))
 
         await(connector.startDelegation("oid", startDelegationContext)) mustBe true
@@ -74,27 +73,27 @@ class DelegationConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with 
 
     "fail to create a new delegation" when {
       "a 400 response is returned" in new Setup {
-        when(mockWSHttp.PUT[StartDelegationContext, HttpResponse](Matchers.any(), Matchers.any())
-          (Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(Upstream4xxResponse("failed", BAD_REQUEST, BAD_REQUEST)))
 
-        intercept[DelegationServiceException](await(connector.startDelegation("oid", startDelegationContext)))
+        intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
 
       "a 200 response is returned" in new Setup {
-        when(mockWSHttp.PUT[StartDelegationContext, HttpResponse](Matchers.any(), Matchers.any())
-          (Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(HttpResponse(OK)))
 
-        intercept[DelegationServiceException](await(connector.startDelegation("oid", startDelegationContext)))
+        intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
 
       "a 500 response is returned" in new Setup {
-        when(mockWSHttp.PUT[StartDelegationContext, HttpResponse](Matchers.any(), Matchers.any())
-          (Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any()))
+        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(Upstream5xxResponse("failed", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
-        intercept[DelegationServiceException](await(connector.startDelegation("oid", startDelegationContext)))
+        intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
     }
   }

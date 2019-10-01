@@ -16,35 +16,35 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import play.api.Play
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import play.api.libs.json.{Json, OFormat}
+
+import scala.util.Try
 
 case class FeatureSwitch(name: String, enabled: Boolean)
 
 object FeatureSwitch {
 
-  import play.api.Play.current
-
-  def forName(name: String): FeatureSwitch = {
+  def forName(name: String)(implicit config: ServicesConfig): FeatureSwitch = {
     FeatureSwitch(name, isEnabled(name))
   }
 
-  def isEnabled(name: String): Boolean = {
+  def isEnabled(name: String)(implicit config: ServicesConfig): Boolean = {
     val sysPropValue = sys.props.get(systemPropertyName(name))
     sysPropValue match {
-      case Some(x) => x.toBoolean
-      case None => Play.configuration.getBoolean(confPropertyName(name)).getOrElse(false)
+      case Some(x)  => x.toBoolean
+      case None     => Try(config.getBoolean(confPropertyName(name))).getOrElse(false)
     }
   }
 
-  def disable(switch: FeatureSwitch): FeatureSwitch = setProp(switch.name, value = false)
+  def disable(switch: FeatureSwitch)(implicit config: ServicesConfig): FeatureSwitch = setProp(switch.name, value = false)
 
-  def setProp(name: String, value: Boolean): FeatureSwitch = {
+  def setProp(name: String, value: Boolean)(implicit config: ServicesConfig): FeatureSwitch = {
     val systemProps = sys.props.+=((systemPropertyName(name), value.toString))
     forName(name)
   }
 
-  def enable(switch: FeatureSwitch): FeatureSwitch = {
+  def enable(switch: FeatureSwitch)(implicit config: ServicesConfig): FeatureSwitch = {
     setProp(switch.name, value = true)
   }
 
@@ -57,9 +57,9 @@ object FeatureSwitch {
 
 object MandateFeatureSwitches {
 
-  def singleService: FeatureSwitch = FeatureSwitch.forName("single_service")
+  def  singleService(implicit config: ServicesConfig): FeatureSwitch = FeatureSwitch.forName("single_service")
 
-  def byName(name: String): Option[FeatureSwitch] = name match {
+  def byName(name: String)(implicit config: ServicesConfig): Option[FeatureSwitch] = name match {
     case "single_service" => Some(singleService)
     case _ => None
   }

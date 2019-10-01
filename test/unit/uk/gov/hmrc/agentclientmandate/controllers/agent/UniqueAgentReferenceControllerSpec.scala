@@ -19,32 +19,42 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 import java.util.UUID
 
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.Result
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UniqueAgentReferenceController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
-class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+  class Setup {
+    val controller = new UniqueAgentReferenceController(
+      mockAuthConnector,
+      mockDataCacheService,
+      app.injector.instanceOf[MessagesControllerComponents],
+      implicitly,
+      mockAppConfig
+    )
+  }
 
   "UniqueAgentReferenceController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
-      "agent requests(GET) for 'Your unique agent reference' view" in {
-        viewWithUnAuthenticatedAgent { result =>
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithUnAuthenticatedAgent(controller) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
         }
@@ -54,8 +64,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
 
-      "agent requests(GET) for 'Your unique agent reference' view" in {
-        viewWithUnAuthorisedAgent { result =>
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithUnAuthorisedAgent(controller) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
         }
@@ -65,8 +75,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
 
     "return 'what is your email address' for AUTHORISED agent" when {
 
-      "agent requests(GET) for 'Your unique agent reference' view" in {
-        viewWithAuthorisedAgent(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithAuthorisedAgent(controller)(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("Your unique authorisation number is ABC123 - GOV.UK")
@@ -76,8 +86,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
     }
 
     "redirect agent to select service page" when {
-      "mandate ID is not found in cache" in {
-        viewWithAuthorisedAgent() { result =>
+      "mandate ID is not found in cache" in new Setup {
+        viewWithAuthorisedAgent(controller)() { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/service"))
         }
@@ -92,43 +102,37 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
   val mandateId: String = "ABC123"
   val agentLastUsedEmail: String = "a.b@mail.com"
 
-
-  object TestUniqueAgentReferenceController extends UniqueAgentReferenceController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val dataCacheService: DataCacheService = mockDataCacheService
-  }
-
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
   }
 
-  def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+  def viewWithUnAuthenticatedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestUniqueAgentReferenceController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+  def viewWithUnAuthorisedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestUniqueAgentReferenceController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def viewWithAuthorisedAgent(clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedAgent(controller: UniqueAgentReferenceController)(clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.eq(TestUniqueAgentReferenceController.agentRefCacheId))
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(clientDisplayDetails))
+    when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(controller.agentRefCacheId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(clientDisplayDetails))
 
-    val result = TestUniqueAgentReferenceController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 

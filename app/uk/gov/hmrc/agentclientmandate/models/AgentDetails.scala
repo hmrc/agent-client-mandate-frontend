@@ -19,6 +19,8 @@ package uk.gov.hmrc.agentclientmandate.models
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
 case class EtmpContactDetails(phoneNumber: Option[String] = None,
                               mobileNumber: Option[String] = None,

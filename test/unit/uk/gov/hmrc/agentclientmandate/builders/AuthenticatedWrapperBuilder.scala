@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.builders
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, ~}
 import uk.gov.hmrc.auth.core._
@@ -25,7 +25,7 @@ import scala.concurrent.Future
 
 object AuthenticatedWrapperBuilder {
   def mockAuthorisedClient(mockAuthConnector: AuthConnector) {
-    when(mockAuthConnector.authorise[Option[Credentials]](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAuthConnector.authorise[Option[Credentials]](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(Some(Credentials("ggCredId", "GovernmentGateway")))
     }
   }
@@ -52,13 +52,13 @@ object AuthenticatedWrapperBuilder {
           agentInformation),
         optCredentials)
 
-    when(mockAuthConnector.authorise[RetrievalConstruction](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(retrievalConstruction)
     }
   }
 
   def mockUnAuthenticated(mockAuthConnector: AuthConnector) {
-    when(mockAuthConnector.authorise[Any](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn {
+    when(mockAuthConnector.authorise[Any](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.failed(MissingBearerToken("Missing bearer token"))
     }
   }

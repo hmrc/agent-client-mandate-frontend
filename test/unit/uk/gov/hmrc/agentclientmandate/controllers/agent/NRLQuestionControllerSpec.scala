@@ -19,30 +19,33 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 import java.util.UUID
 
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.NRLQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar {
+class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "NRLQuestionController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithUnAuthenticatedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -51,7 +54,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     }
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithUnAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -60,7 +63,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     }
 
     "return 'nrl question' view for AUTHORISED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -72,7 +75,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         }
       }
 
-      "agent requests(GET) for 'nrl question' view with some data saved" in {
+      "agent requests(GET) for 'nrl question' view with some data saved" in new Setup {
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -88,7 +91,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     }
 
     "redirect agent to 'mandate details' page" when {
-      "valid form is submitted and YES is selected as client pays self-assessment" in {
+      "valid form is submitted and YES is selected as client pays self-assessment" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -98,7 +101,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     }
 
     "redirect agent to 'client permission' page" when {
-      "valid form is submitted and NO is selected as client pays self-assessment" in {
+      "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -108,7 +111,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     }
 
     "returns BAD_REQUEST" when {
-      "invalid form is submitted" in {
+      "invalid form is submitted" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -125,61 +128,69 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-  object TestNRLQuestionController extends NRLQuestionController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val controllerId: String = "nrl"
-    override val dataCacheService: DataCacheService = mockDataCacheService
+
+
+  class Setup {
+    val controller = new NRLQuestionController(
+      mockDataCacheService,
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig
+    )
+
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[NRLQuestion](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(NRLQuestion(Some(true)))))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
   }
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
   }
 
-  def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestNRLQuestionController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
 
-  def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestNRLQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewWithAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
-    val result = TestNRLQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[NRLQuestion](Matchers.any())
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(NRLQuestion(Some(true)))))
-    val result = TestNRLQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    val result = TestNRLQuestionController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
-  }
 
 }

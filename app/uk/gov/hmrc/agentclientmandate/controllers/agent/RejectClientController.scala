@@ -16,35 +16,32 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object RejectClientController extends RejectClientController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val acmService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-}
-
-trait RejectClientController extends FrontendController with AuthorisedWrappers {
-
-  def acmService: AgentClientMandateService
+@Singleton
+class RejectClientController @Inject()(
+                                        mcc: MessagesControllerComponents,
+                                        acmService: AgentClientMandateService,
+                                        implicit val ec: ExecutionContext,
+                                        implicit val appConfig: AppConfig,
+                                        val authConnector: AuthConnector
+                                      ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
         mandate => Ok(views.html.agent.rejectClient(service,
-          new YesNoQuestionForm("agent.reject-client.error").yesNoQuestionForm,
+          new YesNoQuestionForm("yes-no.error.mandatory.clientReject").yesNoQuestionForm,
           mandate.clientDisplayName, mandateId, getBackLink(service)))
       )
     }
@@ -52,15 +49,14 @@ trait RejectClientController extends FrontendController with AuthorisedWrappers 
 
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
-      val form = new YesNoQuestionForm("agent.reject-client.error")
+      val form = new YesNoQuestionForm("yes-no.error.mandatory.clientReject")
       form.yesNoQuestionForm.bindFromRequest.fold(
         formWithError =>
           acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
             mandate => BadRequest(views.html.agent.rejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))
           ),
         data => {
-          val rejectClient = data.yesNo.getOrElse(false)
-          if (rejectClient) {
+          if (data.yesNo) {
             acmService.rejectClient(mandateId, authRetrievals).map { rejectedClient =>
               if (rejectedClient) {
                 Redirect(routes.RejectClientController.confirmation(mandateId))

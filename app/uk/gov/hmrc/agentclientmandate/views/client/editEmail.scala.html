@@ -20,7 +20,8 @@
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.play.views.html.helpers._
 
-@(service: String, addEmailForm: Form[ClientEmail], backLink: Option[String])(implicit request: Request[_], messages: Messages)
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@(service: String, addEmailForm: Form[ClientEmail], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @analyticsJs = {
   var lastSlash = document.location.pathname.lastIndexOf('/');

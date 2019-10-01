@@ -16,64 +16,37 @@
 
 package helpers
 
-import java.net.{URLDecoder, URLEncoder}
-import java.nio.charset.StandardCharsets
 import java.util.UUID
 
-import play.api.libs.Crypto
-import play.api.libs.ws.WSCookie
-import uk.gov.hmrc.crypto.{CompositeSymmetricCrypto, Crypted, PlainText}
+import play.api.Application
+import play.api.mvc.{DefaultCookieHeaderEncoding, DefaultSessionCookieBaker}
 import uk.gov.hmrc.http.SessionKeys
 
-trait LoginStub extends SessionCookieBaker {
+trait LoginStub {
 
-  private val defaultUser = "/foo/bar"
+  val app: Application
+  lazy val signerSession: DefaultSessionCookieBaker = app.injector.instanceOf[DefaultSessionCookieBaker]
+  lazy val cookieHeader: DefaultCookieHeaderEncoding = app.injector.instanceOf[DefaultCookieHeaderEncoding]
+
   val SessionId = s"stubbed-${UUID.randomUUID}"
 
-  private def cookieData(additionalData: Map[String, String], userId: String = defaultUser, sessionId: String = SessionId): Map[String, String] = {
+  private def cookieData(additionalData: Map[String, String], timeStampRollback: Long): Map[String, String] = {
+    val timeStamp = new java.util.Date().getTime
+    val rollbackTimestamp = (timeStamp - timeStampRollback).toString
+
     Map(
-      SessionKeys.sessionId -> sessionId,
-      SessionKeys.userId -> userId,
+      SessionKeys.sessionId -> SessionId,
+      SessionKeys.userId -> "/auth/oid/1234567890",
       SessionKeys.token -> "token",
       SessionKeys.authProvider -> "GGW",
-      SessionKeys.lastRequestTimestamp -> new java.util.Date().getTime.toString
+      SessionKeys.lastRequestTimestamp -> rollbackTimestamp
     ) ++ additionalData
   }
 
-  def getSessionCookie(additionalData: Map[String, String] = Map(), userId: String = defaultUser, sessionId: String = SessionId): String = {
-    cookieValue(cookieData(additionalData, userId, sessionId))
-  }
-}
+  def getSessionCookie(additionalData: Map[String, String] = Map(), timeStampRollback: Long = 0): String = {
+    val cookie = signerSession.encodeAsCookie(signerSession.deserialize(cookieData(additionalData, timeStampRollback)))
+    val encodedCookie = cookieHeader.encodeSetCookieHeader(Seq(cookie))
 
-trait SessionCookieBaker {
-  val cookieKey = "gvBoGdgzqG1AarzF1LY0zQ=="
-  def cookieValue(sessionData: Map[String,String]): String = {
-    def encode(data: Map[String, String]): PlainText = {
-      val encoded = data.map {
-        case (k, v) => URLEncoder.encode(k, "UTF-8") + "=" + URLEncoder.encode(v, "UTF-8")
-      }.mkString("&")
-      val key = "yNhI04vHs9<_HWbC`]20u`37=NGLGYY5:0Tg5?y`W<NoJnXWqmjcgZBec@rOxb^G".getBytes
-      PlainText(Crypto.sign(encoded, key) + "-" + encoded)
-    }
-
-    val encodedCookie = encode(sessionData)
-    val encrypted = CompositeSymmetricCrypto.aesGCM(cookieKey, Seq()).encrypt(encodedCookie).value
-
-    s"""mdtp="$encrypted"; Path=/; HTTPOnly"; Path=/; HTTPOnly"""
-  }
-
-  def getCookieData(cookie: WSCookie): Map[String, String] = {
-    getCookieData(cookie.value.get)
-  }
-
-  def getCookieData(cookieData: String): Map[String, String] = {
-
-    val decrypted = CompositeSymmetricCrypto.aesGCM(cookieKey, Seq()).decrypt(Crypted(cookieData)).value
-    val result = decrypted.split("&")
-      .map(_.split("="))
-      .map { case Array(k, v) => (k, URLDecoder.decode(v, StandardCharsets.UTF_8.name()))}
-      .toMap
-
-    result
+    encodedCookie
   }
 }

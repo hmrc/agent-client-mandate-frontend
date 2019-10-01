@@ -14,7 +14,13 @@
  * limitations under the License.
  *@
 
-@(appConfig: uk.gov.hmrc.agentclientmandate.config.AppConfig,
+@import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import layouts.{govuk_template => hmrcGovUkTemplate}
+@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
+@import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
+
+@(appConfig: AppConfig,
   title: String,
   mainClass: Option[String] = None,
   mainDataAttributes: Option[Html] = None,
@@ -29,15 +35,11 @@
   delegatedService: Option[String] = None,
   analyticsJs: Option[Html] = None)(implicit request: Request[_], messages: Messages)
 
-@import layouts.{govuk_template => hmrcGovUkTemplate}
-@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
-@import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
-
 @linkElement = {
-<link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("stylesheets/main.css")'/>
-<link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.min.css")'/>
-<link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.structure.min.css")'/>
-<link rel="stylesheet" href='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("stylesheets/urBanner.css")'/>
+<link rel="stylesheet" href='@controllers.routes.Assets.at("stylesheets/main.css")'/>
+<link rel="stylesheet" href='@controllers.routes.Assets.at("jquery/jquery-ui.min.css")'/>
+<link rel="stylesheet" href='@controllers.routes.Assets.at("jquery/jquery-ui.structure.min.css")'/>
+<link rel="stylesheet" href='@controllers.routes.Assets.at("stylesheets/urBanner.css")'/>
 }
 
 @head = {
@@ -53,10 +55,10 @@
 
 
 @scriptElement = {
-  <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui.min.js")'></script>
-  <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("jquery/jquery-ui-1.12.1.min.js")'></script>
-  <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/timeout-dialog.js")'></script>
-  <script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/urBanner.js")'></script>
+  <script src='@controllers.routes.Assets.at("jquery/jquery-ui.min.js")'></script>
+  <script src='@controllers.routes.Assets.at("jquery/jquery-ui-1.12.1.min.js")'></script>
+  <script src='@controllers.routes.Assets.at("javascript/timeout-dialog.js")'></script>
+  <script src='@controllers.routes.Assets.at("javascript/urBanner.js")'></script>
   <script>
   @if(userLoggedIn) {
      $.timeoutDialog({timeout: @appConfig.defaultTimeoutSeconds, countdown: @appConfig.timeoutCountdown, keep_alive_url: '/mandate/keep-alive', logout_url: '@appConfig.serviceSignOutUrl(delegatedService)', logout_redirect_url: '@appConfig.serviceSignOutUrl(delegatedService)', restart_on_yes: true, background_no_scroll: true});

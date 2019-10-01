@@ -17,8 +17,9 @@
 @import uk.gov.hmrc.play.views.html._
 @import uk.gov.hmrc.play.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.models.AgentDetails
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
-@(agentDetails: AgentDetails, service: String)(implicit request: Request[_], messages: Messages)
+@(agentDetails: AgentDetails, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 <section class="section section--blue-top">
 

@@ -16,27 +16,35 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
-import play.api.Play.current
+import play.api.data.format.Formatter
+import play.api.data.{Form, FormError, Forms}
 import play.api.libs.json.{Json, OFormat}
 
-case class YesNoQuestion(yesNo: Option[Boolean] = None)
+case class YesNoQuestion(yesNo: Boolean)
 
 object YesNoQuestion {
   implicit val formats: OFormat[YesNoQuestion] = Json.format[YesNoQuestion]
 }
 
-class YesNoQuestionForm(_param: String) {
+class YesNoQuestionForm(errorMessage: String) {
 
-  private val param:String = Messages(_param)
-
-  val yesNoQuestionForm =
+  def yesNoQuestionForm =
     Form(
       mapping(
-        "yesNo" -> optional(boolean).verifying(Messages("yes-no.error.mandatory", param), x => x.isDefined)
+        "yesNo" -> Forms.of[Boolean](requiredBooleanFormatter)
       )(YesNoQuestion.apply)(YesNoQuestion.unapply)
     )
+
+  def requiredBooleanFormatter: Formatter[Boolean] = new Formatter[Boolean] {
+    def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Boolean] = {
+      Right(data.getOrElse(key,"")).right.flatMap {
+        case "true"   => Right(true)
+        case "false"  => Right(false)
+        case _        => Left(Seq(FormError(key, errorMessage)))
+      }
+    }
+
+    def unbind(key: String, value: Boolean): Map[String, String] = Map(key -> value.toString)
+  }
 }

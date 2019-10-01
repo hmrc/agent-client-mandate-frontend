@@ -16,28 +16,27 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-object UniqueAgentReferenceController extends UniqueAgentReferenceController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  // $COVERAGE-ON$
-}
+import scala.concurrent.ExecutionContext
 
-trait UniqueAgentReferenceController extends FrontendController with MandateConstants with AuthorisedWrappers {
-
-  def dataCacheService: DataCacheService
+@Singleton
+class UniqueAgentReferenceController @Inject()(
+                                                val authConnector: AuthConnector,
+                                                val dataCacheService: DataCacheService,
+                                                val mcc: MessagesControllerComponents,
+                                                implicit val ec: ExecutionContext,
+                                                implicit val appConfig: AppConfig
+                                              ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

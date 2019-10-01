@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentclientmandate.controllers
+package uk.gov.hmrc.agentclientmandate
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import play.api.inject.{Binding, Module}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
+import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
 
-@Singleton
-class ApplicationController @Inject()(mcc: MessagesControllerComponents) extends FrontendController(mcc) {
-  def keepAlive: Action[AnyContent] = Action { implicit request =>
-    Ok("OK")
+class ServiceBindings extends Module {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+   Seq(
+     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector]).eagerly(),
+     bind(classOf[HttpClient]).to(classOf[DefaultHttpClient]).eagerly()
+   )
   }
 }
