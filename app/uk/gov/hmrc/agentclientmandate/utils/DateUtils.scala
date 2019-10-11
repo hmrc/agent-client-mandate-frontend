@@ -21,6 +21,6 @@ import org.joda.time.DateTime
 object DateUtils {
 
   def getDateAsText(date: DateTime):String = {
-    date.getDayOfMonth + " " + date.monthOfYear().getAsText() + " " + date.getYear
+    date.getDayOfMonth() + " " + date.monthOfYear().getAsText() + " " + date.getYear()
   }
 }

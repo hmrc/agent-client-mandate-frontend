@@ -22,9 +22,8 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
-@(service: String, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(service: String, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]])(implicit request: Request[_], messages: Messages)
 
 
 @main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if(isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), delegatedService = Some(service)){

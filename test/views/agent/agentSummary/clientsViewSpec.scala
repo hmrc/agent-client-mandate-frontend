@@ -21,10 +21,7 @@ import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.i18n.{Lang, Messages}
-import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.Mandates
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
@@ -36,9 +33,6 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
   val time1: DateTime = DateTime.now()
@@ -75,7 +69,7 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
     statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val messages : play.api.i18n.Messages = play.api.i18n.Messages.Implicits.applicationMessages
 
   feature("The agent can view the agent summary page when they have both clients and pending clients") {
 

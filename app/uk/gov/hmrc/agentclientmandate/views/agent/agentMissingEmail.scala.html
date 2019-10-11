@@ -16,15 +16,14 @@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
+@(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages)
+
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-
-@(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/agentMissingEmail.js")'></script>
+<script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/agentMissingEmail.js")'></script>
 }
 
 @implicitFormInstance = @{ Some(agentMissingEmailForm) }

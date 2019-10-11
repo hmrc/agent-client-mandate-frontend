@@ -19,12 +19,12 @@ package uk.gov.hmrc.agentclientmandate.controllers.auth
 import play.api.Logger
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls.{companyAuthHost, loginCallbackAgent, loginCallbackClient, loginPath}
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, ClientAuthRetrievals}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,21 +35,20 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
 
   lazy private val origin: String = "agent-client-mandate-frontend"
 
-  protected def continueUrl(isAnAgent: Boolean)(implicit appConfig: AppConfig): String => String = { service: String =>
-    val prefix = if (isAnAgent) appConfig.loginCallbackAgent else appConfig.loginCallbackClient
+  protected def continueUrl(isAnAgent: Boolean): String => String = { service: String =>
+    val prefix = if (isAnAgent) loginCallbackAgent else loginCallbackClient
 
     s"$prefix/$service"
   }
 
-  protected def loginUrl(implicit appConfig: AppConfig): String = s"${appConfig.companyAuthHost}/${appConfig.loginPath}"
+  protected def loginUrl: String = s"$companyAuthHost/$loginPath"
 
-  private def loginParams(service: String, isAnAgent: Boolean)(implicit appConfig: AppConfig): Map[String, Seq[String]] = Map(
-    "continue" -> Seq(continueUrl(isAnAgent)(appConfig)(service)),
+  private def loginParams(service: String, isAnAgent: Boolean): Map[String, Seq[String]] = Map(
+    "continue" -> Seq(continueUrl(isAnAgent)(service)),
     "origin" -> Seq(origin)
   )
 
-  private def authErrorHandling(service: Option[String] = None, isAnAgent: Boolean = true)
-                               (implicit appConfig: AppConfig): PartialFunction[Throwable, Result] = {
+  private def authErrorHandling(service: Option[String] = None, isAnAgent: Boolean = true): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession => Redirect(loginUrl, loginParams(service.getOrElse(""), isAnAgent))
     case InternalError(e)   =>
       Logger.warn(s"[authErrorHandling] Call to auth failed - $e")
@@ -60,21 +59,21 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
   }
 
   def agentAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(Enrolment(agentRefEnrolment) and AuthProviders(GovernmentGateway) and AffinityGroup.Agent).retrieve(retrieval) {
       body
     }.recover(authErrorHandling(service))
   }
 
   def clientAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
-                            (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     authorised(AffinityGroup.Organisation and AuthProviders(GovernmentGateway)).retrieve(retrieval) {
       body
     }.recover(authErrorHandling(service, isAnAgent = false))
   }
 
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     agentAuthenticated(service,
       Retrievals.authorisedEnrolments and
         Retrievals.internalId and
@@ -116,7 +115,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
   }
 
   def withOrgCredId(service: Option[String])(body: ClientAuthRetrievals => Future[Result])
-                   (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                   (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     clientAuthenticated(service, Retrievals.credentials) {
       case Some(credentials) => body(ClientAuthRetrievals(OrgAuthUtil.hash(credentials.providerId)))
       case _                 =>

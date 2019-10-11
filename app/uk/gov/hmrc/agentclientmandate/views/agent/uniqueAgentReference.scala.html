@@ -14,14 +14,13 @@
  * limitations under the License.
  *@
 
+@(clientDisplayDetails: uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails, service: String)(implicit request: Request[_], messages: Messages)
+
 @import uk.gov.hmrc.agentclientmandate.models._
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-
-@(clientDisplayDetails: uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @analyticsJs = {
   var id = "@clientDisplayDetails.mandateId";

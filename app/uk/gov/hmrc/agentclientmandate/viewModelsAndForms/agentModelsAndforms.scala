@@ -16,22 +16,24 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
+import play.api.Play.current
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentclientmandate.models.RegisteredAddressDetails
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, _}
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfTrue
 
 case class AgentSelectService(service: Option[String] = None)
 
 object AgentSelectServiceForm {
-  def selectServiceForm =
+  val selectServiceForm =
     Form(
       mapping(
-        "service" -> optional(text).verifying("agent.select-service.error.service", serviceOpt => serviceOpt.isDefined)
+        "service" -> optional(text).verifying(Messages("agent.select-service.error.service"), serviceOpt => serviceOpt.isDefined)
       )(AgentSelectService.apply)(AgentSelectService.unapply)
     )
 }
@@ -58,7 +60,7 @@ object AgentEmail {
 }
 
 object AgentEmailForm extends Constraints {
-  def agentEmailForm =
+  val agentEmailForm =
     Form(
       mapping(
         "email" -> text
@@ -77,11 +79,11 @@ object AgentMissingEmail {
 
 object AgentMissingEmailForm extends Constraints  {
 
-  def agentMissingEmailForm =
+  val agentMissingEmailForm =
     Form(
         mapping(
 
-          "useEmailAddress" -> optional(boolean).verifying("agent.missing-email.must_answer", x => x.isDefined),
+          "useEmailAddress" -> optional(boolean).verifying(Messages("agent.missing-email.must_answer"), x => x.isDefined),
           "email" -> mandatoryIfTrue("useEmailAddress", text
             .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
             .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
@@ -98,10 +100,10 @@ object OverseasClientQuestion {
 }
 
 object OverseasClientQuestionForm {
-  def overseasClientQuestionForm =
+  val overseasClientQuestionForm =
     Form(
       mapping(
-        "isOverseas" -> optional(boolean).verifying("agent.overseas-client-question.error.isOverseas", x => x.isDefined)
+        "isOverseas" -> optional(boolean).verifying(Messages("agent.overseas-client-question.error.isOverseas"), x => x.isDefined)
       )(OverseasClientQuestion.apply)(OverseasClientQuestion.unapply)
     )
 }
@@ -118,14 +120,14 @@ object CollectClientBusinessDetailsForm {
   val length0 = 0
   val length105 = 105
 
-  def collectClientBusinessDetails = Form(mapping(
+  val collectClientBusinessDetails = Form(mapping(
     "businessName" -> text
-      .verifying("agent.enter-business-details-error.businessName", x => x.length > length0)
-      .verifying("agent.enter-business-details-error.businessName.length", x => x.isEmpty || (x.nonEmpty && x.length <= length105)),
+      .verifying(Messages("agent.enter-business-details-error.businessName"), x => x.length > length0)
+      .verifying(Messages("agent.enter-business-details-error.businessName.length"), x => x.isEmpty || (x.nonEmpty && x.length <= length105)),
     "utr" -> text
-      .verifying("agent.enter-business-details-error.utr", x => x.length > length0)
-      .verifying("agent.enter-business-details-error.utr.length", x => x.isEmpty || (x.nonEmpty && x.matches("""^[0-9]{10}$""")))
-      .verifying("agent.enter-business-details-error.invalidUTR", x => x.isEmpty || (validateUTR(Option(x)) || !x.matches("""^[0-9]{10}$""")))
+      .verifying(Messages("agent.enter-business-details-error.utr"), x => x.length > length0)
+      .verifying(Messages("agent.enter-business-details-error.utr.length"), x => x.isEmpty || (x.nonEmpty && x.matches("""^[0-9]{10}$""")))
+      .verifying(Messages("agent.enter-business-details-error.invalidUTR"), x => x.isEmpty || (validateUTR(Option(x)) || !x.matches("""^[0-9]{10}$""")))
 
   )(CollectClientBusinessDetails.apply)(CollectClientBusinessDetails.unapply))
 }
@@ -137,12 +139,12 @@ object EditMandateDetailsForm extends Constraints {
   val length0 = 0
   val length99 = 99
 
-  def editMandateDetailsForm =
+  val editMandateDetailsForm =
     Form(
       mapping(
     "displayName" -> text
-      .verifying("agent.edit-client.error.dispName", x => x.length > length0)
-      .verifying("agent.edit-client.error.dispName.length", x => x.isEmpty || (x.nonEmpty && x.length <= length99)),
+      .verifying(Messages("agent.edit-client.error.dispName"), x => x.length > length0)
+      .verifying(Messages("agent.edit-client.error.dispName.length"), x => x.isEmpty || (x.nonEmpty && x.length <= length99)),
 
     "email" -> text
       .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
@@ -157,9 +159,9 @@ case class NRLQuestion(nrl: Option[Boolean] = None)
 object NRLQuestionForm {
   implicit val formats: OFormat[NRLQuestion] = Json.format[NRLQuestion]
 
-  def nrlQuestionForm = Form(
+  val nrlQuestionForm = Form(
     mapping(
-      "nrl" -> optional(boolean).verifying("agent.nrl-question.nrl.not-selected.error", a => a.isDefined)
+      "nrl" -> optional(boolean).verifying(Messages("agent.nrl-question.nrl.not-selected.error"), a => a.isDefined)
     )(NRLQuestion.apply)(NRLQuestion.unapply)
   )
 
@@ -169,9 +171,9 @@ case class PaySAQuestion(paySA: Option[Boolean] = None)
 
 object PaySAQuestion {
 
-  def paySAQuestionForm = Form(
+  val paySAQuestionForm = Form(
     mapping(
-      "paySA" -> optional(boolean).verifying("agent.paySA-question.paySA.not-selected.error", a => a.isDefined)
+      "paySA" -> optional(boolean).verifying(Messages("agent.paySA-question.paySA.not-selected.error"), a => a.isDefined)
     )(PaySAQuestion.apply)(PaySAQuestion.unapply)
   )
 
@@ -182,9 +184,9 @@ case class ClientPermission(hasPermission: Option[Boolean] = None)
 object ClientPermissionForm {
   implicit val formats: OFormat[ClientPermission] = Json.format[ClientPermission]
 
-  def clientPermissionForm = Form(
+  val clientPermissionForm = Form(
     mapping(
-      "hasPermission" -> optional(boolean).verifying("agent.client-permission.hasPermission.not-selected.error", a => a.isDefined)
+      "hasPermission" -> optional(boolean).verifying(Messages("agent.client-permission.hasPermission.not-selected.error"), a => a.isDefined)
     )(ClientPermission.apply)(ClientPermission.unapply)
   )
 
@@ -195,9 +197,9 @@ case class PrevRegistered(prevRegistered: Option[Boolean] = None)
 object PrevRegisteredForm {
   implicit val formats: OFormat[PrevRegistered] = Json.format[PrevRegistered]
 
-  def prevRegisteredForm = Form(
+  val prevRegisteredForm = Form(
     mapping(
-      "prevRegistered" -> optional(boolean).verifying("agent.client-prev-registered.not-selected.field-error", a => a.isDefined)
+      "prevRegistered" -> optional(boolean).verifying(Messages("agent.client-prev-registered.not-selected.field-error"), a => a.isDefined)
     )(PrevRegistered.apply)(PrevRegistered.unapply)
   )
 
@@ -220,11 +222,11 @@ object ClientMandateDisplayDetails {
 object ClientDisplayNameForm {
 
   val lengthZero = 0
-  def clientDisplayNameForm = Form(
+  val clientDisplayNameForm = Form(
     mapping(
       "clientDisplayName" -> text
-        .verifying("agent.client-display-name.error.not-selected", x => x.trim.length > lengthZero)
-        .verifying("agent.client-display-name.error.length", x => x.isEmpty || (x.nonEmpty && x.length <= 99))
+        .verifying(Messages("agent.client-display-name.error.not-selected"), x => x.trim.length > lengthZero)
+        .verifying(Messages("agent.client-display-name.error.length"), x => x.isEmpty || (x.nonEmpty && x.length <= 99))
     )(ClientDisplayName.apply)(ClientDisplayName.unapply)
   )
 
@@ -248,30 +250,45 @@ object EditAgentAddressDetailsForm {
 
   val countryUK = "GB"
 
-  def editAgentAddressDetailsForm = Form(
+  val editAgentAddressDetailsForm = Form(
     mapping(
       "agentName" -> text.
-        verifying("agent.edit-details-error.businessName", x => x.trim.length > length0)
-        .verifying("agent.edit-details-error.businessName.length", x => x.isEmpty || (x.nonEmpty && x.length <= length105)),
+        verifying(Messages("agent.edit-details-error.businessName"), x => x.trim.length > length0)
+        .verifying(Messages("agent.edit-details-error.businessName.length", length105), x => x.isEmpty || (x.nonEmpty && x.length <= length105)),
       "address" -> mapping(
         "addressLine1" -> text.
-          verifying("agent.edit-details-error.line_1", x => x.trim.length > length0)
-          .verifying("agent.edit-details-error.line_1.length", x => x.isEmpty || (x.nonEmpty && x.length <= length35)),
+          verifying(Messages("agent.edit-details-error.line_1"), x => x.trim.length > length0)
+          .verifying(Messages("agent.edit-details-error.line_1.length", length35), x => x.isEmpty || (x.nonEmpty && x.length <= length35)),
         "addressLine2" -> text.
-          verifying("agent.edit-details-error.line_2", x => x.trim.length > length0)
-          .verifying("agent.edit-details-error.line_2.length", x => x.isEmpty || (x.nonEmpty && x.length <= length35)),
+          verifying(Messages("agent.edit-details-error.line_2"), x => x.trim.length > length0)
+          .verifying(Messages("agent.edit-details-error.line_2.length", length35), x => x.isEmpty || (x.nonEmpty && x.length <= length35)),
         "addressLine3" -> optional(text)
-          .verifying("agent.edit-details-error.line_3.length", x => x.isEmpty || (x.nonEmpty && x.get.length <= length35)),
+          .verifying(Messages("agent.edit-details-error.line_3.length", length35), x => x.isEmpty || (x.nonEmpty && x.get.length <= length35)),
         "addressLine4" -> optional(text)
-          .verifying("agent.edit-details-error.line_4.length", x => x.isEmpty || (x.nonEmpty && x.get.length <= length35)),
+          .verifying(Messages("agent.edit-details-error.line_4.length", length35), x => x.isEmpty || (x.nonEmpty && x.get.length <= length35)),
         "postalCode" -> optional(text)
-          .verifying("agent.edit-details-error.postcode.length",
+          .verifying(Messages("agent.edit-details-error.postcode.length", postcodeLength),
             x => x.isEmpty || (x.nonEmpty && x.get.length <= postcodeLength)),
         "countryCode" -> text.
-          verifying("agent.edit-details-error.country", x => x.length > length0)
+          verifying(Messages("agent.edit-details-error.country"), x => x.length > length0)
       )(RegisteredAddressDetails.apply)(RegisteredAddressDetails.unapply)
     )(EditAgentAddressDetails.apply)(EditAgentAddressDetails.unapply)
   )
+
+  def validateCountryNonUKAndPostcode(agentData: Form[EditAgentAddressDetails]): Unit = {
+    val country = agentData.data.get("businessAddress.country") map {
+      _.trim
+    } filterNot {
+      _.isEmpty
+    }
+    val countryForm = {
+      if (country.fold("")(x => x).matches(countryUK)) {
+        agentData.withError(key = "businessAddress.country", message = Messages("agent.edit-details-error.non-uk"))
+      } else {
+        agentData
+      }
+    }
+  }
 }
 
 case class OverseasCompany(hasBusinessUniqueId: Option[Boolean] = Some(false),
@@ -290,13 +307,13 @@ object NonUkIdentificationForm {
 
   val countryUK = "GB"
 
-  def nonUkIdentificationForm = Form(
+  val nonUkIdentificationForm = Form(
     mapping(
-      "hasBusinessUniqueId" -> optional(boolean).verifying("agent.edit-details-error.hasBusinessUniqueId.not-selected", x => x.isDefined),
+      "hasBusinessUniqueId" -> optional(boolean).verifying(Messages("agent.edit-details-error.hasBusinessUniqueId.not-selected"), x => x.isDefined),
       "idNumber" -> optional(text)
-        .verifying("agent.edit-details-error.businessUniqueId.length", x => x.isEmpty || (x.nonEmpty && x.get.length <= length60)),
+        .verifying(Messages("agent.edit-details-error.businessUniqueId.length", length60), x => x.isEmpty || (x.nonEmpty && x.get.length <= length60)),
       "issuingInstitution" -> optional(text)
-        .verifying("agent.edit-details-error.issuingInstitution.length", x => x.isEmpty || (x.nonEmpty && x.get.length <= length40)),
+        .verifying(Messages("agent.edit-details-error.issuingInstitution.length", length40), x => x.isEmpty || (x.nonEmpty && x.get.length <= length40)),
       "issuingCountryCode" -> optional(text)
     )(OverseasCompany.apply)(OverseasCompany.unapply)
   )
@@ -324,7 +341,7 @@ object NonUkIdentificationForm {
     }
     hasBusinessUniqueId match {
       case Some(true) if issuingInstitution.isEmpty =>
-        registrationData.withError(key = "issuingInstitution", message = "agent.edit-mandate-details-error.issuingInstitution.select")
+        registrationData.withError(key = "issuingInstitution", message = Messages("agent.edit-mandate-details-error.issuingInstitution.select"))
       case _ => registrationData
     }
   }
@@ -344,9 +361,9 @@ object NonUkIdentificationForm {
     }
     hasBusinessUniqueId match {
       case Some(true) if issuingCountry.isEmpty =>
-        registrationData.withError(key = "issuingCountryCode", message = "agent.edit-mandate-details-error.issuingCountry.select")
+        registrationData.withError(key = "issuingCountryCode", message = Messages("agent.edit-mandate-details-error.issuingCountry.select"))
       case Some(true) if issuingCountry.isDefined && issuingCountry.fold("")(x => x).matches(countryUK) =>
-        registrationData.withError(key = "issuingCountryCode", message = "agent.edit-mandate-details-error.non-uk")
+        registrationData.withError(key = "issuingCountryCode", message = Messages("agent.edit-mandate-details-error.non-uk"))
       case _ => registrationData
     }
   }
@@ -366,7 +383,7 @@ object NonUkIdentificationForm {
     }
     hasBusinessUniqueId match {
       case Some(true) if businessUniqueId.isEmpty =>
-        registrationData.withError(key = "idNumber", message = "agent.edit-mandate-details-error.businessUniqueId.select")
+        registrationData.withError(key = "idNumber", message = Messages("agent.edit-mandate-details-error.businessUniqueId.select"))
       case _ => registrationData
     }
   }

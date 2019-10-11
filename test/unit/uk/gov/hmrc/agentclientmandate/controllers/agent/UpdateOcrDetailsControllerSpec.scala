@@ -18,35 +18,32 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
 
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
-import play.api.mvc.{AnyContentAsJson, MessagesControllerComponents, Result}
+import play.api.mvc.{AnyContentAsJson, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasCompany
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.RunMode
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "UpdateOcrDetailsController" should {
 
     "redirect to unathorised page" when {
-      "the user is UNAUTHORISED" in new Setup {
+      "the user is UNAUTHORISED" in {
         getWithUnAuthorisedUser("abc") { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -55,7 +52,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     }
 
     "return status OK" when {
-      "user is AUTHORISED" in new Setup {
+      "user is AUTHORISED" in {
         getWithAuthorisedUser(cachedData, "abc") { result =>
           status(result) must be(OK)
         }
@@ -63,7 +60,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     }
 
     "throw exception" when {
-      "no cached data is returned" in new Setup {
+      "no cached data is returned" in {
         getWithAuthorisedUser(None, "abc") { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("No Registration Details found")
@@ -73,7 +70,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
 
 
     "fail to submit the input ocr details" when {
-      "UNAUTHORISED user tries to submit" in new Setup {
+      "UNAUTHORISED user tries to submit" in {
         saveWithUnAuthorisedUser("abc") { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -82,7 +79,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     }
 
     "submit the input ocr details" when {
-      "AUTHORISED user tries to submit" in new Setup {
+      "AUTHORISED user tries to submit" in {
         val x = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some("FR"))
         val inputJson = Json.toJson(x)
         val fakeRequest = FakeRequest().withJsonBody(inputJson)
@@ -94,7 +91,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     }
 
     "fail to submit the input ocr details" when {
-      "AUTHORISED user tries to submit but fails due to form eror" in new Setup {
+      "AUTHORISED user tries to submit but fails due to form eror" in {
         val x = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some(""))
         val inputJson = Json.toJson(x)
         val fakeRequest = FakeRequest().withJsonBody(inputJson)
@@ -103,7 +100,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         }
       }
 
-      "AUTHORISED user tries to submit but ETMP update fails" in new Setup {
+      "AUTHORISED user tries to submit but ETMP update fails" in {
         val x = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some("FR"))
         val inputJson = Json.toJson(x)
         val fakeRequest = FakeRequest().withJsonBody(inputJson)
@@ -125,61 +122,54 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-
-
-  class Setup {
-    val controller = new UpdateOcrDetailsController(
-      mockAgentClientMandateService,
-      mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig
-    )
-
-    def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(cachedData))
-      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn (Future.successful(agentDetails))
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
-                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(updatedRegDetails))
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
-      test(result)
-    }
+  object TestUpdateOcrDetailsController extends UpdateOcrDetailsController {
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val dataCacheService: DataCacheService = mockDataCacheService
+    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
   }
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockDataCacheService)
     reset(mockAgentClientMandateService)
+  }
+
+  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = TestUpdateOcrDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[AgentDetails](Matchers.eq(TestUpdateOcrDetailsController.agentDetailsFormId))(Matchers.any(), Matchers.any()))
+      .thenReturn (Future.successful(cachedData))
+    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(agentDetails))
+    val result = TestUpdateOcrDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = TestUpdateOcrDetailsController.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
+                            (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    when(mockAgentClientMandateService.updateRegisteredDetails(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
+      .thenReturn (Future.successful(updatedRegDetails))
+    val result = TestUpdateOcrDetailsController.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
+    test(result)
   }
 }

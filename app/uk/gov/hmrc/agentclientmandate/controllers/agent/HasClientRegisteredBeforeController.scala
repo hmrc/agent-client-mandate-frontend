@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig._
 import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
@@ -28,20 +30,24 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegisteredForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class HasClientRegisteredBeforeController @Inject()(
-                                                     mcc: MessagesControllerComponents,
-                                                     dataCacheService: DataCacheService,
-                                                     businessCustomerConnector: BusinessCustomerFrontendConnector,
-                                                     atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
-                                                     implicit val ec: ExecutionContext,
-                                                     implicit val appConfig: AppConfig,
-                                                     val authConnector: AuthConnector
-                                                   ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+object HasClientRegisteredBeforeController extends HasClientRegisteredBeforeController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val businessCustomerConnector: BusinessCustomerFrontendConnector = BusinessCustomerFrontendConnector
+  val atedSubscriptionConnector: AtedSubscriptionFrontendConnector = AtedSubscriptionFrontendConnector
+  val dataCacheService: DataCacheService = DataCacheService
+  // $COVERAGE-ON$
+}
+
+trait HasClientRegisteredBeforeController extends FrontendController with AuthorisedWrappers with MandateConstants {
+
+  def businessCustomerConnector: BusinessCustomerFrontendConnector
+  def atedSubscriptionConnector: AtedSubscriptionFrontendConnector
+  def dataCacheService: DataCacheService
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -70,7 +76,7 @@ class HasClientRegisteredBeforeController @Inject()(
             val result = if (data.prevRegistered.getOrElse(false)) {
               Redirect(routes.PreviousMandateRefController.view(callingPage))
             } else {
-              Redirect(appConfig.nonUkUri(service, routes.HasClientRegisteredBeforeController.view(callingPage).url))
+              Redirect(nonUkUri(service, routes.HasClientRegisteredBeforeController.view(callingPage).url))
             }
 
             Future.successful(result)

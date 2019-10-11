@@ -16,30 +16,32 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestionForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class OverseasClientQuestionController @Inject()(
-                                                  dataCacheService: DataCacheService,
-                                                  mcc: MessagesControllerComponents,
-                                                  val authConnector: AuthConnector,
-                                                  implicit val ec: ExecutionContext,
-                                                  implicit val appConfig: AppConfig
-                                                ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+object OverseasClientQuestionController extends OverseasClientQuestionController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val controllerId: String = "overseas"
+  val dataCacheService: DataCacheService = DataCacheService
+  // $COVERAGE-ON$
+}
 
-  val controllerId: String = ControllerPageIdConstants.overseasClientQuestionControllerId
+trait OverseasClientQuestionController extends FrontendController with AuthorisedWrappers with MandateConstants{
+  def dataCacheService: DataCacheService
+  val controllerId: String
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

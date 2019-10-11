@@ -329,11 +329,6 @@ agent.reject-client.error.mandatory = You must answer the question
 yes-no.error.mandatory = The {0} question must be answered
 yes-no.error.general.yesNo = There is a problem with {0} question
 
-yes-no.error.mandatory.clientReject = The client reject question must be answered
-yes-no.error.mandatory.removeClient = The remove client question must be answered
-yes-no.error.mandatory.changeAgent = The change agent question must be answered
-yes-no.error.mandatory.removeAgent = The remove agent question must be answered
-
 ##### AGENT REMOVE CLIENT
 
 agent.remove-client.title = Confirm Client Removal
@@ -423,17 +418,22 @@ agent.edit-details-error.businessName = You must enter a business name
 agent.edit-details-error.line_1 = You must enter an address into Address line 1
 agent.edit-details-error.line_2 = You must enter an address into Address line 2
 agent.edit-details-error.country = You must enter a country
-agent.edit-details-error.businessName.length = The business name cannot be more than 105 characters
-agent.edit-details-error.line_1.length = Address line 1 cannot be more than 35 characters
-agent.edit-details-error.line_2.length = Address line 2 cannot be more than 35 characters
-agent.edit-details-error.line_3.length = Address line 3 cannot be more than 35 characters
-agent.edit-details-error.line_4.length = Address line 4 cannot be more than 35 characters
-agent.edit-details-error.postcode.length = The postcode cannot be more than 10 characters
-agent.edit-details-error.businessUniqueId.length = The overseas company registration number cannot be more than 60 characters
+agent.edit-details-error.businessName.length = The business name cannot be more than {0} characters
+agent.edit-details-error.line_1.length = Address line 1 cannot be more than {0} characters
+agent.edit-details-error.line_2.length = Address line 2 cannot be more than {0} characters
+agent.edit-details-error.line_3.length = Address line 3 cannot be more than {0} characters
+agent.edit-details-error.line_3.length = Address line 3 cannot be more than {0} characters
+agent.edit-details-error.line_4.length = Address line 4 cannot be more than {0} characters
+agent.edit-details-error.postcode.length = The postcode cannot be more than {0} characters
+agent.edit-details-error.businessUniqueId.length = The overseas company registration number cannot be more than {0} characters
 agent.edit-details-error.utr.length = The Unique Taxpayer Reference cannot be more than {0} characters
-agent.edit-details-error.issuingInstitution.length = The institution that issued the overseas company registration number cannot be more than 40 characters
+agent.edit-details-error.issuingInstitution.length = The institution that issued the overseas company registration number cannot be more than {0} characters
 agent.edit-details-error.non-uk = You cannot select United Kingdom when entering an overseas address
 agent.edit-details-error.hasBusinessUniqueId.not-selected = You must select one option
+
+agent.edit-details-error.businessUniqueId.length = The overseas company registration number cannot be more than {0} characters
+agent.edit-details-error.issuingInstitution.length = The institution that issued the overseas company registration number cannot be more than {0} characters
+agent.edit-details-error.country = You must enter a country
 
 agent.edit-details.agent.non-uk.header = What is the registered business name and address of your overseas agency?
 agent.edit-details.text.agent= {0} agency set up

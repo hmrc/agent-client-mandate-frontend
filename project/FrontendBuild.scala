@@ -14,16 +14,13 @@ private object AppDependencies {
   
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "0.46.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.30.0-play-26",
-    "uk.gov.hmrc" %% "play-partials" % "6.9.0-play-26",
-    "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
-    "uk.gov.hmrc" %% "http-caching-client" % "8.5.0-play-26",
+    "uk.gov.hmrc" %% "frontend-bootstrap" % "12.9.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-25",
+    "uk.gov.hmrc" %% "play-partials" % "6.9.0-play-25",
+    "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
+    "uk.gov.hmrc" %% "http-caching-client" % "8.5.0-play-25",
     "uk.gov.hmrc" %% "emailaddress" % "3.2.0",
-    "uk.gov.hmrc" %% "play-conditional-form-mapping" % "1.1.0-play-26",
-    "uk.gov.hmrc" %% "play-ui" % "8.2.0-play-26",
-    "com.typesafe.play" %% "play-json-joda" % "2.6.10",
-    "uk.gov.hmrc" %% "govuk-template" % "5.42.0-play-26"
+    "uk.gov.hmrc" %% "play-conditional-form-mapping" % "1.1.0-play-25"
   )
 
   trait TestDependencies {
@@ -34,14 +31,14 @@ private object AppDependencies {
   object Test {
     def apply() = new TestDependencies {
       override lazy val test = Seq(
-        "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % scope,
-        "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-25" % scope,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
         "org.pegdown" % "pegdown" % "1.6.0" % scope,
         "org.jsoup" % "jsoup" % "1.9.2" % scope,
         "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
-        "org.mockito" % "mockito-core" % "2.28.2" % scope,
+        "org.mockito" % "mockito-all" % "1.10.19" % scope,
         "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-        "com.github.tomakehurst" % "wiremock-jre8" % "2.21.0" % "test,it"
+        "com.github.tomakehurst" % "wiremock" % "2.6.0" % "it"
       )
     }.test
   }

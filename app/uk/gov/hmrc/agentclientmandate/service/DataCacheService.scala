@@ -16,33 +16,34 @@
 
 package uk.gov.hmrc.agentclientmandate.service
 
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Format
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import uk.gov.hmrc.agentclientmandate.config.AgentClientMandateSessionCache
 import uk.gov.hmrc.http.cache.client.SessionCache
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-@Singleton
-class DataCacheService @Inject()(val http: DefaultHttpClient,
-                                 val config: AppConfig) extends SessionCache {
+trait DataCacheService {
 
-  val baseUri: String = config.baseDataCacheUri
-  val defaultSource: String = config.dataCacheDefaultSource
-  val domain: String = config.dataCacheDomain
+  def sessionCache: SessionCache
 
   def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, formats: Format[T]): Future[Option[T]] = {
-    fetchAndGetEntry[T](key = formId)
+    sessionCache.fetchAndGetEntry[T](key = formId)
   }
 
   def cacheFormData[T](formId: String, formData: T)(implicit hc: HeaderCarrier, formats: Format[T]): Future[T] = {
-    cache[T](formId, formData).map(_ => formData)
+    sessionCache.cache[T](formId, formData).map(_ => formData)
   }
 
   def clearCache()(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    remove()
+    sessionCache.remove()
   }
+
+}
+
+object DataCacheService extends DataCacheService {
+
+  val sessionCache: SessionCache = AgentClientMandateSessionCache
+
 }

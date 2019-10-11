@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent, Request, Results}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.AgentDetails
@@ -29,20 +30,22 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClients
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.ExecutionContext
+object AgentSummaryController extends AgentSummaryController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val agentClientMandateService: AgentClientMandateService = AgentClientMandateService
+  val delegationConnector: DelegationConnector = DelegationConnector
+  val dataCacheService: DataCacheService = DataCacheService
+  // $COVERAGE-ON$
+}
 
-@Singleton
-class AgentSummaryController @Inject()(
-                                        agentClientMandateService: AgentClientMandateService,
-                                        dataCacheService: DataCacheService,
-                                        delegationConnector: DelegationConnector,
-                                        mcc: MessagesControllerComponents,
-                                        val authConnector: AuthConnector,
-                                        implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
+trait AgentSummaryController extends FrontendController with AuthorisedWrappers {
+
+  def agentClientMandateService: AgentClientMandateService
+  def dataCacheService: DataCacheService
+  val delegationConnector: DelegationConnector
 
   val screenReaderTextId = "screenReaderTextId"
 
@@ -55,9 +58,7 @@ class AgentSummaryController @Inject()(
         clientsCancelled <- agentClientMandateService.fetchClientsCancelled(agentAuthRetrievals, service)
         _ <- dataCacheService.cacheFormData[String](screenReaderTextId, "")
       } yield {
-        val messageScreenReaderText = screenReaderText.getOrElse("")
-
-        showView(service, mandates, agentDetails, clientsCancelled, messageScreenReaderText, tabName)
+        showView(service, mandates, agentDetails, clientsCancelled, screenReaderText.getOrElse(""), tabName)
       }
     }
   }
@@ -68,7 +69,7 @@ class AgentSummaryController @Inject()(
         if (clientAccepted) {
           agentClientMandateService.fetchClientMandate(mandateId, agentAuthRetrievals).flatMap {
             case Some(x) =>
-              dataCacheService.cacheFormData[String](screenReaderTextId, x.clientDisplayName) map {_ =>
+              dataCacheService.cacheFormData[String](screenReaderTextId, Messages("client.summary.hidden.client_activated", x.clientDisplayName)) map {_ =>
                 Redirect(routes.AgentSummaryController.view(Some(service)))
               }
             case _ => throw new RuntimeException("Failed to fetch client")
@@ -110,7 +111,7 @@ class AgentSummaryController @Inject()(
                        agentDetails: AgentDetails,
                        clientsCancelled: Option[Seq[String]],
                        screenReaderText: String,
-                       tabName: Option[String] = None)(implicit request: Request[_]) = {
+                       tabName: Option[String] = None)(implicit request: Request[AnyContent]) = {
 
     mandates match {
       case Some(x) if x.pendingMandates.nonEmpty && tabName.contains("pending-clients") =>

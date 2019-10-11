@@ -17,34 +17,18 @@
 package uk.gov.hmrc.agentclientmandate.models
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain._
-
-case class Link(text: String, url: String)
-
-object Link {
-  implicit val format: OFormat[Link] = Json.format[Link]
-}
+import uk.gov.hmrc.play.frontend.auth.{Link, TaxIdentifiers}
 
 case class StartDelegationContext(
                                    principalName: String,
                                    attorneyName: String,
                                    link: Link,
-                                   principalTaxIdentifiers: PrincipalTaxIdentifiers,
+                                   principalTaxIdentifiers: TaxIdentifiers,
                                    internalId: String
                                  )
 
 object StartDelegationContext {
+  implicit val linkFormat: OFormat[Link] = Json.format[Link]
+  implicit val taxIdentifiersFormat: OFormat[TaxIdentifiers] = Json.format[TaxIdentifiers]
   implicit val delegationContextFormat: OFormat[StartDelegationContext] = Json.format[StartDelegationContext]
-}
-
-case class PrincipalTaxIdentifiers(paye: Option[Nino] = None,
-                                   sa: Option[SaUtr] = None,
-                                   ct: Option[CtUtr] = None,
-                                   vat: Option[Vrn] = None,
-                                   epaye: Option[EmpRef] = None,
-                                   taxsAgent: Option[Uar] = None,
-                                   ated: Option[AtedUtr] = None)
-
-object PrincipalTaxIdentifiers {
-  implicit val format: OFormat[PrincipalTaxIdentifiers] = Json.format[PrincipalTaxIdentifiers]
 }

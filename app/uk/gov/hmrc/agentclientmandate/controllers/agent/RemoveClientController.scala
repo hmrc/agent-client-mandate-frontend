@@ -16,33 +16,29 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.isNonUkClient
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class RemoveClientController @Inject()(
-                                        mcc: MessagesControllerComponents,
-                                        acmService: AgentClientMandateService,
-                                        implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig,
-                                        val authConnector: AuthConnector
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers {
+trait RemoveClientController extends FrontendController with AuthorisedWrappers {
+
+  def acmService: AgentClientMandateService
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
         acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-          mandate => Ok(views.html.agent.removeClient(new YesNoQuestionForm("yes-no.error.mandatory.removeClient").yesNoQuestionForm,
+          mandate => Ok(views.html.agent.removeClient(new YesNoQuestionForm("agent.remove-client.error").yesNoQuestionForm,
             service, mandate.clientDisplayName, mandateId, getBackLink(service)))
         )
       }
@@ -51,14 +47,15 @@ class RemoveClientController @Inject()(
   def confirm(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
-        val form = new YesNoQuestionForm("yes-no.error.mandatory.removeClient")
+        val form = new YesNoQuestionForm("agent.remove-client.error")
         form.yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
             acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
               mandate => BadRequest(views.html.agent.removeClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
             ),
           data => {
-            if (data.yesNo) {
+            val removeClient = data.yesNo.getOrElse(false)
+            if (removeClient) {
               acmService.removeClient(mandateId, authRetrievals).map { removedClient =>
                 if (removedClient) {
                   Redirect(routes.RemoveClientController.showConfirmation(mandateId))
@@ -88,4 +85,12 @@ class RemoveClientController @Inject()(
   private def getBackLink(service: String) = {
     Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url)
   }
+}
+
+
+object RemoveClientController extends RemoveClientController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val acmService: AgentClientMandateService = AgentClientMandateService
+  // $COVERAGE-ON$
 }

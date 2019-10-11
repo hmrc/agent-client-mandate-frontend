@@ -18,11 +18,9 @@ package uk.gov.hmrc.agentclientmandate.utils
 
 import java.util.Properties
 
-import play.api.{Environment, Mode, Play}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
-import uk.gov.hmrc.play.bootstrap.config.RunMode
 
 import scala.io.Source
 
@@ -83,11 +81,21 @@ object AgentClientMandateUtils {
     }
   }
 
+  lazy val p = new Properties
+  p.load(Source.fromInputStream(Play.classloader(Play.current).getResourceAsStream("country-code.properties"), "UTF-8").bufferedReader())
+
+
+  def getIsoCodeTupleList: List[(String, String)] = {
+    val keys = p.propertyNames()
+    val listOfCountryCodes: scala.collection.mutable.MutableList[(String, String)] = scala.collection.mutable.MutableList()
+    while (keys.hasMoreElements) {
+      val key = keys.nextElement().toString
+      listOfCountryCodes.+=:((key, p.getProperty(key)))
+    }
+    listOfCountryCodes.toList.sortBy(_._2)
+  }
+
   def isUkAgent(agentDetails: AgentDetails): Boolean = agentDetails.addressDetails.countryCode == "GB"
-
-  private def isRelativeUrl(url: String): Boolean = url.matches("^[/][^/].*")
-
-  def isRelativeOrDev(url: String)(implicit runMode: AppConfig): Boolean = isRelativeUrl(url) || runMode.environment.mode == Mode.Dev
 
   def isNonUkClient(mandate: Mandate): Boolean = !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
 }

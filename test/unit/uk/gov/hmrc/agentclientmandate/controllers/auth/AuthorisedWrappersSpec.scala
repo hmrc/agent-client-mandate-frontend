@@ -16,11 +16,10 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers.auth
 
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import play.api.mvc.{Result, Results}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.AgentAuthRetrievals
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, EmptyRetrieval, ~}
@@ -36,13 +35,12 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  implicit val mockAppConfig: AppConfig = mock[AppConfig]
 
   trait Setup {
     protected val authorisedWrappers: AuthorisedWrappers = new AuthorisedWrappers {
       override def authConnector: AuthConnector = mockAuthConnector
-      def loginUrl: String = "loginUrl"
-      def continueUrl(isAnAgent: Boolean): String => String = (_: String) => "continueUrl"
+      override def loginUrl: String = "loginUrl"
+      override def continueUrl(isAnAgent: Boolean): String => String = (_: String) => "continueUrl"
     }
   }
 
@@ -54,7 +52,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           future
         }
 
-        when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise(Matchers.any(), Matchers.eq(EmptyRetrieval))(Matchers.any(), Matchers.any()))
           .thenReturn(Future.successful(()))
 
         await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)) shouldBe await(future)
@@ -68,7 +66,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           future
         }
 
-        when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise(Matchers.any(), Matchers.eq(EmptyRetrieval))(Matchers.any(), Matchers.any()))
           .thenReturn(Future.failed(MissingBearerToken("No bearer token")))
 
         val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
@@ -81,7 +79,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           future
         }
 
-        when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise(Matchers.any(), Matchers.eq(EmptyRetrieval))(Matchers.any(), Matchers.any()))
           .thenReturn(Future.failed(InternalError("test")))
 
         val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
@@ -94,7 +92,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           future
         }
 
-        when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise(Matchers.any(), Matchers.eq(EmptyRetrieval))(Matchers.any(), Matchers.any()))
           .thenReturn(Future.failed(InsufficientEnrolments("test")))
 
         val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
@@ -111,7 +109,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           future
         }
 
-        when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise(Matchers.any(), Matchers.eq(EmptyRetrieval))(Matchers.any(), Matchers.any()))
           .thenReturn(Future.successful(()))
 
         await(authorisedWrappers.clientAuthenticated(None, EmptyRetrieval)(body)) shouldBe await(future)
@@ -138,7 +136,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         val retrievalConstruction: RetrievalConstruction =
           new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)
 
-        when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise[RetrievalConstruction](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
         val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
@@ -161,7 +159,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         val retrievalConstruction: RetrievalConstruction =
           new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)
 
-        when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAuthConnector.authorise[RetrievalConstruction](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
         val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))

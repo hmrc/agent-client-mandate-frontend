@@ -16,24 +16,17 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
-import play.api.Configuration
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import play.api.Play.{configuration, current}
 
-import scala.util.Try
-
-trait ExternalUrls {
-  val servicesConfig: ServicesConfig
-
-  val companyAuthHost = s"${Try(servicesConfig.getString(s"microservice.services.auth.company-auth.host")).getOrElse("")}"
-  val loginPath = s"${
-    Try(servicesConfig.getString(s"microservice.services.auth.login-path")).getOrElse("gg/sign-in")
-  }"
+object ExternalUrls {
+  val companyAuthHost = s"${configuration.getString(s"microservice.services.auth.company-auth.host").getOrElse("")}"
+  val loginPath = s"${configuration.getString(s"microservice.services.auth.login-path").getOrElse("gg/sign-in")}"
   val loginCallbackAgent = s"${
-    Try(servicesConfig.getString(s"microservice.services.auth.login-callback-agent.url")).
+    configuration.getString(s"microservice.services.auth.login-callback-agent.url").
       getOrElse("/mandate/agent/service")
   }"
   val loginCallbackClient = s"${
-    Try(servicesConfig.getString(s"microservice.services.auth.login-callback-client.url")).
+    configuration.getString(s"microservice.services.auth.login-callback-client.url").
       getOrElse("/mandate/client/email")
   }"
 }

@@ -14,25 +14,28 @@
  * limitations under the License.
  */
 
-package unit.uk.gov.hmrc.agentclientmandate.controllers
+package unit.uk.gov.hmrc.agentclientmandate.controllers.auth
 
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls
 
-class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
-  val service = "ATED"
+class ExternalUrlsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
-  "ApplicationController" must {
+  "ExternalUrls" must {
+    "contain companyAuthHost" in {
+      ExternalUrls.companyAuthHost must be("http://localhost:9025")
+    }
+    "contain loginCallback for Agent" in {
+      ExternalUrls.loginCallbackAgent must be("http://localhost:9959/mandate/agent/summary")
+    }
 
-    "Keep Alive" must {
-
-      "respond with an OK" in {
-        val result = uk.gov.hmrc.agentclientmandate.controllers.ApplicationController.keepAlive.apply(FakeRequest())
-
-        status(result) must be(OK)
-      }
+    "contain loginCallback for Client" in {
+      ExternalUrls.loginCallbackClient must be("http://localhost:9959/mandate/client/email")
+    }
+    "contain loginPath" in {
+      ExternalUrls.loginPath must be("gg/sign-in")
     }
   }
+
 }

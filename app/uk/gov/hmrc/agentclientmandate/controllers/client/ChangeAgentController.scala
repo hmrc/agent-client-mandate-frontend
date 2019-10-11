@@ -16,33 +16,40 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class ChangeAgentController @Inject()(
-                                       val acmService: AgentClientMandateService,
-                                       val dataCacheService: DataCacheService,
-                                       val mcc: MessagesControllerComponents,
-                                       val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig
-                                     ) extends FrontendController(mcc) with AuthorisedWrappers {
+
+object ChangeAgentController extends ChangeAgentController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val acmService: AgentClientMandateService = AgentClientMandateService
+  val dataCacheService: DataCacheService = DataCacheService
+  // $COVERAGE-ON$
+}
+
+
+trait ChangeAgentController extends FrontendController with AuthorisedWrappers {
+
+  def acmService: AgentClientMandateService
+  def dataCacheService: DataCacheService
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-        val result = Ok(views.html.client.changeAgent(service, new YesNoQuestionForm("yes-no.error.mandatory.changeAgent").yesNoQuestionForm,
+        val result = Ok(views.html.client.changeAgent(service, new YesNoQuestionForm("client.agent-change.error").yesNoQuestionForm,
           mandateId,
           Some(DelegationUtils.getDelegatedServiceRedirectUrl(service))))
         Future.successful(result)
@@ -52,7 +59,7 @@ class ChangeAgentController @Inject()(
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-        val form = new YesNoQuestionForm("yes-no.error.mandatory.changeAgent")
+        val form = new YesNoQuestionForm("client.agent-change.error")
         form.yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
             Future.successful(BadRequest(views.html.client.changeAgent(service, formWithError,
@@ -60,9 +67,10 @@ class ChangeAgentController @Inject()(
               Some(DelegationUtils.getDelegatedServiceRedirectUrl(service))))
             ),
           data => {
-            if (data.yesNo) {
+            val changeAgent = data.yesNo.getOrElse(false)
+            if (changeAgent) {
               val backLink = routes.ChangeAgentController.view(mandateId).url
-              Future.successful(Redirect(routes.CollectEmailController.view(Some(backLink))))
+              Future.successful(Redirect(routes.CollectEmailController.view(Some(ContinueUrl(backLink)))))
             }
             else {
               Future.successful(Redirect(routes.RemoveAgentController.confirmation(mandateId)))

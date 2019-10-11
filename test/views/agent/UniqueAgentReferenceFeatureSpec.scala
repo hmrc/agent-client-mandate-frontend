@@ -20,17 +20,15 @@ import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.i18n.Messages
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
 
 
-class UniqueAgentReferenceFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class UniqueAgentReferenceFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val messages : play.api.i18n.Messages = play.api.i18n.Messages.Implicits.applicationMessages
 
   feature("The user can view the reject client page") {
 

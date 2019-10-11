@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package views.agent
+package uk.gov.hmrc.agentclientmandate.controllers
 
-import play.api.Application
-import play.api.i18n.{Lang, Messages}
-import play.api.mvc.MessagesControllerComponents
+import controllers.AssetsBuilder
+import play.api.http.{HttpErrorHandler, LazyHttpErrorHandler}
 
-trait ViewTestHelper {
+class AssetsController(errorHandler: HttpErrorHandler) extends AssetsBuilder(errorHandler)
 
-  val app: Application
-
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
-
-}
+object AssetsController extends AssetsController(LazyHttpErrorHandler)

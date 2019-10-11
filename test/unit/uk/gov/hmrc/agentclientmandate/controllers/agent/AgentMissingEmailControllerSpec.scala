@@ -19,33 +19,30 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 import java.util.UUID
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.RunMode
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "AgentMissingEmailControllerSpec" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
-      "agent requests(GET) for 'what is your email address' view" in new Setup {
+      "agent requests(GET) for 'what is your email address' view" in {
         viewEmailUnAuthenticatedAgent() { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -54,7 +51,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
     }
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
-      "agent requests(GET) for 'what is your email address' view" in new Setup {
+      "agent requests(GET) for 'what is your email address' view" in {
         viewEmailUnAuthorisedAgent() { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -63,7 +60,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
     }
 
     "view page" when {
-      "agent requests(GET) for 'what is your email address' view" in new Setup {
+      "agent requests(GET) for 'what is your email address' view" in {
         viewEmailAuthorisedAgent() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -79,7 +76,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
     }
 
     "returns BAD_REQUEST" when {
-      "empty form is submitted" in new Setup {
+      "empty form is submitted" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
@@ -89,7 +86,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         }
       }
 
-      " user selected option 'yes' for use email address and left email as empty" in new Setup {
+      " user selected option 'yes' for use email address and left email as empty" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
@@ -100,7 +97,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
       }
 
 
-      "email field has more than expected length" in new Setup {
+      "email field has more than expected length" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
@@ -109,7 +106,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
           document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
         }
       }
-      "invalid email is passed" in new Setup {
+      "invalid email is passed" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
@@ -121,12 +118,12 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
     }
 
     "returns OK and redirects" when {
-      "valid form is submitted" in new Setup {
+      "valid form is submitted" in {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@invalid.com", "useEmailAddress" -> "true")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
-          verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())
+          verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())
         }
       }
     }
@@ -137,7 +134,6 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
-
   val service: String = "ated".toUpperCase
   val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
 
@@ -146,46 +142,39 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
     reset(mockAuthConnector)
   }
 
-  class Setup {
-    val controller = new AgentMissingEmailController(
-      mockAgentClientMandateService,
-      app.injector.instanceOf[MessagesControllerComponents],
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig
-    )
-
-    def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def viewEmailAuthorisedAgent()(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def submitEmailAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-      test(result)
-    }
+  object TestAgentMissingEmailController extends AgentMissingEmailController {
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
   }
 
+  def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = TestAgentMissingEmailController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
 
+  def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = TestAgentMissingEmailController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def viewEmailAuthorisedAgent()(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    val result = TestAgentMissingEmailController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def submitEmailAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean)(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+    val result = TestAgentMissingEmailController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    test(result)
+  }
 }

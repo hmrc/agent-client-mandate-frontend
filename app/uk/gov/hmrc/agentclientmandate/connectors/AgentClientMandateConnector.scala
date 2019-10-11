@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.agentclientmandate.connectors
 
-import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Mode.Mode
 import play.api.libs.json.{JsValue, Json}
+import play.api.{Configuration, Logger, Play}
+import uk.gov.hmrc.agentclientmandate.config.WSHttp
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
-@Singleton
-class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
-                                            val http: DefaultHttpClient) extends RawResponseReads {
-  def serviceUrl: String = servicesConfig.baseUrl("agent-client-mandate")
+trait AgentClientMandateConnector extends ServicesConfig with RawResponseReads {
+
+  def serviceUrl: String
 
   val mandateUri = "mandate"
   val activateUri = "activate"
@@ -39,6 +38,12 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
   val importExistingUri = "importExisting"
   val editMandate = "edit"
   val deleteMandate = "delete"
+
+  override protected def mode: Mode = Play.current.mode
+
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
+
+  def http: CoreGet with CorePost with CoreDelete
 
   def createMandate(mandateDto: CreateMandateDto, agentAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val agentLink = agentAuthRetrievals.mandateConnectorUri
@@ -66,7 +71,7 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     val AgentAuthRetrievals(arn, agentCode, _, _, _) = agentAuthRetrievals
     val authLink = s"/agent/$agentCode"
 
-    val name = displayName.map { x => "displayName=" + x } getOrElse ""
+    val name = displayName.map {x => "displayName=" + x} getOrElse ""
     val getUrl = if (allClients) {
       s"$serviceUrl$authLink/$mandateUri/service/$arn/$serviceName?$name"
     } else {
@@ -166,7 +171,15 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     Logger.debug("deleteUrl: " + deleteUrl)
     http.DELETE[HttpResponse](deleteUrl)
   }
+  // $COVERAGE-ON$
 
+}
+
+object AgentClientMandateConnector extends AgentClientMandateConnector {
+
+  // $COVERAGE-OFF$
+  val serviceUrl: String = baseUrl("agent-client-mandate")
+  val http: WSHttp.type = WSHttp
   // $COVERAGE-ON$
 
 }

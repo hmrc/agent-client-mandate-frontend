@@ -16,14 +16,13 @@
 
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.models._
+
+@(service: String, mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages)
+
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-
-@(service: String, mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-
 
 @main_template(title = Messages("client.review-agent.title"), delegatedService = Some(mandate.subscription.service.id)) {
 

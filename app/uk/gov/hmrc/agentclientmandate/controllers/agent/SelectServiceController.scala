@@ -16,31 +16,34 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.MandateFeatureSwitches._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentSelectServiceForm.selectServiceForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class SelectServiceController @Inject()(
-                                         mcc: MessagesControllerComponents,
-                                         agentClientMandateService: AgentClientMandateService,
-                                         implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig,
-                                         val authConnector: AuthConnector
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers {
+object SelectServiceController extends SelectServiceController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val agentClientMandateService: AgentClientMandateService = AgentClientMandateService
+  // $COVERAGE-ON$
+}
+
+trait SelectServiceController extends FrontendController with AuthorisedWrappers {
+
+  def agentClientMandateService: AgentClientMandateService
 
   def view: Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { authRetrievals =>
-      if (singleService(appConfig.servicesConfig).enabled) {
+      if (singleService.enabled) {
         agentClientMandateService.doesAgentHaveMissingEmail("ated", authRetrievals).map { agentHasMissingEmail =>
           if (agentHasMissingEmail) {
             Redirect(routes.AgentMissingEmailController.view())

@@ -16,24 +16,20 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
-import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
 import uk.gov.hmrc.agentclientmandate.models.Mandate
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.auth.Actions
+import uk.gov.hmrc.play.frontend.controller.{FrontendController, UnauthorisedAction}
 
-import scala.concurrent.ExecutionContext
+trait PerformanceTestSupportController extends FrontendController with Actions {
 
-@Singleton
-class PerformanceTestSupportController @Inject()(
-                                                  mcc: MessagesControllerComponents,
-                                                  agentClientMandateConnector: AgentClientMandateConnector,
-                                                  implicit val ec: ExecutionContext
-                                                ) extends FrontendController(mcc) {
+  def agentClientMandateConnector: AgentClientMandateConnector
 
 
-  def createMandate(): Action[AnyContent] = Action.async { implicit request =>
+  def createMandate(): Action[AnyContent] = UnauthorisedAction.async { implicit request =>
     Logger.debug("inserting test mandate")
      agentClientMandateConnector.testOnlyCreateMandate(request.body.asJson.get.as[Mandate]).map { x =>
        Logger.debug("inserted test mandate")
@@ -41,7 +37,7 @@ class PerformanceTestSupportController @Inject()(
      }
   }
 
-  def deleteMandate(mandateId: String): Action[AnyContent] = Action.async { implicit request =>
+  def deleteMandate(mandateId: String): Action[AnyContent] = UnauthorisedAction.async { implicit request =>
     Logger.debug(s"deleting mandate: $mandateId")
     agentClientMandateConnector.testOnlyDeleteMandate(mandateId).map { x =>
       Logger.debug("deleted mandate")
@@ -51,3 +47,9 @@ class PerformanceTestSupportController @Inject()(
 
 }
 
+object PerformanceTestSupportController extends PerformanceTestSupportController {
+
+  val agentClientMandateConnector: AgentClientMandateConnector = AgentClientMandateConnector
+  val authConnector: FrontendAuthConnector.type = FrontendAuthConnector
+
+}

@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.agentclientmandate.config.FrontendAuthConnector
+import uk.gov.hmrc.play.frontend.auth.Actions
+import uk.gov.hmrc.play.frontend.controller.{FrontendController, UnauthorisedAction}
 
-@Singleton
-class ApplicationController @Inject()(mcc: MessagesControllerComponents) extends FrontendController(mcc) {
-  def keepAlive: Action[AnyContent] = Action { implicit request =>
+object ApplicationController extends ApplicationController {
+  val authConnector: FrontendAuthConnector.type = FrontendAuthConnector
+}
+
+trait ApplicationController extends FrontendController with Actions {
+  def keepAlive = UnauthorisedAction { implicit request =>
     Ok("OK")
   }
 }

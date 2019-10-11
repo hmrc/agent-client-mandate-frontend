@@ -16,27 +16,28 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.Mandate
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.ExecutionContext
+object MandateConfirmationController extends MandateConfirmationController {
+  // $COVERAGE-OFF$
+  val dataCacheService: DataCacheService.type = DataCacheService
+  override def authConnector: AuthConnector = ConcreteAuthConnector
+  // $COVERAGE-ON$
+}
 
-@Singleton
-class MandateConfirmationController @Inject()(
-                                               val mcc: MessagesControllerComponents,
-                                               implicit val ec: ExecutionContext,
-                                               implicit val appConfig: AppConfig,
-                                               val dataCacheService: DataCacheService,
-                                               val authConnector: AuthConnector
-                                             ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
+trait MandateConfirmationController extends FrontendController with MandateConstants with AuthorisedWrappers {
+
+  def dataCacheService: DataCacheService
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

@@ -14,14 +14,14 @@
  * limitations under the License.
  *@
 
+@(email: String, service: String, displayName: String, backLink:Option[String])(implicit request: Request[_], messages: Messages)
+
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
-
-@(email: String, service: String, displayName: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
 @main_template(title = Messages("agent.check-client-details.header"), delegatedService = Some(service)) {

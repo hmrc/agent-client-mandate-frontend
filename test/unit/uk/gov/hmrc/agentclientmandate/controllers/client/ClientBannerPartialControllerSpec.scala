@@ -20,34 +20,32 @@ import java.util.UUID
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers
+import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{MessagesControllerComponents, Result}
+import play.api.mvc.Result
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.client.ClientBannerPartialController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.RunMode
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
+import uk.gov.hmrc.play.binders.ContinueUrl
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
 
   "ClientBannerPartialController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
-      "client requests(GET) for collect email view" in new Setup {
+      "client requests(GET) for collect email view" in {
         viewWithUnAuthenticatedClient { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -55,16 +53,16 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       }
     }
 
-    "return NOT_FOUND if can't find mandate" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    "return NOT_FOUND if can't find mandate" in {
+      when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn (Future.successful(None))
       viewWithAuthorisedClient() { result =>
         status(result) must be(NOT_FOUND)
       }
     }
 
-    "return partial if mandate is found and approved" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    "return partial if mandate is found and approved" in {
+      when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn (Future.successful(Some(approvedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -74,8 +72,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       }
     }
 
-    "return partial if mandate is found and active" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    "return partial if mandate is found and active" in {
+      when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn (Future.successful(Some(activeMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -85,8 +83,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       }
     }
 
-    "return partial if mandate is found and cancelled" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    "return partial if mandate is found and cancelled" in {
+      when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn (Future.successful(Some(cancelledMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -96,8 +94,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       }
     }
 
-    "return partial if mandate is found and rejected" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    "return partial if mandate is found and rejected" in {
+      when(mockMandateService.fetchClientMandateByClient(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
         .thenReturn (Future.successful(Some(rejectedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -107,8 +105,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       }
     }
 
-    "return url is invalid format" in new Setup {
-      viewWithAuthorisedClient(None, "http://website.com") { result =>
+    "return url is invalid format" in {
+      viewWithAuthorisedClient(continueUrl = ContinueUrl("http://website.com")) { result =>
         status(result) must be(BAD_REQUEST)
       }
     }
@@ -118,32 +116,9 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
-
-  class Setup {
-    val controller = new ClientBannerPartialController(
-      app.injector.instanceOf[MessagesControllerComponents],
-      mockAuthConnector,
-      mockMandateService,
-      implicitly,
-      mockAppConfig
-    )
-
-    def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.getBanner("clientId", "service", "/api/anywhere")
-        .apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, continueUrl: String = "/api/anywhere")(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      val result = controller.getBanner("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
+  object TestClientBannerPartialController extends ClientBannerPartialController {
+    override val authConnector: AuthConnector = mockAuthConnector
+    override val mandateService: AgentClientMandateService = mockMandateService
   }
 
   override def beforeEach(): Unit = {
@@ -173,5 +148,22 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
     currentStatus = MandateStatus(Status.Rejected, DateTime.now(), "credId"), statusHistory = Nil,
     Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+
+  def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = TestClientBannerPartialController.getBanner("clientId", "service", ContinueUrl("/api/anywhere"))
+      .apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
+
+  def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, continueUrl: ContinueUrl = ContinueUrl("/api/anywhere"))(test: Future[Result] => Any) {
+    val userId = s"user-${UUID.randomUUID}"
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    val result = TestClientBannerPartialController.getBanner("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
 
 }

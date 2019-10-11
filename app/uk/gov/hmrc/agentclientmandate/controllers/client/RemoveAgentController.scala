@@ -16,43 +16,45 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.I18nSupport
-import play.api.mvc._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
-import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import play.api.mvc.{Action, AnyContent, Request, Result}
+import uk.gov.hmrc.agentclientmandate.config.{ConcreteAuthConnector, FrontendAppConfig}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.MandateAuthRetrievals
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.config.RunMode
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class RemoveAgentController @Inject()(
-                                       acmService: AgentClientMandateService,
-                                       dataCacheService: DataCacheService,
-                                       delegationConnector: DelegationConnector,
-                                       mcc: MessagesControllerComponents,
-                                       val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig
-                                     ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
+object RemoveAgentController extends RemoveAgentController {
+  // $COVERAGE-OFF$
+  val authConnector: AuthConnector = ConcreteAuthConnector
+  val acmService: AgentClientMandateService = AgentClientMandateService
+  val dataCacheService: DataCacheService = DataCacheService
+  // $COVERAGE-ON$
+}
 
-  def view(service: String, mandateId: String, returnUrl: String): Action[AnyContent] = Action.async {
+trait RemoveAgentController extends FrontendController with AuthorisedWrappers {
+
+  def acmService: AgentClientMandateService
+
+  def dataCacheService: DataCacheService
+
+
+  def view(service: String, mandateId: String, returnUrl: ContinueUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
+        if (!returnUrl.isRelativeOrDev(FrontendAppConfig.env)) {
           Future.successful(BadRequest("The return url is not correctly formatted"))
         }
         else {
-          dataCacheService.cacheFormData[String]("RETURN_URL", returnUrl).flatMap { _ =>
-            showView(service, mandateId, Some(returnUrl), authRetrievals)
+          dataCacheService.cacheFormData[String]("RETURN_URL", returnUrl.url).flatMap { _ =>
+            showView(service, mandateId, Some(returnUrl.url), authRetrievals)
           }
         }
       }
@@ -66,7 +68,7 @@ class RemoveAgentController @Inject()(
     acmService.fetchClientMandate(mandateId, authRetrievals).map {
       case Some(mandate) => Ok(views.html.client.removeAgent(
         service = service,
-        removeAgentForm = new YesNoQuestionForm("yes-no.error.mandatory.removeAgent").yesNoQuestionForm,
+        removeAgentForm = new YesNoQuestionForm("client.remove-agent.error").yesNoQuestionForm,
         agentName = mandate.agentParty.name,
         mandateId = mandateId,
         backLink = backLink))
@@ -77,7 +79,7 @@ class RemoveAgentController @Inject()(
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        val form = new YesNoQuestionForm("yes-no.error.mandatory.removeAgent")
+        val form = new YesNoQuestionForm("client.remove-agent.error")
         form.yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
             acmService.fetchClientMandateAgentName(mandateId, authRetrievals).flatMap(
@@ -87,7 +89,8 @@ class RemoveAgentController @Inject()(
                 }
             ),
           data => {
-            if (data.yesNo) {
+            val removeAgent = data.yesNo.getOrElse(false)
+            if (removeAgent) {
               acmService.removeAgent(mandateId, authRetrievals).map { removedAgent =>
                 if (removedAgent) Redirect(routes.ChangeAgentController.view(mandateId))
                 else throw new RuntimeException("Agent Removal Failed")
