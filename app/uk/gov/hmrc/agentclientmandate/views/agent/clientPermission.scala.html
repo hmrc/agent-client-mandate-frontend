@@ -16,17 +16,17 @@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
-
-@(clientPermissionForm: Form[ClientPermission], service: String, callingPage: String, backLink: Option[String])(implicit request: Request[_], messages: Messages)
-
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
+@(clientPermissionForm: Form[ClientPermission], service: String, callingPage: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(clientPermissionForm) }
 
 @pageScripts = {
-<script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/client-permission.js")'></script>
+<script src='@controllers.routes.Assets.at("javascript/client-permission.js")'></script>
 }
 
 @main_template(title = Messages("agent.client-permission.title"), scriptElem = Some(pageScripts), delegatedService = Some(service)) {

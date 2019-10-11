@@ -16,22 +16,28 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.AgentDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-trait AgencyDetailsController extends FrontendController with AuthorisedWrappers with MandateConstants {
+import scala.concurrent.ExecutionContext
 
-  def agentClientMandateService: AgentClientMandateService
-  def dataCacheService: DataCacheService
+@Singleton
+class AgencyDetailsController @Inject()(
+                                          agentClientMandateService: AgentClientMandateService,
+                                          dataCacheService: DataCacheService,
+                                          mcc: MessagesControllerComponents,
+                                          val authConnector: AuthConnector,
+                                          implicit val ec: ExecutionContext,
+                                          implicit val appConfig: AppConfig
+                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
@@ -44,14 +50,4 @@ trait AgencyDetailsController extends FrontendController with AuthorisedWrappers
       }
     }
   }
-}
-
-object AgencyDetailsController extends AgencyDetailsController {
-
-  // $COVERAGE-OFF$
-  val dataCacheService: DataCacheService = DataCacheService
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val agentClientMandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-
 }

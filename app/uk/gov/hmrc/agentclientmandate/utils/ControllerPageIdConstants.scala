@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentclientmandate.controllers
+package uk.gov.hmrc.agentclientmandate.utils
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-
-@Singleton
-class ApplicationController @Inject()(mcc: MessagesControllerComponents) extends FrontendController(mcc) {
-  def keepAlive: Action[AnyContent] = Action { implicit request =>
-    Ok("OK")
-  }
+object ControllerPageIdConstants {
+  val paySAQuestionControllerId = "paySA"
+  val overseasClientQuestionControllerId = "overseas"
+  val nrlQuestionControllerId: String = "nrl"
 }

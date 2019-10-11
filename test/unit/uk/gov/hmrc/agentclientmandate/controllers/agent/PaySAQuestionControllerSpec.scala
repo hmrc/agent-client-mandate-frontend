@@ -24,22 +24,25 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar {
+class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "PaySAQuestionController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithUnAuthenticatedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -48,7 +51,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithUnAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -57,7 +60,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "return 'paySA question' view for AUTHORISED agent" when {
-      "agent requests(GET) for 'nrl question' view" in {
+      "agent requests(GET) for 'nrl question' view" in new Setup {
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -71,7 +74,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "redirect agent to 'mandate details' page" when {
-      "valid form is submitted and YES is selected as client pays self-assessment" in {
+      "valid form is submitted and YES is selected as client pays self-assessment" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -81,7 +84,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "redirect agent to 'client permission' page" when {
-      "valid form is submitted and NO is selected as client pays self-assessment" in {
+      "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -91,7 +94,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "returns BAD_REQUEST" when {
-      "invalid form is submitted" in {
+      "invalid form is submitted" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -107,47 +110,53 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
 
-  object TestPaySAQuestionController extends PaySAQuestionController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val controllerId: String = "paySA"
+
+
+  class Setup {
+    val controller = new PaySAQuestionController(
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig,
+      app.injector.instanceOf[MessagesControllerComponents]
+    )
+
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
   }
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-  }
-
-  def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestPaySAQuestionController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
-
-  def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestPaySAQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewWithAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    val result = TestPaySAQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    val result = TestPaySAQuestionController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
   }
 
 }

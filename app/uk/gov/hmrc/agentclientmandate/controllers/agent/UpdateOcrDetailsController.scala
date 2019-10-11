@@ -16,29 +16,32 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.Play.current
-import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, BusinessRegistrationDisplayDetails, Identification}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NonUkIdentificationForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{NonUkIdentificationForm, OverseasCompany}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait UpdateOcrDetailsController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def agentClientMandateService: AgentClientMandateService
-
-  def dataCacheService: DataCacheService
+@Singleton
+class UpdateOcrDetailsController @Inject()(
+                                            agentClientMandateService: AgentClientMandateService,
+                                            dataCacheService: DataCacheService,
+                                            mcc: MessagesControllerComponents,
+                                            val authConnector: AuthConnector,
+                                            implicit val ec: ExecutionContext,
+                                            implicit val appConfig: AppConfig
+                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -54,7 +57,7 @@ trait UpdateOcrDetailsController extends FrontendController with AuthorisedWrapp
             Ok(views.html.agent.editDetails.update_ocr_details(nonUkIdentificationForm.fill(nonUkId), service, displayDetails(service), getBackLink(service)))
           case None =>
             Logger.warn(s"[UpdateOcrDetailsController][view] - No business details found to edit")
-            throw new RuntimeException(Messages("agent.edit-details.error.no-registration-details"))
+            throw new RuntimeException("No Registration Details found")
         }
       }
     }
@@ -79,7 +82,7 @@ trait UpdateOcrDetailsController extends FrontendController with AuthorisedWrapp
               updatedDetails match {
                 case Some(_) => Redirect(routes.AgencyDetailsController.view())
                 case None =>
-                  val errorMsg = Messages("agent.edit-mandate-detail.save.error")
+                  val errorMsg = "agent.edit-mandate-detail.save.error"
                   val errorForm = nonUkIdentificationForm.withError(key = "addressType", message = errorMsg).fill(updateDetails)
                   BadRequest(views.html.agent.editDetails.update_ocr_details(errorForm, service, displayDetails(service), getBackLink(service)))
               }
@@ -93,20 +96,12 @@ trait UpdateOcrDetailsController extends FrontendController with AuthorisedWrapp
     Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view().url)
   }
 
-  private def displayDetails(service: String): BusinessRegistrationDisplayDetails = {
+  private def displayDetails(service: String)(implicit messages: Messages): BusinessRegistrationDisplayDetails = {
     BusinessRegistrationDisplayDetails("NUK",
-      Messages("agent.edit-details.agent.non-uk.header"),
-      Messages("agent.edit-details.text.agent", service),
+      "agent.edit-details.agent.non-uk.header",
+      "agent.edit-details.text.agent",
       None,
-      AgentClientMandateUtils.getIsoCodeTupleList)
+      appConfig.getIsoCodeTupleList)
   }
 
-}
-
-object UpdateOcrDetailsController extends UpdateOcrDetailsController {
-  // $COVERAGE-OFF$
-  val dataCacheService: DataCacheService = DataCacheService
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val agentClientMandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
 }

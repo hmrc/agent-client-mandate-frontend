@@ -19,33 +19,34 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 import java.util.UUID
 
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.binders.ContinueUrl
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-
-class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "CollectAgentEmailController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
-      "agent requests(GET) for 'what is your email address' view" in {
+      "agent requests(GET) for 'what is your email address' view" in new Setup {
         viewEmailUnAuthenticatedAgent() { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -55,7 +56,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
 
-      "agent requests(GET) for 'what is your email address' view" in {
+      "agent requests(GET) for 'what is your email address' view" in new Setup {
         viewEmailUnAuthorisedAgent() { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -65,17 +66,17 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
 
     "return 'what is your email address' for AUTHORISED agent who is editing the details of new client to be added" when {
 
-      "agent requests(GET) for 'what is your email address' view pre-populated and the data has been cached" in {
+      "agent requests(GET) for 'what is your email address' view pre-populated and the data has been cached" in new Setup {
         viewEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What email address do you want to use for this client? - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "agents try to edit their email address redirecting to 'what is your email address' view pre-populated and the data has been cached" in {
+      "agents try to edit their email address redirecting to 'what is your email address' view pre-populated and the data has been cached" in new Setup {
         editEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -87,8 +88,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
 
     "return 'what is your email address' for AUTHORISED agent" when {
 
-      "agent requests(GET) for 'what is your email address' view and the data hasn't been cached" in {
-        viewEmailAuthorisedAgent(None, Some(ContinueUrl("/api/anywhere"))) { result =>
+      "agent requests(GET) for 'what is your email address' view and the data hasn't been cached" in new Setup {
+        viewEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What email address do you want to use for this client? - GOV.UK")
@@ -98,12 +99,12 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
           document.getElementById("email_field").text() must be("What email address do you want to use for this client?")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("Continue")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "agents try to edit their email address redirecting to 'what is your email address' view and the data hasn't been cached" in {
-        editEmailAuthorisedAgent(None, Some(ContinueUrl("/api/anywhere"))) { result =>
+      "agents try to edit their email address redirecting to 'what is your email address' view and the data hasn't been cached" in new Setup {
+        editEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What email address do you want to use for this client? - GOV.UK")
@@ -116,13 +117,13 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         }
       }
 
-      "return url is invalid format" in {
-        viewEmailAuthorisedAgent(None, Some(ContinueUrl("http://website.com"))) { result =>
+      "return url is invalid format" in new Setup {
+        viewEmailAuthorisedAgent(None, Some("http://website.com")) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
 
-      "agent requests(GET) for 'what is your email address' view pre-populated and the data has been cached" in {
+      "agent requests(GET) for 'what is your email address' view pre-populated and the data has been cached" in new Setup {
 
         val clientMandatDisplay = ClientMandateDisplayDetails("name", "mandateId", "agent@mail.com")
         addClientAuthorisedAgent(Some(clientMandatDisplay)){ result =>
@@ -130,80 +131,80 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What email address do you want to use for this client? - GOV.UK")
           document.getElementById("email").`val`() must be("agent@mail.com")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "agent requests(GET) for 'what is your email address' but the agent email is not pre-populated as it's not cached" in {
+      "agent requests(GET) for 'what is your email address' but the agent email is not pre-populated as it's not cached" in new Setup {
         addClientAuthorisedAgent(None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What email address do you want to use for this client? - GOV.UK")
           document.getElementById("email").`val`() must be("")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
     }
 
     "valid form is submitted with valid email" when {
-      "redirect to 'client display name' Page" in {
+      "redirect to 'client display name' Page" in new Setup {
 
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/client-display-name"))
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "redirect to redirect Page if one is supplied" in {
+      "redirect to redirect Page if one is supplied" in new Setup {
 
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some(ContinueUrl("/api/anywhere"))) { result =>
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "return url is invalid format" in {
+      "return url is invalid format" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some(ContinueUrl("http://website.com"))) { result =>
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("http://website.com")) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
     }
 
     "returns BAD_REQUEST" when {
-      "empty form is submitted" in {
+      "empty form is submitted" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
 
-      "invalid email id is passed" in {
+      "invalid email id is passed" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "email provided is too long" in {
+      "email provided is too long" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -211,14 +212,14 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
           document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
           document.getElementsByClass("error-notification").text() must
             include("The email address you want to use for this client must be 241 characters or less")
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
 
     "retrieve client display name stored in session" when {
-      "return ok" in {
+      "return ok" in new Setup {
         retrieveAgentEmailFromSessionAuthorisedAgent(Some(AgentEmail("agent@agency.com"))) { result =>
           status(result) must be(OK)
         }
@@ -240,74 +241,81 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
     reset(mockAuthConnector)
   }
 
-  def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](Matchers.eq(agentRefCacheId))(Matchers.any(), Matchers.any()))
-      .thenReturn(Future.successful(clientMandateDisplayDetails))
-    val result = TestCollectAgentEmailController.addClient(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
 
-  def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestCollectAgentEmailController.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
 
-  def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestCollectAgentEmailController.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
+  class Setup {
+    val controller = new CollectAgentEmailController(
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      mockDataCacheService,
+      implicitly,
+      mockAppConfig
+    )
 
-  def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(formId1))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    val result = TestCollectAgentEmailController.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
+    def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(agentRefCacheId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(clientMandateDisplayDetails))
+      val result = controller.addClient(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
 
-  def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.eq(formId1))(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.eq(TestCollectAgentEmailController.callingPageCacheId))(Matchers.any(), Matchers.any()))
-      .thenReturn(Future.successful(Some("callingPage")))
-    val result = TestCollectAgentEmailController.editFromSummary(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
+    def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
 
-  def submitEmailAuthorisedAgent
-  (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[ContinueUrl]=None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.cacheFormData[AgentEmail](Matchers.eq(formId1), Matchers.eq(agentEmail))(Matchers.any(), Matchers.any()))
-      .thenReturn(Future.successful(agentEmail))
-    val result = TestCollectAgentEmailController.submit(service, redirectUrl).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
-  }
+    def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
 
-  def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[AgentEmail](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(cachedData))
-    val result = TestCollectAgentEmailController.getAgentEmail(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
+    def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
+      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
 
-  object TestCollectAgentEmailController extends CollectAgentEmailController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val dataCacheService: DataCacheService = mockDataCacheService
+    def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.callingPageCacheId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Some("callingPage")))
+      val result = controller.editFromSummary(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitEmailAuthorisedAgent
+    (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.cacheFormData[AgentEmail](ArgumentMatchers.eq(formId1), ArgumentMatchers.eq(agentEmail))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(agentEmail))
+      val result = controller.submit(service, redirectUrl).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
+
+    def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
+      val result = controller.getAgentEmail(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
   }
 
 }

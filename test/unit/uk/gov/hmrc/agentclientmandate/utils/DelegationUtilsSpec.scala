@@ -16,15 +16,24 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Configuration
+import play.api.i18n.Messages
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import uk.gov.hmrc.agentclientmandate.models.PrincipalTaxIdentifiers
 import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
-import uk.gov.hmrc.play.frontend.auth.TaxIdentifiers
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class DelegationUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
+class DelegationUtilsSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
+
+  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val messages: Messages = mock[Messages]
+  implicit val config: ServicesConfig = appConfig.servicesConfig
 
   "DelegationUtils" must {
 
@@ -38,10 +47,10 @@ class DelegationUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
     "getPrincipalTaxIdentifiers" must {
       "returns TaxIdentifiers with ated filled, if service=ated" in {
-        DelegationUtils.getPrincipalTaxIdentifiers("ated", atedUtr.utr) must be(TaxIdentifiers(ated = Some(atedUtr)))
+        DelegationUtils.getPrincipalTaxIdentifiers("ated", atedUtr.utr) must be(PrincipalTaxIdentifiers(ated = Some(atedUtr)))
       }
       "returns empty TaxIdentifiers" in {
-        DelegationUtils.getPrincipalTaxIdentifiers("xyz", "xyz") must be(TaxIdentifiers())
+        DelegationUtils.getPrincipalTaxIdentifiers("xyz", "xyz") must be(PrincipalTaxIdentifiers())
       }
     }
 

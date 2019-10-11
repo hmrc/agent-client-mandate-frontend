@@ -16,55 +16,44 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import play.api.Mode.Mode
-import play.api.Play.current
 import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
-import play.api.{Configuration, Play}
-import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import uk.gov.hmrc.agentclientmandate.models.{Link, PrincipalTaxIdentifiers, StartDelegationContext}
 import uk.gov.hmrc.domain.AtedUtr
-import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.frontend.auth.{Link, TaxIdentifiers}
 
-object DelegationUtils extends ServicesConfig {
+object DelegationUtils {
 
   def createDelegationContext(service: String,
                               serviceId: String,
                               clientName: String,
-                              attorneyName: Option[String],
-                              internalId: String): StartDelegationContext = {
+                              attorney: Option[String],
+                              internal: String)(implicit messages: Messages, appConfig: AppConfig): StartDelegationContext = {
     StartDelegationContext(
       principalName = clientName,
-      attorneyName = attorneyName.getOrElse("Agent"),
+      attorneyName = attorney.getOrElse("Agent"),
       link = Link(
         url = getReturnUrl,
-        text = Messages("mandate.agent.delegation.url.text")
+        text = messages("mandate.agent.delegation.url.text")
       ),
       principalTaxIdentifiers = getPrincipalTaxIdentifiers(service, serviceId),
-      internalId = internalId
+      internalId = internal
     )
   }
 
-  def getPrincipalTaxIdentifiers(service: String, serviceId: String): TaxIdentifiers = {
+  def getPrincipalTaxIdentifiers(service: String, serviceId: String): PrincipalTaxIdentifiers = {
     service.toLowerCase match {
-      case "ated" => TaxIdentifiers(ated = Some(AtedUtr(serviceId)))
-      case _ => TaxIdentifiers()
+      case "ated" => PrincipalTaxIdentifiers(ated = Some(AtedUtr(serviceId)))
+      case _ => PrincipalTaxIdentifiers()
     }
   }
 
-  def getReturnUrl: String = s"""${getString("microservice.return-part-url")}"""
+  def getReturnUrl(implicit appConfig: AppConfig): String = s"""${appConfig.servicesConfig.getString("microservice.return-part-url")}"""
 
-  def getDelegatedServiceRedirectUrl(service: String): String = {
-    getString(s"microservice.delegated-service-redirect-url.${service.toLowerCase}")
+  def getDelegatedServiceRedirectUrl(service: String)(implicit appConfig: AppConfig): String = {
+    appConfig.servicesConfig.getString(s"microservice.delegated-service-redirect-url.${service.toLowerCase}")
   }
 
-  def getDelegatedServiceHomeUrl(service: String): String = {
-    getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
+  def getDelegatedServiceHomeUrl(service: String)(implicit appConfig: AppConfig): String = {
+    appConfig.servicesConfig.getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
   }
-
-  // $COVERAGE-OFF$
-  override protected def mode: Mode = Play.current.mode
-
-  override protected def runModeConfiguration: Configuration = Play.current.configuration
-  // $COVERAGE-ON$
 }

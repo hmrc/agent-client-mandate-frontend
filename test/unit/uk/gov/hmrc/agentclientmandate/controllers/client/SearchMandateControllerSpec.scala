@@ -20,33 +20,35 @@ import java.util.UUID
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.client.SearchMandateController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup {
 
   "SearchMandateController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
 
-      "client requests(GET) for search mandate view" in {
-        viewUnAuthenticatedClient { result =>
+      "client requests(GET) for search mandate view" in new Setup {
+        viewUnAuthenticatedClient(searchMandateController) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
         }
@@ -56,8 +58,8 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
     "redirect to unauthorised page for UNAUTHORISED client" when {
 
-      "client requests for search mandate view" in {
-        viewUnAuthenticatedClient { result =>
+      "client requests for search mandate view" in new Setup {
+        viewUnAuthenticatedClient(searchMandateController) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
         }
@@ -67,8 +69,8 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
     "return search mandate view for AUTHORISED client" when {
 
-      "client requests(GET) for search mandate view" in {
-        viewWithAuthorisedClient() { result =>
+      "client requests(GET) for search mandate view" in new Setup {
+        viewWithAuthorisedClient(searchMandateController)() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What is your unique authorisation number? - GOV.UK")
@@ -78,9 +80,9 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         }
       }
 
-      "client requests(GET) for search mandate view pre-populated and the data has been cached" in {
+      "client requests(GET) for search mandate view pre-populated and the data has been cached" in new Setup {
         val cached = ClientCache(mandate = Some(mandate1))
-        viewWithAuthorisedClient(Some(cached)) { result =>
+        viewWithAuthorisedClient(searchMandateController)(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("What is your unique authorisation number? - GOV.UK")
@@ -94,41 +96,41 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
     "redirect to 'Review Mandate view' view for Authorised Client" when {
 
-      "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in {
+      "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
         val clientParty = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
         val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
 
       "valid form is submitted but with mandate having spaces, mandate is found from backend," +
-        "cache object exists and update of cache with mandate is successful" in {
+        "cache object exists and update of cache with mandate is successful" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
         val clientParty = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
         val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
 
-      "throw an exception when cached email not found from cache" in {
+      "throw an exception when cached email not found from cache" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
         val clientParty = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
         val cachedData = ClientCache(email = None)
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("email not cached")
         }
@@ -136,10 +138,10 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     }
 
     "redirect to 'collect email' view for authorised client" when {
-      "valid form is submitted, mandate is found from backend, but cache object doesn't exist" in {
+      "valid form is submitted, mandate is found from backend, but cache object doesn't exist" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
         val returnCache = ClientCache(mandate = Some(mandate))
-        submitWithAuthorisedClient(request = fakeRequest, cachedData = None, mandate = Some(mandate), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/email"))
         }
@@ -148,58 +150,58 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
 
     "returns BAD_REQUEST" when {
-      "empty form is submitted" in {
+      "empty form is submitted" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "")
-        submitWithAuthorisedClient(fakeRequest) { result =>
+        submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("You must answer unique authorisation number question")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "mandateRef field has more than expected length" in {
+      "mandateRef field has more than expected length" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "a" * 11)
-        submitWithAuthorisedClient(fakeRequest) { result =>
+        submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must include("A unique authorisation number cannot be more than 8 characters")
-          verify(mockMandateService, times(0)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "invalid agent reference is passed" in {
+      "invalid agent reference is passed" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
-        submitWithAuthorisedClient(fakeRequest) { result =>
+        submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must
             include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
-          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
-      "agent reference is already used" in {
+      "agent reference is already used" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
         val returnCache = ClientCache(mandate = Some(mandate1))
-        submitWithAuthorisedClient(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
           document.getElementsByClass("error-notification").text() must
             include("The unique authorisation number you entered has already been used. Check the number, or enter a different number.")
-          verify(mockMandateService, times(1)).fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](Matchers.any())(Matchers.any(), Matchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -233,10 +235,15 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
 
-  object TestSearchMandateController extends SearchMandateController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val dataCacheService: DataCacheService = mockDataCacheService
-    override val mandateService: AgentClientMandateService = mockMandateService
+  class Setup {
+    val searchMandateController = new SearchMandateController(
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      mockDataCacheService,
+      mockMandateService,
+      implicitly,
+      mockAppConfig
+    )
   }
 
   override def beforeEach(): Unit = {
@@ -245,37 +252,37 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     reset(mockAuthConnector)
   }
 
-  def viewUnAuthenticatedClient(test: Future[Result] => Any) {
+  def viewUnAuthenticatedClient(controller: SearchMandateController)(test: Future[Result] => Any) {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestSearchMandateController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedClient(controller: SearchMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any()))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    val result = TestSearchMandateController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded],
+  def submitWithAuthorisedClient(controller: SearchMandateController)(request: FakeRequest[AnyContentAsFormUrlEncoded],
                                  cachedData: Option[ClientCache] = None,
                                  mandate: Option[Mandate] = None,
                                  returnCache: ClientCache = ClientCache())(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId))(Matchers.any(), Matchers.any()))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(mandate))
-    when(mockDataCacheService.cacheFormData[ClientCache](Matchers.eq(TestSearchMandateController.clientFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(returnCache))
-    val result = TestSearchMandateController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
 

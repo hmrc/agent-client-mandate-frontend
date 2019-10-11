@@ -19,11 +19,14 @@ package unit.uk.gov.hmrc.agentclientmandate.utils
 import org.joda.time.DateTime
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
 class AgentClientMandateUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
+
+  val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
   "AgentClientMandateUtils" must {
     "validateUTR" must {
@@ -59,9 +62,9 @@ class AgentClientMandateUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
   }
   "getIsoCodeTupleList" must {
     "bring the correct country from the file" in {
-      AgentClientMandateUtils.getIsoCodeTupleList must contain(("US", "USA :United States of America"))
-      AgentClientMandateUtils.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
-      AgentClientMandateUtils.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
+      appConfig.getIsoCodeTupleList must contain(("US", "USA :United States of America"))
+      appConfig.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
+      appConfig.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
     }
   }
 

@@ -16,32 +16,28 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
+import scala.concurrent.ExecutionContext
 
-object MandateDetailsController extends MandateDetailsController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  val mandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-}
-
-trait MandateDetailsController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-
-  def mandateService: AgentClientMandateService
+@Singleton
+class MandateDetailsController @Inject()(
+                                          mcc: MessagesControllerComponents,
+                                          dataCacheService: DataCacheService,
+                                          mandateService: AgentClientMandateService,
+                                          implicit val ec: ExecutionContext,
+                                          implicit val appConfig: AppConfig,
+                                          val authConnector: AuthConnector
+                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -69,9 +65,11 @@ trait MandateDetailsController extends FrontendController with AuthorisedWrapper
   }
 
   private def getBackLink(service: String, callingPage: String): Some[String] = {
+    val pageId: String = ControllerPageIdConstants.paySAQuestionControllerId
+
     callingPage match {
-      case PaySAQuestionController.controllerId => Some(routes.PaySAQuestionController.view().url)
-      case _ => Some(routes.OverseasClientQuestionController.view().url)
+      case `pageId` => Some(routes.PaySAQuestionController.view().url)
+      case _        => Some(routes.OverseasClientQuestionController.view().url)
     }
   }
 }

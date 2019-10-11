@@ -19,13 +19,19 @@ package unit.uk.gov.hmrc.agentclientmandate.utils
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Configuration
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class FeatureSwitchSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach {
 
   override def beforeEach: Unit = {
     System.clearProperty("feature.test")
   }
+
+  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val config: ServicesConfig = appConfig.servicesConfig
 
   "FeatureSwitch" should {
 
