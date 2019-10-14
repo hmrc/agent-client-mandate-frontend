@@ -18,7 +18,7 @@ package unit.uk.gov.hmrc.agentclientmandate.builders
 
 import java.util.UUID
 
-import play.api.mvc.{AnyContentAsFormUrlEncoded, AnyContentAsJson}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, AnyContentAsJson, Headers}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.SessionKeys
 
@@ -31,7 +31,8 @@ object SessionBuilder {
     fakeRequest.withSession(
       SessionKeys.sessionId -> sessionId,
       TOKEN -> "RANDOMTOKEN",
-      SessionKeys.userId -> userId)
+      SessionKeys.userId -> userId
+    ).withHeaders(Headers("Authorization" -> "value"))
   }
 
   def updateRequestFormWithSession(fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded], userId: String): FakeRequest[AnyContentAsFormUrlEncoded] = {
@@ -39,7 +40,8 @@ object SessionBuilder {
     fakeRequest.withSession(
       SessionKeys.sessionId -> sessionId,
       TOKEN -> "RANDOMTOKEN",
-      SessionKeys.userId -> userId)
+      SessionKeys.userId -> userId
+    ).withHeaders(Headers("Authorization" -> "value"))
   }
 
   def buildRequestWithSession(userId: String) = {
@@ -47,7 +49,8 @@ object SessionBuilder {
     FakeRequest().withSession(
       SessionKeys.sessionId -> sessionId,
       TOKEN -> "RANDOMTOKEN",
-      SessionKeys.userId -> userId)
+      SessionKeys.userId -> userId
+    ).withHeaders(Headers("Authorization" -> "value"))
   }
 
   def buildRequestWithSessionDelegation(userId: String) = {
@@ -56,7 +59,8 @@ object SessionBuilder {
       SessionKeys.sessionId -> sessionId,
       TOKEN -> "RANDOMTOKEN",
       "delegationState" -> "On",
-      SessionKeys.userId -> userId)
+      SessionKeys.userId -> userId
+    ).withHeaders(Headers("Authorization" -> "value"))
   }
 
   def buildRequestWithSessionNoUser = {
@@ -64,7 +68,7 @@ object SessionBuilder {
     FakeRequest().withSession(
       SessionKeys.sessionId -> sessionId,
       TOKEN -> "RANDOMTOKEN"
-    )
+    ).withHeaders(Headers("Authorization" -> "value"))
   }
 
 }

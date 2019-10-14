@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, st
 import helpers.{AgentBusinessUtrGenerator, IntegrationSpec}
 import play.api.http.{HeaderNames => HN}
 import play.api.libs.ws.WSResponse
+import play.api.mvc.Headers
 import uk.gov.hmrc.http.HeaderNames
 
 class UniqueAgentReferenceControllerISpec extends IntegrationSpec {
@@ -59,6 +60,7 @@ class UniqueAgentReferenceControllerISpec extends IntegrationSpec {
         val result: WSResponse = await(hitApplicationEndpoint("/agent/unique-reference")
           .withHeaders(HN.SET_COOKIE -> getSessionCookie())
           .withHeaders(HeaderNames.xSessionId -> s"$SessionId")
+          .withHeaders("Authorization" -> "value")
           .get())
 
         result.status mustBe 200

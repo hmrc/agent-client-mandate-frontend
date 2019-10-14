@@ -19,13 +19,15 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.auth
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
-import play.api.mvc.{Result, Results}
+import play.api.mvc.{AnyContentAsEmpty, Headers, Result, Results}
+import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.AgentAuthRetrievals
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, EmptyRetrieval, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,12 +39,32 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   implicit val mockAppConfig: AppConfig = mock[AppConfig]
+  implicit val fr: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(Headers("Authorization" -> "value"))
 
   trait Setup {
     protected val authorisedWrappers: AuthorisedWrappers = new AuthorisedWrappers {
       override def authConnector: AuthConnector = mockAuthConnector
       def loginUrl: String = "loginUrl"
       def continueUrl(isAnAgent: Boolean): String => String = (_: String) => "continueUrl"
+    }
+  }
+
+  "fallbackHeaderCarrier" should {
+    "return a headercarrier" when {
+      "there is authorization in the request" in new Setup {
+        authorisedWrappers.fallbackHeaderCarrier(hc, fr).authorization shouldBe Some(Authorization("value"))
+      }
+
+      "there is a HeaderCarrier" in new Setup {
+        authorisedWrappers.fallbackHeaderCarrier(hc.copy(authorization = Some(Authorization("test"))), FakeRequest()).authorization shouldBe
+          Some(Authorization("test"))
+      }
+    }
+
+    "fail to return anything" when {
+      "neither authorisation in the request or the HeaderCarrier" in new Setup {
+        intercept[MissingBearerToken](authorisedWrappers.fallbackHeaderCarrier(hc, FakeRequest()))
+      }
     }
   }
 
@@ -119,7 +141,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
     }
   }
 
-  type RetrievalConstruction = Enrolments ~ Option[String] ~ Some[String] ~ AgentInformation ~ Some[Credentials]
+  type RetrievalConstruction = Enrolments ~ Option[String] ~ Option[String] ~ AgentInformation ~ Option[Credentials]
 
   "withAgentRefNumber" should {
     "authenticate an agent with their ref number" when {
@@ -153,10 +175,78 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         val body: AgentAuthRetrievals => Future[Result] = { agentAuthRetrievals =>
           future(agentAuthRetrievals)
         }
-        val agentCode = Some("agentCode")
+        val agentCode: Option[String] = Some("agentCode")
         val agentInformation = AgentInformation(Some("agentID"), agentCode, Some("agentFriendlyName"))
         val optCredentials = Some(Credentials("providerID", "providerType"))
         val internalId = Some("internalId")
+
+        val retrievalConstruction: RetrievalConstruction =
+          new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)
+
+        when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(retrievalConstruction))
+
+        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
+        status(result) shouldBe 500
+      }
+
+      "there is no agent code" in new Setup {
+        val fakeRefNo = "ABX123456"
+        val fakeRefNumberEnrolment = Enrolments(Set(Enrolment("HMRC-AGENT-AGENT", Seq(EnrolmentIdentifier("AgentRefNumber", fakeRefNo)), "Activated")))
+
+        def future(refNumber: AgentAuthRetrievals): Future[Result] = Future.successful(Results.Ok(refNumber.agentRef))
+
+        val body: AgentAuthRetrievals => Future[Result] = { agentAuthRetrievals =>
+          future(agentAuthRetrievals)
+        }
+        val agentCode: Option[String] = None
+        val agentInformation = AgentInformation(Some("agentID"), agentCode, Some("agentFriendlyName"))
+        val optCredentials = Some(Credentials("providerID", "providerType"))
+        val internalId = Some("internalId")
+
+        val retrievalConstruction: RetrievalConstruction =
+          new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)
+
+        when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(retrievalConstruction))
+
+        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
+        status(result) shouldBe 500
+      }
+
+      "there is no credentials" in new Setup {
+        val fakeRefNo = "ABX123456"
+        val fakeRefNumberEnrolment = Enrolments(Set(Enrolment("HMRC-AGENT-AGENT", Seq(EnrolmentIdentifier("AgentRefNumber", fakeRefNo)), "Activated")))
+        def future(refNumber: AgentAuthRetrievals): Future[Result] = Future.successful(Results.Ok(refNumber.agentRef))
+        val body: AgentAuthRetrievals => Future[Result] = { agentAuthRetrievals =>
+          future(agentAuthRetrievals)
+        }
+        val agentCode: Option[String] = Some("agentCode")
+        val agentInformation = AgentInformation(Some("agentID"), agentCode, Some("agentFriendlyName"))
+        val optCredentials = None
+        val internalId = Some("internalId")
+
+        val retrievalConstruction: RetrievalConstruction =
+          new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)
+
+        when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(retrievalConstruction))
+
+        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
+        status(result) shouldBe 500
+      }
+
+      "there is no internalId" in new Setup {
+        val fakeRefNo = "ABX123456"
+        val fakeRefNumberEnrolment = Enrolments(Set(Enrolment("HMRC-AGENT-AGENT", Seq(EnrolmentIdentifier("AgentRefNumber", fakeRefNo)), "Activated")))
+        def future(refNumber: AgentAuthRetrievals): Future[Result] = Future.successful(Results.Ok(refNumber.agentRef))
+        val body: AgentAuthRetrievals => Future[Result] = { agentAuthRetrievals =>
+          future(agentAuthRetrievals)
+        }
+        val agentCode: Option[String] = Some("agentCode")
+        val agentInformation = AgentInformation(Some("agentID"), agentCode, Some("agentFriendlyName"))
+        val optCredentials = Some(Credentials("providerID", "providerType"))
+        val internalId = None
 
         val retrievalConstruction: RetrievalConstruction =
           new ~(new ~(new ~(new ~(fakeRefNumberEnrolment, internalId), agentCode), agentInformation), optCredentials)

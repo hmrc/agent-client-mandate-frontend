@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
 import play.api.Logger
-import play.api.mvc.Result
+import play.api.mvc.{Request, Result}
 import play.api.mvc.Results._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, ClientAuthRetrievals}
@@ -26,6 +26,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.Authorization
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -73,8 +74,13 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
     }.recover(authErrorHandling(service, isAnAgent = false))
   }
 
+  def fallbackHeaderCarrier(implicit hc: HeaderCarrier, req: Request[_]): HeaderCarrier = {
+    if(hc.authorization.isEmpty) hc.copy(authorization = Some(Authorization(req.headers.get("Authorization")
+      .getOrElse(throw MissingBearerToken("No auth header in hc or header"))))) else hc
+  }
+
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig, req: Request[_]): Future[Result] = {
     agentAuthenticated(service,
       Retrievals.authorisedEnrolments and
         Retrievals.internalId and
@@ -112,7 +118,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
           Logger.warn("[withAgentRefNumber] No internal ID found for agent")
           Future.successful(InternalServerError)
       }
-    }
+    }(fallbackHeaderCarrier, ec, appConfig)
   }
 
   def withOrgCredId(service: Option[String])(body: ClientAuthRetrievals => Future[Result])
