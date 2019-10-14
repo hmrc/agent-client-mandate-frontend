@@ -15,11 +15,12 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.testOnly.routes
-@()(implicit request: Request[_], messages: Messages)
-
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.play.views.html.helpers.form
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = Messages("test-only"), delegatedService = None) {
 

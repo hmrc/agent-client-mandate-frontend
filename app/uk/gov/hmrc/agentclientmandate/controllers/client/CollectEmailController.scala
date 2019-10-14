@@ -16,41 +16,39 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent, Request, Result}
-import uk.gov.hmrc.agentclientmandate.config.{ConcreteAuthConnector, FrontendAppConfig}
+import javax.inject.{Inject, Singleton}
+import play.api.i18n.I18nSupport
+import play.api.mvc._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object CollectEmailController extends CollectEmailController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  // $COVERAGE-ON$
-}
+@Singleton
+class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
+                                       val mcc: MessagesControllerComponents,
+                                       val authConnector: AuthConnector,
+                                       implicit val ec: ExecutionContext,
+                                       implicit val appConfig: AppConfig
+                                      ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
 
-trait CollectEmailController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-
-  def view(service: String, redirectUrl: Option[ContinueUrl]): Action[AnyContent] = Action.async {
+  def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
       redirectUrl match {
-        case Some(x) if !x.isRelativeOrDev(FrontendAppConfig.env) => Future.successful(BadRequest("The return url is not correctly formatted"))
+        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) =>
+          Future.successful(BadRequest("The return url is not correctly formatted"))
         case Some(x) =>
-          saveBackLink(service, Some(x.url)).flatMap { _ =>
+          saveBackLink(service, Some(x)).flatMap { _ =>
             showView(service, None)
           }
         case _ =>
@@ -76,7 +74,6 @@ trait CollectEmailController extends FrontendController with AuthorisedWrappers 
   }
 
   private def showView(service: String, mode: Option[String])(implicit request: Request[AnyContent]): Future[Result] = {
-
     for {
       cachedData <- dataCacheService.fetchAndGetFormData[ClientCache](clientFormId)
       backLink <- getBackLink(service, mode)

@@ -18,18 +18,26 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers
 
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.controllers.ApplicationController
+
+import scala.concurrent.Future
 
 class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
   val service = "ATED"
+
+  class Setup {
+    val applicationController = new ApplicationController(app.injector.instanceOf[MessagesControllerComponents])
+  }
 
   "ApplicationController" must {
 
     "Keep Alive" must {
 
-      "respond with an OK" in {
-        val result = uk.gov.hmrc.agentclientmandate.controllers.ApplicationController.keepAlive.apply(FakeRequest())
+      "respond with an OK" in new Setup {
+        val result: Future[Result] = applicationController.keepAlive.apply(FakeRequest())
 
         status(result) must be(OK)
       }

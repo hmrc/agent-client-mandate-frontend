@@ -16,34 +16,21 @@
 
 package uk.gov.hmrc.agentclientmandate.connectors
 
-import play.api.Mode.Mode
+import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.http.Status._
-import play.api.{Configuration, Logger, Play}
-import uk.gov.hmrc.agentclientmandate.config.WSHttp
 import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
-import uk.gov.hmrc.http.{CorePut, HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.frontend.auth.connectors.DelegationServiceException
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
-object DelegationConnector extends DelegationConnector {
-  // $COVERAGE-OFF$
-  override val http: CorePut = WSHttp
-  override protected def serviceUrl: String = baseUrl("delegation")
-  // $COVERAGE-ON$
-}
-
-trait DelegationConnector extends ServicesConfig {
-  val http: CorePut
-
-  protected def serviceUrl: String
-
-  // $COVERAGE-OFF$
-  protected def mode: Mode = Play.current.mode
-  protected def runModeConfiguration: Configuration = Play.current.configuration
-  // $COVERAGE-ON$
+@Singleton
+class DelegationConnector @Inject()(val http: DefaultHttpClient,
+                                    val servicesConfig: ServicesConfig) {
+  protected def serviceUrl: String = servicesConfig.baseUrl("delegation")
 
   private def delegationUrl(oid: String): String = s"$serviceUrl/oid/$oid"
 
@@ -55,12 +42,12 @@ trait DelegationConnector extends ServicesConfig {
           true
         case unexpectedStatus =>
           Logger.info(s"[Delegation] Unexpected response code $unexpectedStatus")
-          throw DelegationServiceException(s"Unexpected response code '$unexpectedStatus'", "PUT", delegationUrl(oid))
+          throw new RuntimeException(s"Unexpected response code '$unexpectedStatus' PUT ${delegationUrl(oid)}")
       }
     } recover {
       case e: Exception =>
         Logger.info(s"[Delegation] Unexpected exception ${e.getClass}")
-        throw DelegationServiceException(s"Unexpected exception ${e.getClass}", "PUT", delegationUrl(oid))
+        throw new RuntimeException(s"Unexpected exception ${e.getClass} PUT ${delegationUrl(oid)}")
     }
   }
 }

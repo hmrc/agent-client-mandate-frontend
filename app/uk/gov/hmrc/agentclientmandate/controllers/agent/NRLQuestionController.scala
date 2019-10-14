@@ -16,33 +16,30 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestionForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object NRLQuestionController extends NRLQuestionController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val controllerId: String = "nrl"
-  val dataCacheService: DataCacheService = DataCacheService
-  // $COVERAGE-ON$
-}
+@Singleton
+class NRLQuestionController @Inject()(
+                                       dataCacheService: DataCacheService,
+                                       mcc: MessagesControllerComponents,
+                                       val authConnector: AuthConnector,
+                                       implicit val ec: ExecutionContext,
+                                       implicit val appConfig: AppConfig
+                                     ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-trait NRLQuestionController extends FrontendController with AuthorisedWrappers with MandateConstants {
-  def dataCacheService: DataCacheService
-
-  val controllerId: String
+  val controllerId: String = ControllerPageIdConstants.nrlQuestionControllerId
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

@@ -16,39 +16,35 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.{ConcreteAuthConnector, FrontendAppConfig}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayNameForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.binders.ContinueUrl
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object ClientDisplayNameController extends ClientDisplayNameController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  // $COVERAGE-ON$
-}
+@Singleton
+class ClientDisplayNameController @Inject()(
+                                             dataCacheService: DataCacheService,
+                                             mcc: MessagesControllerComponents,
+                                             val authConnector: AuthConnector,
+                                             implicit val ec: ExecutionContext,
+                                             implicit val appConfig: AppConfig
+                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-trait ClientDisplayNameController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-  def authConnector: AuthConnector
-
-  def view(service: String, redirectUrl: Option[ContinueUrl]): Action[AnyContent] = Action.async { implicit request =>
+  def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       redirectUrl match {
-        case Some(x) if !x.isRelativeOrDev(FrontendAppConfig.env) => Future.successful(BadRequest("The return url is not correctly formatted"))
+        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
         case _ =>
           dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId) map {
             case Some(clientDisplayname) => Ok(views.html.agent.clientDisplayName(clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service, redirectUrl)))
@@ -59,18 +55,18 @@ trait ClientDisplayNameController extends FrontendController with AuthorisedWrap
   }
 
 
-  def editFromSummary(service: String, redirectUrl: Option[ContinueUrl]): Action[AnyContent] = Action.async { implicit request =>
+  def editFromSummary(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       for {
         clientDisplayName <- dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId)
         callingPage <- dataCacheService.fetchAndGetFormData[String](callingPageCacheId)
       } yield {
         redirectUrl match {
-          case Some(x) if !x.isRelativeOrDev(FrontendAppConfig.env) => BadRequest("The return url is not correctly formatted")
+          case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => BadRequest("The return url is not correctly formatted")
           case _ =>
             clientDisplayName match {
               case Some(clientDisplayname) => Ok(views.html.agent.clientDisplayName(clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service,
-                Some(ContinueUrl(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url)))))
+                Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
               case None => Ok(views.html.agent.clientDisplayName(clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl)))
             }
         }
@@ -79,17 +75,17 @@ trait ClientDisplayNameController extends FrontendController with AuthorisedWrap
   }
 
 
-  def submit(service: String, redirectUrl: Option[ContinueUrl]): Action[AnyContent] = Action.async { implicit request =>
+  def submit(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       redirectUrl match {
-        case Some(x) if !x.isRelativeOrDev(FrontendAppConfig.env) => Future.successful(BadRequest("The return url is not correctly formatted"))
+        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
         case _ =>
           clientDisplayNameForm.bindFromRequest.fold(
             formWithError => Future.successful(BadRequest(views.html.agent.clientDisplayName(formWithError, service, redirectUrl, getBackLink(service, redirectUrl)))),
             data =>
               dataCacheService.cacheFormData[ClientDisplayName](clientDisplayNameFormId, data) map { _ =>
                 redirectUrl match {
-                  case Some(redirect) => Redirect(redirect.url)
+                  case Some(redirect) => Redirect(redirect)
                   case None => Redirect(routes.OverseasClientQuestionController.view())
                 }
               }
@@ -106,9 +102,9 @@ trait ClientDisplayNameController extends FrontendController with AuthorisedWrap
     }
   }
 
-  private def getBackLink(service: String, redirectUrl: Option[ContinueUrl]): Option[String] = {
+  private def getBackLink(service: String, redirectUrl: Option[String]): Option[String] = {
     redirectUrl match {
-      case Some(x) => Some(x.url)
+      case Some(x) => Some(x)
       case None => Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.CollectAgentEmailController.view().url)
     }
   }

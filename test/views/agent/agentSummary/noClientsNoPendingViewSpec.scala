@@ -21,16 +21,22 @@ import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.i18n.{Lang, Messages}
+import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
+class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
+
+  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
   val time1: DateTime = DateTime.now()
@@ -38,7 +44,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   implicit val request = FakeRequest()
-  implicit val messages : play.api.i18n.Messages = play.api.i18n.Messages.Implicits.applicationMessages
+  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The agent can view the agent summary page but they have no clients and no pending clients") {
 

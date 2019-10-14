@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
+import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig._
-import uk.gov.hmrc.agentclientmandate.config.{ConcreteAuthConnector, FrontendAuthConnector}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.OldMandateReference
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
@@ -31,24 +29,19 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.MandateReferenceForm.ma
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail, MandateReference}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-
-object PreviousMandateRefController extends PreviousMandateRefController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  val mandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-}
-
-trait PreviousMandateRefController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-
-  def mandateService: AgentClientMandateService
+@Singleton
+class PreviousMandateRefController @Inject()(
+                                            val mcc: MessagesControllerComponents,
+                                            val authConnector: AuthConnector,
+                                            dataCacheService: DataCacheService,
+                                            mandateService: AgentClientMandateService,
+                                            implicit val ec: ExecutionContext,
+                                            implicit val appConfig: AppConfig
+                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -76,10 +69,10 @@ trait PreviousMandateRefController extends FrontendController with AuthorisedWra
                 dataCacheService.cacheFormData[OldMandateReference](oldNonUkMandate, OldMandateReference(x.id,
                   x.subscription.referenceNumber.getOrElse(throw new RuntimeException("No Client Ref no. found!"))))
                 dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(Some(ClientEmail(x.clientParty.map(_.contactDetails.email).getOrElse(""))), Some(x))) flatMap { cacheResp =>
-                  Future.successful(Redirect(addNonUkClientCorrespondenceUri(service, routes.PreviousMandateRefController.view(callingPage).url)))
+                  Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(service, routes.PreviousMandateRefController.view(callingPage).url)))
                 }
               case None =>
-                val errorMsg = Messages("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
+                val errorMsg = "client.search-mandate.error.mandateRef.not-found-by-mandate-service"
                 val errorForm = mandateRefForm.withError(key = "mandateRef", message = errorMsg).fill(data)
                 Future.successful(BadRequest(views.html.agent.searchPreviousMandate(service, errorForm, callingPage, getBackLink(service, callingPage))))
             }

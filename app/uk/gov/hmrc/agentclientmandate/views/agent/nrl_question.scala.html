@@ -16,12 +16,12 @@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
-
-@(nrlQuestionForm: Form[NRLQuestion], service: String, backLink:Option[String]=None)(implicit request: Request[_], messages: Messages)
-
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
+@(nrlQuestionForm: Form[NRLQuestion], service: String, backLink:Option[String]=None)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(nrlQuestionForm) }
 

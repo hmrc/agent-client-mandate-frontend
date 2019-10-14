@@ -4,10 +4,11 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock._
 import helpers.{AgentBusinessUtrGenerator, IntegrationSpec}
 import org.joda.time.DateTime
-import play.api.http.HeaderNames
-import play.api.libs.json.{JsValue, Json}
+import play.api.http.{HeaderNames => HN}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
-import uk.gov.hmrc.agentclientmandate.models.{ContactDetails, Mandate, MandateStatus, Party, PartyType, Service, Status, Subscription, User}
+import uk.gov.hmrc.agentclientmandate.models._
+import uk.gov.hmrc.http.HeaderNames
 
 class MandateConfirmationControllerISpec extends IntegrationSpec {
 
@@ -62,7 +63,8 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
         )
 
         val result: WSResponse = await(hitApplicationEndpoint("/client/confirmation")
-          .withHeaders(HeaderNames.COOKIE -> getSessionCookie())
+          .withHeaders(HN.SET_COOKIE -> getSessionCookie())
+          .withHeaders(HeaderNames.xSessionId -> s"$SessionId")
           .get())
 
         result.status mustBe 200

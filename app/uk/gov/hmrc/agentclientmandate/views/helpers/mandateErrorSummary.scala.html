@@ -16,7 +16,7 @@
 
 @(form: Form[_], errorMessageFieldPrefix: String, formErrorMessageParam: Option[String] = None, maxErrorsToShow: Int = 999)(implicit messages: Messages)
 
-<script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/error-summary.js")'></script>
+<script src='@controllers.routes.Assets.at("javascript/error-summary.js")'></script>
 
 @if(form.hasGlobalErrors || form.hasErrors) {
   <div id="errors" tabindex="-1" role="group" aria-labelledby="form-error-heading" class="validation-summary">
