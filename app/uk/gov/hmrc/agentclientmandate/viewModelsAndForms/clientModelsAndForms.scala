@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import play.api.Play.current
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentclientmandate.models.Mandate
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, maximumEmailLength, minimumEmailLength}
@@ -54,12 +51,12 @@ object ClientEmailForm extends Constraints {
 
       val mandateRefLength = 8
 
-      val mandateRefForm =
+      def mandateRefForm =
         Form(
           mapping(
             "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
-              .verifying(Messages("client.search-mandate.error.mandateRef"), x => x.nonEmpty)
-              .verifying(Messages("client.search-mandate.error.mandateRef.length"), x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
+              .verifying("client.search-mandate.error.mandateRef", x => x.nonEmpty)
+              .verifying("client.search-mandate.error.mandateRef.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
           )
           (MandateReference.apply)(MandateReference.unapply)
         )

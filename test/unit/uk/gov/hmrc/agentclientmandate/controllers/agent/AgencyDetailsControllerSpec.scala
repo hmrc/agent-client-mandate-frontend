@@ -18,29 +18,31 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.Result
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgencyDetailsController
 import uk.gov.hmrc.agentclientmandate.models.AgentDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.auth.core.AuthConnector
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
    "AgencyDetailsController" should {
 
      "redirect to unathorised page" when {
-       "the user is UNAUTHORISED" in {
-         getWithUnAuthorisedUser("abc") { result =>
+       "the user is UNAUTHORISED" in new Setup {
+         getWithUnAuthorisedUser(controller)("abc") { result =>
            status(result) must be(SEE_OTHER)
            redirectLocation(result).get must include("/gg/sign-in")
          }
@@ -48,8 +50,8 @@ class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
      }
 
      "return status OK" when {
-       "user is AUTHORISED" in {
-         getWithAuthorisedUser(agentDetails, "abc") { result =>
+       "user is AUTHORISED" in new Setup {
+         getWithAuthorisedUser(controller)(agentDetails, "abc") { result =>
            status(result) must be(OK)
          }
        }
@@ -64,10 +66,15 @@ class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-  object TestAgencyDetailsController extends AgencyDetailsController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val dataCacheService: DataCacheService = mockDataCacheService
-    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
+  class Setup {
+    val controller = new AgencyDetailsController(
+      mockAgentClientMandateService,
+      mockDataCacheService,
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig
+    )
   }
 
   override def beforeEach(): Unit = {
@@ -75,22 +82,22 @@ class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     reset(mockDataCacheService)
   }
 
-  def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
+  def getWithUnAuthorisedUser(controller: AgencyDetailsController)(service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestAgencyDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def getWithAuthorisedUser(agentDetails: AgentDetails, service: String)(test: Future[Result] => Any): Any = {
+  def getWithAuthorisedUser(controller: AgencyDetailsController)(agentDetails: AgentDetails, service: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val cachedData = AgentBuilder.buildAgentDetails
     when(mockDataCacheService.cacheFormData[AgentDetails]
-      (Matchers.eq(TestAgencyDetailsController.agentDetailsFormId), Matchers.any())(Matchers.any(), Matchers.any()))
+      (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())).thenReturn(Future.successful(agentDetails))
-    val result = TestAgencyDetailsController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(agentDetails))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 }

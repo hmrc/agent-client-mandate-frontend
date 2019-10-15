@@ -16,37 +16,32 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object ClientPermissionController extends ClientPermissionController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val businessCustomerConnector: BusinessCustomerFrontendConnector = BusinessCustomerFrontendConnector
-  val atedSubscriptionConnector: AtedSubscriptionFrontendConnector = AtedSubscriptionFrontendConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  // $COVERAGE-ON$
-}
-
-trait ClientPermissionController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def businessCustomerConnector: BusinessCustomerFrontendConnector
-  def atedSubscriptionConnector: AtedSubscriptionFrontendConnector
-  def dataCacheService: DataCacheService
+@Singleton
+class ClientPermissionController @Inject()(
+                                            businessCustomerConnector: BusinessCustomerFrontendConnector,
+                                            atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
+                                            dataCacheService: DataCacheService,
+                                            mcc: MessagesControllerComponents,
+                                            val authConnector: AuthConnector,
+                                            implicit val ec: ExecutionContext,
+                                            implicit val appConfig: AppConfig
+                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -86,9 +81,11 @@ trait ClientPermissionController extends FrontendController with AuthorisedWrapp
   }
 
   private def getBackLink(service: String, callingPage: String) = {
+    val pageId: String = ControllerPageIdConstants.paySAQuestionControllerId
+
     callingPage match {
-      case PaySAQuestionController.controllerId => Some(routes.PaySAQuestionController.view().url)
-      case _ => Some(routes.NRLQuestionController.view().url)
+      case `pageId` => Some(routes.PaySAQuestionController.view().url)
+      case _        => Some(routes.NRLQuestionController.view().url)
     }
   }
 }

@@ -16,11 +16,12 @@
 
 @import uk.gov.hmrc.agentclientmandate.utils.DateUtils
 @import org.joda.time.DateTime
-@(service: String, agentName: String, mandateId: String)(implicit request: Request[_], messages: Messages)
-
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
-@import uk.gov.hmrc.agentclientmandate.config.FrontendAppConfig
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
+@(service: String, agentName: String, mandateId: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
 
 @analyticsJs = {
   var id = "@mandateId";

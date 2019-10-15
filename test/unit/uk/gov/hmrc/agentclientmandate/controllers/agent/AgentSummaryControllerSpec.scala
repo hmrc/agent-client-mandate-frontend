@@ -20,15 +20,16 @@ import java.util.UUID
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
@@ -36,19 +37,20 @@ import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCa
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, SessionBuilder}
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
 
   "AgentClientSummaryController" must {
 
     "return page with UR banner" when {
-      "the UR banner toggle is activated" in {
+      "the UR banner toggle is activated" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))
-        viewAuthorisedAgent(mockMandates) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -60,9 +62,9 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
     }
 
     "return check client details view for agent" when {
-      "they have no data" in {
+      "they have no data" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))
-        viewAuthorisedAgent(mockMandates) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -75,9 +77,9 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         }
       }
 
-      "client requests(GET) there are active mandates" in {
+      "client requests(GET) there are active mandates" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
-        viewAuthorisedAgent(mockMandates) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -92,9 +94,9 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         }
       }
 
-      "client requests(GET) there are more than or equal to 15 active mandates" in {
+      "client requests(GET) there are more than or equal to 15 active mandates" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
-        viewAuthorisedAgent(mockMandates) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -111,10 +113,10 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
     }
 
     "return check pending details view for agent who wants to see this" when {
-      "client requests(GET) for check client details view" in {
+      "client requests(GET) for check client details view" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
 
-        viewAuthorisedAgent(mockMandates, Some("pending-clients")) { result =>
+        viewAuthorisedAgent(controller)(mockMandates, Some("pending-clients")) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -128,10 +130,10 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
     }
 
     "return check pending details view for agent when that's all they have" when {
-      "client requests(GET) for check client details view" in {
+      "client requests(GET) for check client details view" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
 
-        viewAuthorisedAgent(mockMandates) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -145,9 +147,9 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
     }
 
     "redirect to delegated service specific page" when {
-      "agent selects and begins delegation on a particular client" in {
+      "agent selects and begins delegation on a particular client" in new Setup {
 
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(Some(mandateActive))
         }
 
@@ -155,15 +157,15 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
-        val result = TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
+        val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
       }
 
-      "agent selects and begins delegation but client does not exist" in {
+      "agent selects and begins delegation but client does not exist" in new Setup {
 
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(Some(mandateActive.copy(clientParty = None)))
         }
 
@@ -171,16 +173,16 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
-        val result = TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
+        val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
       }
 
-      "agent selects client but it fails as we have no serviceId" in {
+      "agent selects client but it fails as we have no serviceId" in new Setup {
 
         val mandateWithNoSubscription = mandateActive.copy(subscription = mandateActive.subscription.copy(referenceNumber = None))
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(Some(mandateWithNoSubscription))
         }
 
@@ -188,70 +190,70 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(Matchers.any(), Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
 
-        val thrown = the[RuntimeException] thrownBy await(TestAgentSummaryController.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId)))
+        val thrown = the[RuntimeException] thrownBy await(controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId)))
         thrown.getMessage must include(s"[AgentSummaryController][doDelegation] Failed to doDelegation to for mandateId 1 for service $service")
       }
     }
 
     "activate client" when {
-      "agent selects and activates client" in {
-        activateClientByAuthorisedAgent { result =>
+      "agent selects and activates client" in new Setup {
+        activateClientByAuthorisedAgent(controller) { result =>
 
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/mandate/agent/summary")
         }
       }
 
-      "could not accept client" in {
+      "could not accept client" in new Setup {
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(false)
         }
 
-        val thrown = the[RuntimeException] thrownBy await(TestAgentSummaryController.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId)))
+        val thrown = the[RuntimeException] thrownBy await(controller.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId)))
         thrown.getMessage must include("Failed to accept client")
       }
 
-      "could not fetch mandate when accepting client" in {
+      "could not fetch mandate when accepting client" in new Setup {
         val userId = s"user-${UUID.randomUUID}"
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(true)
         }
-        when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(None)
         }
 
-        val thrown = the[RuntimeException] thrownBy await(TestAgentSummaryController.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId)))
+        val thrown = the[RuntimeException] thrownBy await(controller.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId)))
         thrown.getMessage must include("Failed to fetch client")
       }
     }
 
     "update view" when {
-      "user updates filters" in {
+      "user updates filters" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("showAllClients" -> "allClients")
-        updateAuthorisedAgent(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
+        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
           status(result) must be(OK)
         }
       }
 
-      "user updates filters but there areno mandates" in {
+      "user updates filters but there areno mandates" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("showAllClients" -> "allClients")
-        updateAuthorisedAgent(fakeRequest, None) { result =>
+        updateAuthorisedAgent(controller)(fakeRequest, None) { result =>
           status(result) must be(OK)
         }
       }
 
-      "user submits bad data" in {
+      "user submits bad data" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("allClients" -> "client display name")
-        updateAuthorisedAgent(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
+        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
@@ -263,11 +265,16 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
   val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
-  object TestAgentSummaryController extends AgentSummaryController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val agentClientMandateService: AgentClientMandateService = mockAgentClientMandateService
-    override val dataCacheService: DataCacheService = mockDataCacheService
-    override val delegationConnector: DelegationConnector = mockDelegationConnector
+  class Setup {
+    val controller = new AgentSummaryController(
+      mockAgentClientMandateService,
+      mockDataCacheService,
+      mockDelegationConnector,
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig
+    )
   }
 
   override def beforeEach(): Unit = {
@@ -301,59 +308,59 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
 
   val mandatePendingActivation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123451", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty2), currentStatus = MandateStatus(Status.PendingActivation, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
 
-  def viewAuthorisedAgent(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
+  def viewAuthorisedAgent(controller: AgentSummaryController)(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(Some("text"))
-    when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(None)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
+    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
-    val result = TestAgentSummaryController.view(service, tabName).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service, tabName).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def activateClientByAuthorisedAgent(test: Future[Result] => Any) {
+  def activateClientByAuthorisedAgent(controller: AgentSummaryController)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.acceptClient(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(true)
     }
-    when(mockAgentClientMandateService.fetchClientMandate(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(Some(mandateActive))
     }
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
 
-    when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
 
-    val result = TestAgentSummaryController.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def updateAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
+  def updateAuthorisedAgent(controller: AgentSummaryController)(request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(Matchers.any())(Matchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(Some("text"))
-    when(mockDataCacheService.cacheFormData[String](Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(Matchers.any(), Matchers.any())(Matchers.any())) thenReturn Future.successful(None)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
+    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
-    val result = TestAgentSummaryController.update(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    val result = controller.update(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
   }
 

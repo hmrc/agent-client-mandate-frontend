@@ -15,18 +15,18 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
-@import uk.gov.hmrc.agentclientmandate.models._
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
-@(identificationForm: Form[OverseasCompany], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages)
-
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.agentclientmandate.models.BusinessRegistrationDisplayDetails
+
+@(identificationForm: Form[OverseasCompany], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/mandate-country-auto-complete.js")'></script>
-<script src='@uk.gov.hmrc.agentclientmandate.controllers.routes.AssetsController.at("javascript/overseas-company-registration.js")'></script>
+<script src='@controllers.routes.Assets.at("javascript/mandate-country-auto-complete.js")'></script>
+<script src='@controllers.routes.Assets.at("javascript/overseas-company-registration.js")'></script>
 <script>
     $(document).ready(function() {
       countryCodeAutoComplete("#businessAddress\\.country")

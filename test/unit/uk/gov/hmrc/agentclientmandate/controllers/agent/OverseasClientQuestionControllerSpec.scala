@@ -19,32 +19,34 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 import java.util.UUID
 
 import org.jsoup.Jsoup
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.OverseasClientQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestion
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, SessionBuilder}
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-
-class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "OverseasClientQuestionController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
 
-      "agent requests(GET) for 'overseas client question' view" in {
+      "agent requests(GET) for 'overseas client question' view" in new Setup {
         viewWithUnAuthenticatedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -55,7 +57,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
 
     "redirect to unauthorised page for UNAUTHORISED agent" when {
 
-      "agent requests(GET) for 'overseas client question' view" in {
+      "agent requests(GET) for 'overseas client question' view" in new Setup {
         viewWithUnAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/gg/sign-in")
@@ -66,7 +68,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
 
     "return 'overseas client question' view for AUTHORISED agent" when {
 
-      "agent requests(GET) for 'overseas client question' view" in {
+      "agent requests(GET) for 'overseas client question' view" in new Setup {
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -77,7 +79,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         }
       }
 
-      "agent requests(GET) for 'overseas client question' view with some saved data" in {
+      "agent requests(GET) for 'overseas client question' view with some saved data" in new Setup {
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -92,7 +94,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
     }
 
     "redirect agent to 'nrl page' on business-customer-frontend" when {
-      "valid form is submitted and overseas is answered as yes" in {
+      "valid form is submitted and overseas is answered as yes" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -101,7 +103,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
       }
     }
     "redirect agent to 'mandate confirmation' page" when {
-      "valid form is submitted and overseas is answered as no" in {
+      "valid form is submitted and overseas is answered as no" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -111,7 +113,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
     }
 
     "returns BAD_REQUEST" when {
-      "invalid form is submitted" in {
+      "invalid form is submitted" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -125,66 +127,74 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
 
   }
 
+
+
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
 
+  class Setup {
+    val controller = new OverseasClientQuestionController(
+      mockDataCacheService,
+      app.injector.instanceOf[MessagesControllerComponents],
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig
+    )
 
-  object TestOverseasClientQuestionController extends OverseasClientQuestionController {
-    override val authConnector: AuthConnector = mockAuthConnector
-    override val dataCacheService: DataCacheService = mockDataCacheService
-    override val controllerId: String = "overseas"
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[OverseasClientQuestion](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(OverseasClientQuestion(Some(true)))))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+      implicit val hc: HeaderCarrier = HeaderCarrier()
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
+
   }
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
   }
 
-  def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestOverseasClientQuestionController.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
 
-  def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = TestOverseasClientQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewWithAuthorisedAgent(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[String](Matchers.any())
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(None))
-    val result = TestOverseasClientQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[OverseasClientQuestion](Matchers.any())
-      (Matchers.any(), Matchers.any())).thenReturn(Future.successful(Some(OverseasClientQuestion(Some(true)))))
-    val result = TestOverseasClientQuestionController.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-
-    AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-    val result = TestOverseasClientQuestionController.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
-  }
 
 }

@@ -14,7 +14,9 @@
  * limitations under the License.
  *@
 
-@(clientsCancelled: Option[Seq[String]], service: String)(implicit request: Request[_], messages: Messages)
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
+@(clientsCancelled: Option[Seq[String]], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @if(clientsCancelled.isDefined) {
 <div class="form-group">

@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import play.api.Play.current
+import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.{ContactDetails, Party, PartyType}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
@@ -29,24 +28,19 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.MandateReferenceForm.ma
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, MandateReference}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-
-object SearchMandateController extends SearchMandateController {
-  // $COVERAGE-OFF$
-  val authConnector: AuthConnector = ConcreteAuthConnector
-  val dataCacheService: DataCacheService = DataCacheService
-  val mandateService: AgentClientMandateService = AgentClientMandateService
-  // $COVERAGE-ON$
-}
-
-trait SearchMandateController extends FrontendController with AuthorisedWrappers with MandateConstants {
-
-  def dataCacheService: DataCacheService
-
-  def mandateService: AgentClientMandateService
+@Singleton
+class SearchMandateController @Inject()(
+                                         mcc: MessagesControllerComponents,
+                                         val authConnector: AuthConnector,
+                                         dataCacheService: DataCacheService,
+                                         mandateService: AgentClientMandateService,
+                                         implicit val ec: ExecutionContext,
+                                         implicit val appConfig: AppConfig
+                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -68,7 +62,7 @@ trait SearchMandateController extends FrontendController with AuthorisedWrappers
           data => mandateService.fetchClientMandate(data.mandateRef.toUpperCase, authRetrievals) flatMap {
             case Some(x) =>
               if (x.currentStatus.status != uk.gov.hmrc.agentclientmandate.models.Status.New) {
-                val errorMsg = Messages("client.search-mandate.error.mandateRef.already-used-by-mandate-service")
+                val errorMsg = "client.search-mandate.error.mandateRef.already-used-by-mandate-service"
                 val errorForm = mandateRefForm.withError(key = "mandateRef", message = errorMsg).fill(data)
                 Future.successful(BadRequest(views.html.client.searchMandate(service, errorForm, getBackLink(service))))
               } else {
@@ -93,7 +87,7 @@ trait SearchMandateController extends FrontendController with AuthorisedWrappers
                 }
               }
             case None =>
-              val errorMsg = Messages("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
+              val errorMsg = "client.search-mandate.error.mandateRef.not-found-by-mandate-service"
               val errorForm = mandateRefForm.withError(key = "mandateRef", message = errorMsg).fill(data)
               Future.successful(BadRequest(views.html.client.searchMandate(service, errorForm, getBackLink(service))))
           }

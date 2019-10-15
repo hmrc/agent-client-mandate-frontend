@@ -16,22 +16,26 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.agentclientmandate.config.ConcreteAuthConnector
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.play.frontend.controller.FrontendController
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-object GGBreakingRelationshipController extends FrontendController with AuthorisedWrappers {
-
-  def agentClientMandateConnector: AgentClientMandateConnector = AgentClientMandateConnector
-  override val authConnector: ConcreteAuthConnector.type = ConcreteAuthConnector
+@Singleton
+class GGBreakingRelationshipController @Inject()(
+                                                  mcc: MessagesControllerComponents,
+                                                  agentClientMandateConnector: AgentClientMandateConnector,
+                                                  val authConnector: AuthConnector,
+                                                  implicit val appConfig: AppConfig,
+                                                  implicit val ec: ExecutionContext
+                                                ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(): Action[AnyContent] = Action.async {implicit request =>
     withAgentRefNumber(None) { _ =>
