@@ -47,13 +47,8 @@ class RemoveAgentController @Inject()(
   def view(service: String, mandateId: String, returnUrl: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
-          Future.successful(BadRequest("The return url is not correctly formatted"))
-        }
-        else {
-          dataCacheService.cacheFormData[String]("RETURN_URL", returnUrl).flatMap { _ =>
-            showView(service, mandateId, Some(returnUrl), authRetrievals)
-          }
+        dataCacheService.cacheFormData[String]("RETURN_URL", returnUrl).flatMap { _ =>
+          showView(service, mandateId, Some(returnUrl), authRetrievals)
         }
       }
   }
