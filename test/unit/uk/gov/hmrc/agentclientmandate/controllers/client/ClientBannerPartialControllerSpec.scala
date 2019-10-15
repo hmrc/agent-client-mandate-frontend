@@ -106,12 +106,6 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
         document.getElementById("client-banner-text-link").attr("href") must include("/client/email")
       }
     }
-
-    "return url is invalid format" in new Setup {
-      viewWithAuthorisedClient(None, "http://website.com") { result =>
-        status(result) must be(BAD_REQUEST)
-      }
-    }
   }
 
 

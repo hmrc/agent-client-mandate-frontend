@@ -96,13 +96,6 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
 
         thrown.getMessage must be("No Mandate returned")
       }
-
-      "return url is invalid format" in new Setup {
-        val request = FakeRequest(GET, "/client/remove-agent/1?returnUrl=http://website.com").withJsonBody(Json.toJson("""{}"""))
-        viewAuthorisedClient(controller)(request, "http://website.com") { result =>
-          status(result) must be(BAD_REQUEST)
-        }
-      }
     }
 
     "submitting form" when {

@@ -39,20 +39,16 @@ class ClientBannerPartialController @Inject()(mcc: MessagesControllerComponents,
   def getBanner(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
     implicit request => {
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
-          Future.successful(BadRequest("The return url is not correctly formatted"))
-        } else {
-          val mandateHost = appConfig.mandateFrontendHost
+        val mandateHost = appConfig.mandateFrontendHost
 
-          mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
-            case Some(mandate) => mandate.currentStatus.status match {
-              case Active => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
-              case Approved => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
-              case Rejected => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "rejected", "cancelled_rejected"))
-              case Cancelled => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "cancelled", "cancelled_rejected"))
-            }
-            case None => NotFound
+        mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
+          case Some(mandate) => mandate.currentStatus.status match {
+            case Active => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
+            case Approved => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
+            case Rejected => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "rejected", "cancelled_rejected"))
+            case Cancelled => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "cancelled", "cancelled_rejected"))
           }
+          case None => NotFound
         }
       }
     }
