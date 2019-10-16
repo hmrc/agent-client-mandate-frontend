@@ -71,13 +71,13 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedClient(reviewMandateController)(Some(returnData)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Check that this is the agency you want to appoint - GOV.UK")
-          document.getElementById("header").text() must include("Check that this is the agency you want to appoint")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("agent-ref-name-label").text() must be("Unique authorisation number")
-          document.getElementById("your-email-label").text() must be("Your email address")
-          document.getElementById("agent-disclaimer").text() must be("Appointing name will let them see all the details in your old returns.")
-          document.getElementById("submit").text() must be("Confirm and appoint agent")
+          document.title() must be("client.review-agent.title - GOV.UK")
+          document.getElementById("header").text() must include("client.review-agent.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.review-agent.preheader")
+          document.getElementById("agent-ref-name-label").text() must be("client.review-agent.agent-reference")
+          document.getElementById("your-email-label").text() must be("client.review-agent.own.email")
+          document.getElementById("agent-disclaimer").text() must be("client.review-agent.disclaimer")
+          document.getElementById("submit").text() must be("client.review-agent.submit")
         }
       }
 
@@ -123,7 +123,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
   class Setup {
     val reviewMandateController = new ReviewMandateController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

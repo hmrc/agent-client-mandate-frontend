@@ -237,7 +237,7 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
   class Setup {
     val searchMandateController = new SearchMandateController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockDataCacheService,
       mockMandateService,

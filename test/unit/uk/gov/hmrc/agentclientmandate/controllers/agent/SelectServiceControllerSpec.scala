@@ -146,7 +146,7 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
   class Setup {
     val controller = new SelectServiceController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,

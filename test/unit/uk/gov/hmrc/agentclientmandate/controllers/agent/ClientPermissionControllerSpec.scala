@@ -68,15 +68,15 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Do you have permission to register on behalf of your client? - GOV.UK")
-          document.getElementById("header").text() must include("Do you have permission to register on behalf of your client?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("hasPermission_legend").text() must be("Do you have permission to register on behalf of your client?")
+          document.title() must be("agent.client-permission.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
-            startWith("Your client must complete an ATED 1. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records.")
-          document.getElementById("continue").text() must be("Continue")
+            startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
+          document.getElementById("continue").text() must be("continue-button")
 
-          document.getElementById("backLinkHref").text() must be("Back")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
@@ -85,16 +85,16 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         viewWithAuthorisedAgentWithSomeData(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Do you have permission to register on behalf of your client? - GOV.UK")
-          document.getElementById("header").text() must include("Do you have permission to register on behalf of your client?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("hasPermission_legend").text() must be("Do you have permission to register on behalf of your client?")
+          document.title() must be("agent.client-permission.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
-            startWith("Your client must complete an ATED 1. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records.")
+            startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
           document.getElementById("hasPermission-true").attr("checked") must be("checked")
-          document.getElementById("continue").text() must be("Continue")
+          document.getElementById("continue").text() must be("continue-button")
 
-          document.getElementById("backLinkHref").text() must be("Back")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
@@ -103,13 +103,13 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Do you have permission to register on behalf of your client? - GOV.UK")
-          document.getElementById("header").text() must include("Do you have permission to register on behalf of your client?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("hasPermission_legend").text() must be("Do you have permission to register on behalf of your client?")
-          document.getElementById("continue").text() must be("Continue")
+          document.title() must be("agent.client-permission.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
+          document.getElementById("continue").text() must be("continue-button")
 
-          document.getElementById("backLinkHref").text() must be("Back")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/nrl-question")
         }
       }
@@ -117,7 +117,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         viewWithAuthorisedAgent(serviceUsed = "otherService", "") { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Do you have permission to register on behalf of your client? - GOV.UK")
+          document.title() must be("agent.client-permission.title - GOV.UK")
         }
       }
     }
@@ -148,8 +148,8 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the client permission question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the client permission question")
+          document.getElementsByClass("error-list").text() must include("agent.client-permission.error.general.hasPermission")
+          document.getElementsByClass("error-notification").text() must include("agent.client-permission.hasPermission.not-selected.error")
         }
       }
     }
@@ -167,7 +167,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
       mockBusinessCustomerConnector,
       mockAtedSubscriptionConnector,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

@@ -190,7 +190,7 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
     val controller = new EditEmailController(
       mockDataCacheService,
       mockMandateService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

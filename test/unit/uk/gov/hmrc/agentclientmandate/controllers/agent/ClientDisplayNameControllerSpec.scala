@@ -191,7 +191,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
   class Setup {
     val controller = new ClientDisplayNameController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

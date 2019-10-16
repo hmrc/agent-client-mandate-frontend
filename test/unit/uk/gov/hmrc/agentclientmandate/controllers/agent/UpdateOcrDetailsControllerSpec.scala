@@ -131,7 +131,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     val controller = new UpdateOcrDetailsController(
       mockAgentClientMandateService,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

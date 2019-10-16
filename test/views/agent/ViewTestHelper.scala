@@ -19,12 +19,13 @@ package views.agent
 import play.api.Application
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc.MessagesControllerComponents
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
 trait ViewTestHelper {
 
   val app: Application
 
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
   implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
 }

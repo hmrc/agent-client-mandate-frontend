@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentclientmandate.service.Mandates
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
 class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
@@ -37,7 +38,7 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
   implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
@@ -93,18 +94,18 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, pendingMandates), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - ATED clients - GOV.UK")
-      assert(document.title() === "ATED clients - GOV.UK")
+      Then("The title should match - client.summary.title - GOV.UK")
+      assert(document.title() === "client.summary.title - GOV.UK")
 
       And("The Clients tab - should exist and have 1 item")
-      assert(document.getElementById("clients").text === "Current (1) selected")
+      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
       And("The Pending Clients tab - should not exist")
-      assert(document.getElementById("pending-clients").text === "Requests (1)")
+      assert(document.getElementById("pending-clients").text === "client.summary.client-pending.title")
 
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
       And("The Add Client Link - should exist")
-      assert(document.getElementById("add-client-link").text() === "Add a client")
+      assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
     }
 
     scenario("agent has visited the page and has clients but no pending clients") {
@@ -118,22 +119,22 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - ATED clients - GOV.UK")
-      assert(document.title() === "ATED clients - GOV.UK")
+      Then("The title should match - client.summary.title - GOV.UK")
+      assert(document.title() === "client.summary.title - GOV.UK")
 
       And("The Clients tab - should exist and have 1 item")
-      assert(document.getElementById("clients").text === "Current (1) selected")
+      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
       And("The Pending Clients tab - should not exist")
       assert(document.getElementById("pending-clients") === null)
 
       And("The Clients table - has the correct data and View link")
       assert(document.getElementById("client-name-0").text === "client display name 2")
-      assert(document.getElementById("client-link-0").text === "View details for client display name 2")
+      assert(document.getElementById("client-link-0").text === "client.summary.client-view client.summary.client-details-for client display name 2")
 
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
       And("The Add Client Link - should exist")
-      assert(document.getElementById("add-client-link").text() === "Add a client")
+      assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
 
       And("The filter box should not exist")
       assert(document.getElementById("filterbox") == null)
@@ -152,19 +153,19 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val document = Jsoup.parse(html.toString())
 
       Then("The Clients tab - should exist and have 15 items")
-      assert(document.getElementById("clients").text === "Current (15) selected")
+      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
 
       And("The Clients table - has the correct data and View link")
       assert(document.getElementById("client-name-0").text === "client display name 2")
-      assert(document.getElementById("client-link-0").text === "View details for client display name 2")
+      assert(document.getElementById("client-link-0").text === "client.summary.client-view client.summary.client-details-for client display name 2")
 
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
       And("The Add Client Link - should exist")
-      assert(document.getElementById("add-client-link").text() === "Add a client")
+      assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
 
       And("The filter box should exist")
-      assert(document.getElementById("filter-clients").text === "Filter clients")
+      assert(document.getElementById("filter-clients").text === "client.summary.filter-clients")
     }
 
     scenario("agent has visited the page and has filtered clients but there no results") {
@@ -178,7 +179,7 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val document = Jsoup.parse(html.toString())
 
       Then("The Clients tab - should exist and have 0 items")
-      assert(document.getElementById("clients").text === "Current (0) selected")
+      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
 
       And("I should not see the clients cancelled panel")
       assert(document.getElementById("client-cancelled-title") === null)
@@ -186,13 +187,13 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
       And("The Add Client Link - should exist")
-      assert(document.getElementById("add-client-link").text() === "Add a client")
+      assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
 
       And("The filter box should exist")
-      assert(document.getElementById("filter-clients").text === "Filter clients")
+      assert(document.getElementById("filter-clients").text === "client.summary.filter-clients")
 
       And("The text for no results should exist")
-      assert(document.getElementById("filter-no-results").text === "No clients found")
+      assert(document.getElementById("filter-no-results").text === "client.summary.no_clients_found")
     }
 
     scenario("agent visits summary page with clients cancelled in last 28 days") {
@@ -203,7 +204,7 @@ class clientsViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")
-      assert(document.getElementById("client-cancelled-title").text === "Your authority to act for these clients has been removed:")
+      assert(document.getElementById("client-cancelled-title").text === "client.summary.client-cancelled.text")
 
       And("I should see the name of the client")
       assert(document.getElementById("client-cancelled-name-0").text === "AAA")

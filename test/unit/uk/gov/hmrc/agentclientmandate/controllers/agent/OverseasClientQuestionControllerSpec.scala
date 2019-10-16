@@ -72,10 +72,10 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Does your client have an overseas company without a UK Unique Taxpayer Reference? - GOV.UK")
-          document.getElementById("header").text() must include("Does your client have an overseas company without a UK Unique Taxpayer Reference?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("submit").text() must be("Continue")
+          document.title() must be("agent.overseas-client-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.overseas-client-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -83,11 +83,11 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Does your client have an overseas company without a UK Unique Taxpayer Reference? - GOV.UK")
-          document.getElementById("header").text() must include("Does your client have an overseas company without a UK Unique Taxpayer Reference?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
+          document.title() must be("agent.overseas-client-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.overseas-client-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("isOverseas-true").attr("checked") must be("checked")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -118,8 +118,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the overseas client question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the overseas client question")
+          document.getElementsByClass("error-list").text() must include("agent.overseas-client-question.error.general.isOverseas")
+          document.getElementsByClass("error-notification").text() must include("agent.overseas-client-question.error.isOverseas")
         }
       }
     }
@@ -136,7 +136,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
   class Setup {
     val controller = new OverseasClientQuestionController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

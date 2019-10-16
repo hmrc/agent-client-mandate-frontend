@@ -63,12 +63,12 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("Declaration and consent - GOV.UK")
-          document.getElementById("header").text() must include("Declaration and consent")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("declare-title").text() must be("I declare that:")
-          document.getElementById("agent-name").text() must be("name has agreed to act on my behalf in respect of ATED")
-          document.getElementById("dec-info").text() must be("the information I have provided is correct and complete")
-          document.getElementById("submit").text() must be("Agree and submit")
+          document.getElementById("header").text() must include("client.agent-declaration.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.agent-declaration.pre-heading")
+          document.getElementById("declare-title").text() must be("client.agent-declaration.declare-header")
+          document.getElementById("agent-name").text() must be("client.agent-declaration.agent-name")
+          document.getElementById("dec-info").text() must be("client.agent-declaration.information")
+          document.getElementById("submit").text() must be("agree-submit")
         }
       }
     }
@@ -141,7 +141,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
       mockDataCacheService,
       mockMandateService,
       mockAuthConnector,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       implicitly,
       mockAppConfig
     )

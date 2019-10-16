@@ -64,11 +64,11 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Does your client pay tax in the UK through Self Assessment? - GOV.UK")
-          document.getElementById("header").text() must include("Does your client pay tax in the UK through Self Assessment?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("paySA_legend").text() must be("Does your client pay tax in the UK through Self Assessment?")
-          document.getElementById("submit").text() must be("Continue")
+          document.title() must be("agent.paySA-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.paySA-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("paySA_legend").text() must be("agent.paySA-question.header")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
     }
@@ -99,8 +99,8 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the do you pay Self Assessment question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the Self Assessment question")
+          document.getElementsByClass("error-list").text() must include("agent.paySA-question.error.general.paySA")
+          document.getElementsByClass("error-notification").text() must include("agent.paySA-question.paySA.not-selected.error")
         }
       }
     }
@@ -117,7 +117,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      app.injector.instanceOf[MessagesControllerComponents]
+      stubbedMessagesControllerComponents
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {

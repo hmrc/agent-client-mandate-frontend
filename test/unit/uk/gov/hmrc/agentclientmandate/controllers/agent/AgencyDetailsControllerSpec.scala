@@ -70,7 +70,7 @@ class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
     val controller = new AgencyDetailsController(
       mockAgentClientMandateService,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

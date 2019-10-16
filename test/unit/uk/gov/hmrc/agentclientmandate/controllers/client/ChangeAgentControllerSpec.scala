@@ -70,11 +70,11 @@ class ChangeAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         viewAuthorisedClient(request, { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Do you want to appoint another agent to act for you? - GOV.UK")
-          document.getElementById("header").text() must include("Do you want to appoint another agent to act for you?")
-          document.getElementById("pre-heading").text() must be("This section is: Manage your ATED service")
-          document.getElementById("yesNo_legend").text() must be("Do you want to appoint another agent to act for you?")
-          document.getElementById("submit").text() must be("Confirm")
+          document.title() must be("client.change-agent.title - GOV.UK")
+          document.getElementById("header").text() must include("client.change-agent.header")
+          document.getElementById("pre-heading").text() must be("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementById("yesNo_legend").text() must be("client.change-agent.header")
+          document.getElementById("submit").text() must be("confirm-button")
         })
       }
     }
@@ -87,8 +87,8 @@ class ChangeAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with change agent question")
-          document.getElementsByClass("error-notification").text() must include("The change agent question must be answered")
+          document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+          document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.changeAgent")
         }
       }
 
@@ -120,7 +120,7 @@ class ChangeAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     val controller = new ChangeAgentController(
       mockAgentClientMandateService,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

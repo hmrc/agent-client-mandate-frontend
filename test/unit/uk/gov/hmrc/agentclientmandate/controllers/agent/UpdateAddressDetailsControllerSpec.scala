@@ -125,7 +125,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with GuiceOneServerPer
 
   class Setup {
     val controller = new UpdateAddressDetailsController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
       mockDataCacheService,
       implicitly,

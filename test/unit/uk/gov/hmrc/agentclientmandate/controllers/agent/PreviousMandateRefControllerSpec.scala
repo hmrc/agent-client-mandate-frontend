@@ -83,10 +83,10 @@ class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSu
         viewWithAuthorisedAgent(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is the previous unique authorisation number for the client? - GOV.UK")
-          document.getElementById("header").text() must include("What is the previous unique authorisation number for the client?")
+          document.title() must be("agent.search-previous-mandate.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.search-previous-mandate.header")
           document.getElementById("mandateRef").`val`() must be("ABC123")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -131,8 +131,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("You must answer unique authorisation number question")
+          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -144,8 +144,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("A unique authorisation number cannot be more than 8 characters")
+          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -157,9 +157,9 @@ class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("You must answer unique authorisation number question")
+          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
           document.getElementsByClass("error-notification").text() must
-            include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
+            include("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -216,7 +216,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with GuiceOneServerPerSu
 
   class Setup {
     val controller = new PreviousMandateRefController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockDataCacheService,
       mockMandateService,

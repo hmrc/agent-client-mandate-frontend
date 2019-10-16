@@ -106,7 +106,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with GuiceOneServerPerS
 
   class Setup {
     val controller = new MandateConfirmationController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       implicitly,
       mockAppConfig,
       mockDataCacheService,

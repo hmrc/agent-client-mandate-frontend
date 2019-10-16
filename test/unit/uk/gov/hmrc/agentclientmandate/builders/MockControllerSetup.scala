@@ -19,15 +19,21 @@ package unit.uk.gov.hmrc.agentclientmandate.builders
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
+import play.api.mvc.MessagesControllerComponents
 import play.api.{Application, Environment}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
 trait MockControllerSetup {
   self: MockitoSugar =>
 
   val app: Application
   val mockAppConfig: AppConfig = mock[AppConfig]
+  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+  val mockEnvironment: Environment = mock[Environment]
+
+  val stubbedMessagesControllerComponents: MessagesControllerComponents = stubMessagesControllerComponents()
 
   when(mockAppConfig.companyAuthHost)
     .thenReturn("")
@@ -54,7 +60,9 @@ trait MockControllerSetup {
         "" +
         "http://localhost:9959/mandate/agent/client-registered-previously/callPage")
   when(mockAppConfig.servicesConfig)
-    .thenReturn(app.injector.instanceOf[ServicesConfig])
+    .thenReturn(mockServicesConfig)
+  when(mockServicesConfig.getString(ArgumentMatchers.eq("microservice.delegated-service-redirect-url.ated")))
+    .thenReturn("http://localhost:9916/ated/account-summary")
   when(mockAppConfig.environment)
-    .thenReturn(app.injector.instanceOf[Environment])
+    .thenReturn(mockEnvironment)
 }

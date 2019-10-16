@@ -76,11 +76,11 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         viewAuthorisedClient(controller)(request, "/app/return") { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Confirm Agent Removal - GOV.UK")
-          document.getElementById("header").text() must include("Are you sure you want to cancel the authority for Agent Ltd to act on your behalf for ATED?")
-          document.getElementById("pre-header").text() must be("This section is: Manage your ATED service")
-          document.getElementById("yesNo_legend").text() must be("Are you sure you want to cancel the authority for Agent Ltd to act on your behalf for ATED?")
-          document.getElementById("submit").text() must be("Confirm")
+          document.title() must be("client.remove-agent.title - GOV.UK")
+          document.getElementById("header").text() must include("client.remove-agent.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementById("yesNo_legend").text() must be("client.remove-agent.header")
+          document.getElementById("submit").text() must be("confirm-button")
         }
       }
 
@@ -109,8 +109,8 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with remove agent question")
-          document.getElementsByClass("error-notification").text() must include("The remove agent question must be answered")
+          document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+          document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.removeAgent")
         }
       }
 
@@ -187,11 +187,11 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         confirmationWithAuthorisedClient(controller) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("You have successfully removed your agent - GOV.UK")
-          document.getElementById("banner-text").text() must include("You have removed Agent Limited as your agent")
-          document.getElementById("notification").text() must be("Your agent will receive an email notification.")
-          document.getElementById("heading-1").text() must be("You can")
-                    document.getElementById("return_to_service_button").text() must be("Your ATED online service")
+          document.title() must be("client.remove-agent-confirmation.title - GOV.UK")
+          document.getElementById("banner-text").text() must include("client.remove-agent-confirmation.banner-text")
+          document.getElementById("notification").text() must be("client.agent-confirmation.notification")
+          document.getElementById("heading-1").text() must be("client.remove-agent-confirmation.header")
+          document.getElementById("return_to_service_button").text() must be("client.remove-agent-confirmation.service_button")
         }
       }
     }
@@ -209,7 +209,7 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
       mockAgentClientMandateService,
       mockDataCacheService,
       mockDelegationConnector,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

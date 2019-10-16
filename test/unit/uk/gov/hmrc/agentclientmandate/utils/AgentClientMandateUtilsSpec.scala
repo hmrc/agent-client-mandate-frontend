@@ -17,16 +17,16 @@
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
 import org.joda.time.DateTime
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class AgentClientMandateUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
+class AgentClientMandateUtilsSpec extends PlaySpec with MockitoSugar {
 
-  val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  val appConfig: AppConfig = mock[AppConfig]
 
   "AgentClientMandateUtils" must {
     "validateUTR" must {
@@ -58,13 +58,6 @@ class AgentClientMandateUtilsSpec extends PlaySpec with GuiceOneServerPerSuite {
       "a valid status is passed" in {
         AgentClientMandateUtils.checkStatus(Status.PendingActivation) must be("Pending")
       }
-    }
-  }
-  "getIsoCodeTupleList" must {
-    "bring the correct country from the file" in {
-      appConfig.getIsoCodeTupleList must contain(("US", "USA :United States of America"))
-      appConfig.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
-      appConfig.getIsoCodeTupleList must contain(("GB", "United Kingdom :UK, GB, Great Britain"))
     }
   }
 

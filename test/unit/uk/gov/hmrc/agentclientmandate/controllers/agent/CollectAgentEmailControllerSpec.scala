@@ -70,7 +70,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         viewEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -80,7 +80,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         editEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
         }
       }
@@ -92,11 +92,11 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         viewEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
-          document.getElementById("header").text() must include("What email address do you want to use for this client?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
+          document.title() must be("agent.enter-email.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.enter-email.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"We will use this email address to send you notifications about this client.")
-          document.getElementById("email_field").text() must be("What email address do you want to use for this client?")
+          document.getElementById("email_field").text() must be("agent.enter-email.title")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("Continue")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -107,11 +107,11 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         editEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
-          document.getElementById("header").text() must include("What email address do you want to use for this client?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
+          document.title() must be("agent.enter-email.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.enter-email.header")
+          document.getElementById("pre-header").text() must be("Tated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"We will use this email address to send you notifications about this client.")
-          document.getElementById("email_field").text() must be("What email address do you want to use for this client?")
+          document.getElementById("email_field").text() must be("agent.enter-email.title")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("Continue")
         }
@@ -129,7 +129,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         addClientAuthorisedAgent(Some(clientMandatDisplay)){ result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("agent@mail.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -139,7 +139,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         addClientAuthorisedAgent(None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What email address do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -245,7 +245,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
 
   class Setup {
     val controller = new CollectAgentEmailController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockDataCacheService,
       implicitly,

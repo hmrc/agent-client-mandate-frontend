@@ -59,7 +59,7 @@ class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
 
   class Setup {
     val controller = new RemoveClientController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,

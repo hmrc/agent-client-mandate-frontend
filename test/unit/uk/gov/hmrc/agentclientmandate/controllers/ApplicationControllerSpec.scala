@@ -18,10 +18,11 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers
 
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{MessagesControllerComponents, Result}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.ApplicationController
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
 import scala.concurrent.Future
 
@@ -29,7 +30,7 @@ class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
   val service = "ATED"
 
   class Setup {
-    val applicationController = new ApplicationController(app.injector.instanceOf[MessagesControllerComponents])
+    val applicationController = new ApplicationController(stubMessagesControllerComponents())
   }
 
   "ApplicationController" must {

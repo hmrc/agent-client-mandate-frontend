@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
 class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen {
@@ -35,7 +36,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
   implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"

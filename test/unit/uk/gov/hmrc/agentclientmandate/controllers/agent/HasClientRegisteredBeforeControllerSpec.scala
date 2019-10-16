@@ -68,7 +68,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("Has your client previously had an agent who used the ATED online service to submit returns on their behalf?")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK")
         }
       }
 
@@ -76,7 +76,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("Has your client previously had an agent who used the ATED online service to submit returns on their behalf?")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK")
         }
       }
     }
@@ -86,7 +86,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
         viewWithAuthorisedAgent("any", ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("Has your client previously had an agent who used the ATED online service to submit returns on their behalf?")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK")
         }
       }
     }
@@ -118,8 +118,8 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the previously had an agent question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the previously had an agent question")
+          document.getElementsByClass("error-list").text() must include("agent.client-permission.error.general.prevRegistered")
+          document.getElementsByClass("error-notification").text() must include("agent.client-prev-registered.not-selected.field-error")
         }
       }
     }
@@ -136,7 +136,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
 
   class Setup {
     val controller = new HasClientRegisteredBeforeController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockDataCacheService,
       mockBusinessCustomerConnector,
       mockAtedSubscriptionConnector,
