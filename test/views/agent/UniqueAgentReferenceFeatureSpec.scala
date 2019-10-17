@@ -27,10 +27,9 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDet
 import uk.gov.hmrc.agentclientmandate.views
 
 
-class UniqueAgentReferenceFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class UniqueAgentReferenceFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The user can view the reject client page") {
 
@@ -48,25 +47,25 @@ class UniqueAgentReferenceFeatureSpec extends FeatureSpec with GuiceOneServerPer
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Your unique agent reference is ABC123 - GOV.UK")
-      assert(document.title() === "Your unique authorisation number is ABC123 - GOV.UK")
+      assert(document.title() === "agent.unique-reference.title - GOV.UK")
       And("The banner text is - Your unique authorisation number for test name is ABC123")
-      assert(document.getElementById("banner-text").text() === "Your unique authorisation number for test name is ABC123")
+      assert(document.getElementById("banner-text").text() === "agent.unique-reference.header")
       And("The screen text is - What you must do next")
-      assert(document.getElementById("what-you-must-do").text() === "What you must do next")
+      assert(document.getElementById("what-you-must-do").text() === "agent.unique-reference.next.heading.text")
 
       And("The agents instructions")
-      assert(document.getElementById("agent-instruction-1").text() === "You must give your client the unique authorisation number ABC123 so they can authorise you to act for them. This number is available from your list of clients.")
-      assert(document.getElementById("agent-instruction-2").text() === "When your client authorises you, we will send you an email. You must sign in and accept their request within 28 days or you will need to start from the beginning.")
+      assert(document.getElementById("agent-instruction-1").text() === "agent.unique-reference.do-next1")
+      assert(document.getElementById("agent-instruction-2").text() === "agent.unique-reference.do-next2")
 
       And("The client-instruction - should be correct for the relevant service")
-      assert(document.getElementById("tell-your-client").text() === "What to tell your client")
-      assert(document.getElementById("agent.unique-reference.details.text.1").text() === "Sign in to your organisation Government Gateway account. If you do not have an account, create a Government Gateway account.")
-      assert(document.getElementById("agent.unique-reference.details.text.2").text() === "When you are signed in, register for ATED using your registered name and Unique Taxpayer Reference (UTR).")
-      assert(document.getElementById("agent.unique-reference.details.text.3").text() === "Add your or your agent’s contact email address.")
-      assert(document.getElementById("agent.unique-reference.details.text.4").text() === "Enter the unique authorisation number ABC123.")
+      assert(document.getElementById("tell-your-client").text() === "agent.unique-reference.tell-client")
+      assert(document.getElementById("agent.unique-reference.details.text.2").text() === "agent.unique-reference.details.text.2")
+      assert(document.getElementById("agent.unique-reference.details.text.1").text() === "agent.unique-reference.details.text.1")
+      assert(document.getElementById("agent.unique-reference.details.text.3").text() === "agent.unique-reference.details.text.3")
+      assert(document.getElementById("agent.unique-reference.details.text.4").text() === "agent.unique-reference.details.text.4")
 
       And("The submit : View all my clients has the correct link")
-      assert(document.getElementById("submit").text() === "View all my clients")
+      assert(document.getElementById("submit").text() === "agent.unique-reference.button")
 
     }
   }

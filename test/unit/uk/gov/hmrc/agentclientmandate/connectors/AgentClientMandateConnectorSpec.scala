@@ -35,7 +35,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AgentBusiness
 
 import scala.concurrent.Future
 
-class AgentClientMandateConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]

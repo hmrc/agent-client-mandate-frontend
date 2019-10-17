@@ -40,9 +40,9 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
-  implicit val mockConfiguration: ServicesConfig = app.injector.instanceOf[ServicesConfig]
+  implicit val mockConfiguration: ServicesConfig = mock[ServicesConfig]
 
   "SelectServiceController" must {
 
@@ -74,11 +74,11 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Select a service - GOV.UK")
-          document.getElementById("header").text() must include("Select a service")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("service_legend").text() must be("Select a service")
-          document.getElementById("submit").text() must be("Submit")
+          document.title() must be("agent.select-service.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.select-service.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("service_legend").text() must be("agent.select-service.header")
+          document.getElementById("submit").text() must be("submit-button")
         }
       }
 
@@ -90,7 +90,7 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
           .thenReturn (Future.successful(false))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/summary"))
+          redirectLocation(result) must be(Some("/agent/summary"))
         }
       }
 
@@ -99,7 +99,7 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
           .thenReturn (Future.successful(true))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
+          redirectLocation(result) must be(Some("/agent/missing-email"))
         }
       }
     }
@@ -111,7 +111,7 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/summary"))
+          redirectLocation(result) must be(Some("/agent/summary"))
         }
       }
 
@@ -121,7 +121,7 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
+          redirectLocation(result) must be(Some("/agent/missing-email"))
         }
       }
     }
@@ -132,8 +132,8 @@ class SelectServiceControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the select service question")
-          document.getElementsByClass("error-notification").text() must include("You must select one service")
+          document.getElementsByClass("error-list").text() must include("agent.select-service.error.general.service")
+          document.getElementsByClass("error-notification").text() must include("agent.select-service.error.service")
         }
       }
     }

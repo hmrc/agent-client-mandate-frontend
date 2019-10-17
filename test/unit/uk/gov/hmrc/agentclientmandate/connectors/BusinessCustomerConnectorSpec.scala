@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
-class BusinessCustomerConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   val testAgentAuthRetrievals = AgentAuthRetrievals(
     "agentRef",

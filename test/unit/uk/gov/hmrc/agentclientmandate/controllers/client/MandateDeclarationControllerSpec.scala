@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with MockControllerSetup {
+class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup {
 
   "MandateDeclarationController" must {
 
@@ -90,7 +90,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val mandateReturned = Some(mandate)
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn, mandateReturned) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/confirmation"))
+          redirectLocation(result) must be(Some("/client/confirmation"))
         }
       }
     }
@@ -102,7 +102,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val cacheReturn = Some(ClientCache(mandate = Some(mandate)))
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
     }
@@ -112,7 +112,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
     }

@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "EditMandateControllerSpec" must {
 
@@ -129,7 +129,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
+          redirectLocation(result) must be(Some(s"/agent/summary"))
         }
       }
     }
@@ -139,7 +139,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/edit-client/AS123456"))
+          redirectLocation(result) must be(Some(s"/agent/edit-client/AS123456"))
         }
       }
     }

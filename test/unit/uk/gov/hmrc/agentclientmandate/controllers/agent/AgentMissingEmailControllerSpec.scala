@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "AgentMissingEmailControllerSpec" must {
 

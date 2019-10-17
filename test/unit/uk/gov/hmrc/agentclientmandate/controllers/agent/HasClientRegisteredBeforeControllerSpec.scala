@@ -42,7 +42,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "HasClientRegisteredBeforeController" must {
 
@@ -96,7 +96,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with GuiceOneServ
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "true")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/agent/search-previous/callPage")
+          redirectLocation(result).get must include("/agent/search-previous/callPage")
         }
       }
     }

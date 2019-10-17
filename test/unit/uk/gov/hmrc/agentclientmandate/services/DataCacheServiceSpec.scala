@@ -33,7 +33,7 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
-class DataCacheServiceSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   case class FormData(name: String)
 

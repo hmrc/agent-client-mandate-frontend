@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "MandateDetailsController" must {
 
@@ -65,7 +65,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
         }
       }
 
@@ -88,7 +88,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/overseas-client-question")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/overseas-client-question")
         }
       }
     }
@@ -106,7 +106,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/add-client"))
+          redirectLocation(result) must be(Some(s"/agent/add-client"))
         }
       }
     }
@@ -123,7 +123,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/client-display-name"))
+          redirectLocation(result) must be(Some(s"/agent/client-display-name"))
         }
       }
     }
@@ -142,7 +142,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
       "form is submitted" in new Setup {
         submitWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/unique-reference"))
+          redirectLocation(result) must be(Some(s"/agent/unique-reference"))
         }
       }
     }

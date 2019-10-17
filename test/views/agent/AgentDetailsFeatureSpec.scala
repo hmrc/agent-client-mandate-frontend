@@ -25,10 +25,9 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.views
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class AgentDetailsFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class AgentDetailsFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The user can view the agent details page") {
 

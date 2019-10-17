@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class AgentClientMandateServiceSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   class Setup {
     val service = new AgentClientMandateService(

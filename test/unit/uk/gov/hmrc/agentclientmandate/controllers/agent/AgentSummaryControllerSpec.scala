@@ -42,7 +42,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, Authenticated
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
 
   "AgentClientSummaryController" must {
@@ -89,7 +89,7 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
           document.getElementById("filter-clients") must be(null)
           document.getElementById("displayName_field") must be(null)
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
+          document.getElementById("view-pending-clients").attr("href") must be("/agent/summary?tabName=pending-clients")
           document.getElementById("view-clients") must be(null)
         }
       }
@@ -106,7 +106,7 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
           document.getElementById("filter-clients").text() must be("client.summary.filter-clients")
           document.getElementById("displayName_field").text() must be("client.summary.filter-display_name")
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
+          document.getElementById("view-pending-clients").attr("href") must be("/agent/summary?tabName=pending-clients")
           document.getElementById("view-clients") must be(null)
         }
       }
@@ -124,7 +124,7 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("view-pending-clients") must be(null)
-          document.getElementById("view-clients").attr("href") must be("/mandate/agent/summary")
+          document.getElementById("view-clients").attr("href") must be("/agent/summary")
         }
       }
     }
@@ -202,7 +202,7 @@ class AgentSummaryControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         activateClientByAuthorisedAgent(controller) { result =>
 
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/agent/summary")
+          redirectLocation(result).get must include("/agent/summary")
         }
       }
 

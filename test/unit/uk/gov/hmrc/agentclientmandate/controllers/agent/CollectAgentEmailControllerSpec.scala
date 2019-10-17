@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "CollectAgentEmailController" must {
 
@@ -95,10 +95,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
           document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("header").text() must include("agent.enter-email.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("info").text() must include(s"We will use this email address to send you notifications about this client.")
-          document.getElementById("email_field").text() must be("agent.enter-email.title")
+          document.getElementById("info").text() must include(s"agent.enter-email.info.text")
+          document.getElementById("email_field").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
@@ -109,11 +109,11 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.enter-email.title - GOV.UK")
           document.getElementById("header").text() must include("agent.enter-email.header")
-          document.getElementById("pre-header").text() must be("Tated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("info").text() must include(s"We will use this email address to send you notifications about this client.")
-          document.getElementById("email_field").text() must be("agent.enter-email.title")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("info").text() must include(s"agent.enter-email.info.text")
+          document.getElementById("email_field").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -153,7 +153,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/client-display-name"))
+          redirectLocation(result) must be(Some("/agent/client-display-name"))
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -184,8 +184,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -197,8 +197,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -209,9 +209,9 @@ class CollectAgentEmailControllerSpec extends PlaySpec with GuiceOneServerPerSui
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
           document.getElementsByClass("error-notification").text() must
-            include("The email address you want to use for this client must be 241 characters or less")
+            include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }

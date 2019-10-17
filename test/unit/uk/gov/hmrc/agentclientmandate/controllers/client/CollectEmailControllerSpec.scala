@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "CollectEmailController" must {
 
@@ -101,7 +101,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
           document.getElementById("submit").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/client/review")
+          document.getElementById("backLinkHref").attr("href") must be("/client/review")
         }
 
       }
@@ -158,7 +158,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = Some(cachedData), returnCache = returnData, mode = Some("edit")) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -169,7 +169,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = None, returnCache = returnData) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/search"))
+          redirectLocation(result) must be(Some("/client/search"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }

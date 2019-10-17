@@ -26,10 +26,9 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 
-class RejectClientFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The user can view the reject client page") {
 

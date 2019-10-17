@@ -37,7 +37,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "PaySAQuestionController" must {
 
@@ -78,7 +78,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/mandate/agent/details/paySA")
+          redirectLocation(result).get must include(s"/agent/details/paySA")
         }
       }
     }
@@ -88,7 +88,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/mandate/agent/client-permission/paySA")
+          redirectLocation(result).get must include(s"/agent/client-permission/paySA")
         }
       }
     }

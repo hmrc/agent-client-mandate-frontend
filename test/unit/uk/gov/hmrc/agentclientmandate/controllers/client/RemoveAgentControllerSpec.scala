@@ -43,7 +43,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "RemoveAgentController" must {
 
@@ -119,7 +119,7 @@ class RemoveAgentControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/client/change")
+          redirectLocation(result).get must include("/client/change")
         }
       }
 

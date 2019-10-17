@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "ClientDisplayNameController" must {
 
@@ -70,8 +70,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         viewClientDisplayNameAuthorisedAgent() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What display name do you want to use for this client? - GOV.UK")
-          document.getElementById("header").text() must include("What display name do you want to use for this client?")
+          document.title() must be("agent.client-display-name.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.client-display-name.header")
         }
       }
 
@@ -79,7 +79,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         viewClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What display name do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.client-display-name.title - GOV.UK")
           document.getElementById("clientDisplayName").`val`() must be("client display name")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -95,8 +95,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         editClientDisplayNameAuthorisedAgent() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What display name do you want to use for this client? - GOV.UK")
-          document.getElementById("header").text() must include("What display name do you want to use for this client?")
+          document.title() must be("agent.client-display-name.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.client-display-name.header")
         }
       }
 
@@ -104,7 +104,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         editClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What display name do you want to use for this client? - GOV.UK")
+          document.title() must be("agent.client-display-name.title - GOV.UK")
           document.getElementById("clientDisplayName").`val`() must be("client display name")
         }
       }
@@ -121,7 +121,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/overseas-client-question"))
+          redirectLocation(result) must be(Some("/agent/overseas-client-question"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
@@ -149,8 +149,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the client display name question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the client display name question")
+          document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
+          document.getElementsByClass("error-notification").text() must include("agent.client-display-name.error.not-selected")
         }
       }
 
@@ -160,8 +160,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with GuiceOneServerPerSui
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the client display name question")
-          document.getElementsByClass("error-notification").text() must include("A client display name cannot be more than 99 characters")
+          document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
+          document.getElementsByClass("error-notification").text() must include("agent.client-display-name.error.length")
         }
       }
     }

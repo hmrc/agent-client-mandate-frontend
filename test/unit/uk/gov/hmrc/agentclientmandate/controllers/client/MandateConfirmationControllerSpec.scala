@@ -38,7 +38,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateConfirmationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "MandateConfirmationController" must {
 
@@ -79,11 +79,11 @@ class MandateConfirmationControllerSpec extends PlaySpec with GuiceOneServerPerS
         viewAuthorisedClient(controller)(Some(mandate)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Your request to appoint an agent has been successfully submitted - GOV.UK")
-          document.getElementById("banner-text").text() must include("Your request to appoint name has been successfully submitted")
-          document.getElementById("notification").text() must be("Your agent will receive an email notification.")
-          document.getElementById("heading").text() must be("What happens next")
-          document.getElementById("finish_btn").text() must be("Sign out")
+          document.title() must be("client.agent-confirmation.title - GOV.UK")
+          document.getElementById("banner-text").text() must include("client.agent-confirmation.banner-text")
+          document.getElementById("notification").text() must be("client.agent-confirmation.notification")
+          document.getElementById("heading").text() must be("client.agent-confirmation.header")
+          document.getElementById("finish_btn").text() must be("client.agent-confirmation.finish-signout")
         }
       }
 
@@ -93,7 +93,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with GuiceOneServerPerS
       "approved mandate is not returned in response" in new Setup {
         viewAuthorisedClient(controller)(None) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
     }

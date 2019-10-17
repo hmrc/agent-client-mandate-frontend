@@ -36,7 +36,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, Authenticated
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgencyDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgencyDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
    "AgencyDetailsController" should {
 

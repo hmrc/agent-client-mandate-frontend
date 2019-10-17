@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
 import scala.concurrent.Future
 
-class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite {
+class ApplicationControllerSpec extends PlaySpec  {
   val service = "ATED"
 
   class Setup {

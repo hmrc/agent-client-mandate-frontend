@@ -20,7 +20,6 @@ import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
@@ -32,13 +31,10 @@ import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
+class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-
-  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
   val time1: DateTime = DateTime.now()
@@ -77,7 +73,6 @@ class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
     clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The agent can view the agent summary page when they only have pending clients") {
 

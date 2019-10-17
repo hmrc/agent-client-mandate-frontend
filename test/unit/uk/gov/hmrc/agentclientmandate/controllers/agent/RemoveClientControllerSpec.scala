@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -141,11 +141,11 @@ class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
       viewWithAuthorisedAgent { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("Are you sure you want to remove ACME Limited? - GOV.UK")
-        document.getElementById("pre-header").text() must include("Manage your ATED service")
-        document.getElementById("header").text() must include("Are you sure you want to remove ACME Limited?")
-        document.getElementById("yesNo_legend").text() must be("Are you sure you want to remove ACME Limited?")
-        document.getElementById("submit").text() must be("Confirm")
+        document.title() must be("agent.remove-client.header - GOV.UK")
+        document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+        document.getElementById("header").text() must include("agent.remove-client.header")
+        document.getElementById("yesNo_legend").text() must be("agent.remove-client.header")
+        document.getElementById("submit").text() must be("confirm-button")
       }
     }
   }
@@ -159,8 +159,8 @@ class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(BAD_REQUEST)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementsByClass("error-list").text() must include("There is a problem with remove client question")
-        document.getElementsByClass("error-notification").text() must include("The remove client question must be answered")
+        document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+        document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.removeClient")
       }
     }
   }
@@ -172,7 +172,7 @@ class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         .thenReturn(Future.successful(mandate))
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(SEE_OTHER)
-        redirectLocation(result).get must include(s"/mandate/agent/summary")
+        redirectLocation(result).get must include(s"/agent/summary")
       }
     }
 
@@ -214,7 +214,7 @@ class RemoveClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
       showConfirmationWithAuthorisedAgent { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("You have removed your client - GOV.UK")
+        document.title() must be("agent.remove-client-confirmation.title - GOV.UK")
       }
     }
   }

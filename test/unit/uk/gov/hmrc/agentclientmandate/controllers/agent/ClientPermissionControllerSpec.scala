@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "ClientPermissionController" must {
 
@@ -77,7 +77,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
         }
       }
 
@@ -95,7 +95,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
         }
       }
 
@@ -110,7 +110,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/nrl-question")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/nrl-question")
         }
       }
       "agent requests(GET) for 'client permission' view for other service - it doesn't clear session cache for ated-subscription" in new Setup {
@@ -127,7 +127,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "true")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/agent/client-registered-previously")
+          redirectLocation(result).get must include("/agent/client-registered-previously")
         }
       }
     }
@@ -137,7 +137,7 @@ class ClientPermissionControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary?tabName=ATED"))
+          redirectLocation(result) must be(Some(s"/agent/summary?tabName=ATED"))
         }
       }
     }

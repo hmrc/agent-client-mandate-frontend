@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "OverseasClientQuestionController" must {
 
@@ -98,7 +98,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/agent/nrl-question")
+          redirectLocation(result).get must include("/agent/nrl-question")
         }
       }
     }
@@ -107,7 +107,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with GuiceOneServerP
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/mandate/agent/details/overseas")
+          redirectLocation(result).get must include(s"/agent/details/overseas")
         }
       }
     }

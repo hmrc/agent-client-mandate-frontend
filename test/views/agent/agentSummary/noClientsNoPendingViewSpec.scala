@@ -31,13 +31,10 @@ import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen {
+class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-
-  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
   val time1: DateTime = DateTime.now()
@@ -45,7 +42,6 @@ class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The agent can view the agent summary page but they have no clients and no pending clients") {
 
@@ -59,17 +55,17 @@ class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite
       val html = views.html.agent.agentSummary.noClientsNoPending("ATED", agentDetails, None)
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - ATED clients - GOV.UK")
-      assert(document.title() === "ATED clients - GOV.UK")
+      Then("The title should match - client.summary.title - GOV.UK")
+      assert(document.title() === "client.summary.title - GOV.UK")
 
       And("I should not see the clients cancelled panel")
       assert(document.getElementById("client-cancelled-title") === null)
 
       And("The Pre Header should be the agents name - ABC Ltd.")
-      assert(document.getElementById("pre-header").text() === "this is for: Org Name")
+      assert(document.getElementById("pre-header").text() === "ated.screen-reader.name Org Name")
 
       And("The Add Client Button - should exist")
-      assert(document.getElementById("add-client-btn").text() === "Add a client")
+      assert(document.getElementById("add-client-btn").text() === "client.summary.add-client")
 
       And("The Add Client Link - should not exist")
       assert(document.getElementById("add-client-link") === null)
@@ -86,7 +82,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")
-      assert(document.getElementById("client-cancelled-title").text === "Your authority to act for these clients has been removed:")
+      assert(document.getElementById("client-cancelled-title").text === "client.summary.client-cancelled.text")
 
       And("I should see the name of the client")
       assert(document.getElementById("client-cancelled-name-0").text === "AAA")

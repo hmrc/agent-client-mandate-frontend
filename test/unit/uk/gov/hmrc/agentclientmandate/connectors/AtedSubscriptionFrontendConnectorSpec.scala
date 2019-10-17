@@ -26,6 +26,7 @@ import play.api.mvc.Request
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
+import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainContent}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.filters.frontend.crypto.SessionCookieCrypto
@@ -33,13 +34,19 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
-class AtedSubscriptionFrontendConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
-  val mockDefaultHttpClient = mock[DefaultHttpClient]
-  val mockServicesConfig = mock[ServicesConfig]
-  val mockSessionCookieCrypto = app.injector.instanceOf[SessionCookieCrypto]
+  val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
+  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+  val mockSessionCookieCrypto: SessionCookieCrypto = mock[SessionCookieCrypto]
+  val mockEncWithDec: Encrypter with Decrypter = mock[Encrypter with Decrypter]
 
   override def beforeEach(): Unit = {
+    when(mockSessionCookieCrypto.crypto)
+      .thenReturn(mockEncWithDec)
+    when(mockEncWithDec.encrypt(ArgumentMatchers.any()))
+      .thenReturn(Crypted("test"))
+
     reset(mockDefaultHttpClient)
   }
 
@@ -65,7 +72,7 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec with GuiceOneServer
     }
 
     "crypto" in new Setup {
-      connector.crypto("test").length mustBe 48
+      connector.crypto("test").length mustBe 4
     }
   }
 

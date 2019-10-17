@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "ReviewMandateController" must {
 
@@ -89,7 +89,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client requests(GET) for review mandate view, but mandate has not been cached on search mandate submit" in new Setup {
         viewWithAuthorisedClient(reviewMandateController)(Some(ClientCache(email = Some(ClientEmail(email = "aa@test.com"))))) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/search"))
+          redirectLocation(result) must be(Some("/client/search"))
         }
       }
 
@@ -100,7 +100,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client requests(GET) for review mandate view, but there is no cache" in new Setup {
         viewWithAuthorisedClient(reviewMandateController)() { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/email"))
+          redirectLocation(result) must be(Some("/client/email"))
         }
       }
 
@@ -110,7 +110,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client submits form" in new Setup {
         submitWithAuthorisedClient(reviewMandateController) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/declaration"))
+          redirectLocation(result) must be(Some("/client/declaration"))
         }
       }
     }

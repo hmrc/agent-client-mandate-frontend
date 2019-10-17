@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package views.agent
+package views.agent.agentSummary
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
