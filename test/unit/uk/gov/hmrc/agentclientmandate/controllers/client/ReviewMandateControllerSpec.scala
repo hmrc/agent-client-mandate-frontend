@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "ReviewMandateController" must {
 
@@ -71,13 +71,13 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedClient(reviewMandateController)(Some(returnData)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Check that this is the agency you want to appoint - GOV.UK")
-          document.getElementById("header").text() must include("Check that this is the agency you want to appoint")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("agent-ref-name-label").text() must be("Unique authorisation number")
-          document.getElementById("your-email-label").text() must be("Your email address")
-          document.getElementById("agent-disclaimer").text() must be("Appointing name will let them see all the details in your old returns.")
-          document.getElementById("submit").text() must be("Confirm and appoint agent")
+          document.title() must be("client.review-agent.title - GOV.UK")
+          document.getElementById("header").text() must include("client.review-agent.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.review-agent.preheader")
+          document.getElementById("agent-ref-name-label").text() must be("client.review-agent.agent-reference")
+          document.getElementById("your-email-label").text() must be("client.review-agent.own.email")
+          document.getElementById("agent-disclaimer").text() must be("client.review-agent.disclaimer")
+          document.getElementById("submit").text() must be("client.review-agent.submit")
         }
       }
 
@@ -89,7 +89,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client requests(GET) for review mandate view, but mandate has not been cached on search mandate submit" in new Setup {
         viewWithAuthorisedClient(reviewMandateController)(Some(ClientCache(email = Some(ClientEmail(email = "aa@test.com"))))) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/search"))
+          redirectLocation(result) must be(Some("/client/search"))
         }
       }
 
@@ -100,7 +100,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client requests(GET) for review mandate view, but there is no cache" in new Setup {
         viewWithAuthorisedClient(reviewMandateController)() { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/email"))
+          redirectLocation(result) must be(Some("/client/email"))
         }
       }
 
@@ -110,7 +110,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
       "client submits form" in new Setup {
         submitWithAuthorisedClient(reviewMandateController) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/declaration"))
+          redirectLocation(result) must be(Some("/client/declaration"))
         }
       }
     }
@@ -123,7 +123,7 @@ class ReviewMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
   class Setup {
     val reviewMandateController = new ReviewMandateController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

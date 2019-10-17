@@ -37,13 +37,13 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   class Setup {
     val controller = new UniqueAgentReferenceController(
       mockAuthConnector,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       implicitly,
       mockAppConfig
     )
@@ -79,7 +79,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
         viewWithAuthorisedAgent(controller)(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Your unique authorisation number is ABC123 - GOV.UK")
+          document.title() must be("agent.unique-reference.title - GOV.UK")
         }
       }
 
@@ -89,7 +89,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with GuiceOneServerPer
       "mandate ID is not found in cache" in new Setup {
         viewWithAuthorisedAgent(controller)() { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/service"))
+          redirectLocation(result) must be(Some("/agent/service"))
         }
       }
     }

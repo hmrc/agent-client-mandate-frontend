@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with MockControllerSetup {
+class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup {
 
   "MandateDeclarationController" must {
 
@@ -63,12 +63,12 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("Declaration and consent - GOV.UK")
-          document.getElementById("header").text() must include("Declaration and consent")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("declare-title").text() must be("I declare that:")
-          document.getElementById("agent-name").text() must be("name has agreed to act on my behalf in respect of ATED")
-          document.getElementById("dec-info").text() must be("the information I have provided is correct and complete")
-          document.getElementById("submit").text() must be("Agree and submit")
+          document.getElementById("header").text() must include("client.agent-declaration.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.agent-declaration.pre-heading")
+          document.getElementById("declare-title").text() must be("client.agent-declaration.declare-header")
+          document.getElementById("agent-name").text() must be("client.agent-declaration.agent-name")
+          document.getElementById("dec-info").text() must be("client.agent-declaration.information")
+          document.getElementById("submit").text() must be("agree-submit")
         }
       }
     }
@@ -90,7 +90,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val mandateReturned = Some(mandate)
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn, mandateReturned) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/confirmation"))
+          redirectLocation(result) must be(Some("/client/confirmation"))
         }
       }
     }
@@ -102,7 +102,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val cacheReturn = Some(ClientCache(mandate = Some(mandate)))
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
     }
@@ -112,7 +112,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
     }
@@ -141,7 +141,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with GuiceOneServerPerSu
       mockDataCacheService,
       mockMandateService,
       mockAuthConnector,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       implicitly,
       mockAppConfig
     )

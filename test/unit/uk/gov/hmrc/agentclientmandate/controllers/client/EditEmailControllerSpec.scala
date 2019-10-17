@@ -42,7 +42,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "EditEmailController" must {
 
@@ -59,10 +59,10 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
       viewWithAuthorisedClient(controller)("/api/anywhere") { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("Edit your email address - GOV.UK")
+        document.title() must be("client.edit-email.title - GOV.UK")
         document.getElementById("email").`val`() must be("client@client.com")
 
-        document.getElementById("backLinkHref").text() must be("Back")
+        document.getElementById("backLinkHref").text() must be("mandate.back")
         document.getElementById("backLinkHref").attr("href") must be("/api/anywhere")
       }
     }
@@ -115,8 +115,8 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -129,9 +129,9 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("error-notification").text() must
-            include("The email address you want to use for this client must be 241 characters or less")
+            include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -144,8 +144,8 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -190,7 +190,7 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
     val controller = new EditEmailController(
       mockDataCacheService,
       mockMandateService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

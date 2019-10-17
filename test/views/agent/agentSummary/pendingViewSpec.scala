@@ -20,7 +20,6 @@ import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
@@ -29,15 +28,13 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.Mandates
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
+import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen{
+class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-
-  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mandateId = "12345678"
   val time1: DateTime = DateTime.now()
@@ -76,7 +73,6 @@ class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
     clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The agent can view the agent summary page when they only have pending clients") {
 
@@ -93,14 +89,14 @@ class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val html = views.html.agent.agentSummary.pending("ATED", Mandates(Nil, pendingMandates), agentDetails, None, "")
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - ATED clients - GOV.UK")
-      assert(document.title() === "ATED clients - GOV.UK")
+      Then("The title should match - client.summary.title - GOV.UK")
+      assert(document.title() === "client.summary.title - GOV.UK")
 
       And("I should not see the clients cancelled panel")
       assert(document.getElementById("client-cancelled-title") === null)
       
       And("The Pending Clients tab - should exist")
-      assert(document.getElementById("pending-clients").text === "Requests (4) selected")
+      assert(document.getElementById("pending-clients").text === "client.summary.client-pending.title selected")
 
 
 
@@ -108,7 +104,7 @@ class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
       And("The Add Client Link - should exist")
-      assert(document.getElementById("add-client-link").text() === "Add a client")
+      assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
     }
 
     scenario("agent visits summary page with clients cancelled in last 28 days") {
@@ -120,7 +116,7 @@ class pendingViewSpec extends FeatureSpec with GuiceOneServerPerSuite with Mocki
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")
-      assert(document.getElementById("client-cancelled-title").text === "Your authority to act for these clients has been removed:")
+      assert(document.getElementById("client-cancelled-title").text === "client.summary.client-cancelled.text")
 
       And("I should see the name of the client")
       assert(document.getElementById("client-cancelled-name-0").text === "AAA")

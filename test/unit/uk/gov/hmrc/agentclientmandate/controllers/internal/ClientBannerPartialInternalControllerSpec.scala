@@ -39,7 +39,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ClientBannerPartialInternalControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "ClientBannerPartialController" must {
 
@@ -57,7 +57,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneSe
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementById("client-banner-text").text() must include("You have requested Agent Ltd to act as your agent")
+        document.getElementById("client-banner-text").text() must include("client.banner.text.approved")
         document.getElementById("client-banner-text-link").attr("href") must include("/client/remove/1")
       }
     }
@@ -68,7 +68,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneSe
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementById("client-banner-text").text() must include("Agent Ltd is now your appointed agent")
+        document.getElementById("client-banner-text").text() must include("client.banner.text.active")
         document.getElementById("client-banner-text-link").attr("href") must include("/client/remove/1")
       }
     }
@@ -79,7 +79,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneSe
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementById("client-banner-text").text() must include("The ATED agent can no longer act for the client")
+        document.getElementById("client-banner-text").text() must include("client.banner.text.cancelled")
         document.getElementById("client-banner-text-link").attr("href") must include("/client/email")
       }
     }
@@ -90,7 +90,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneSe
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementById("client-banner-text").text() must include("Agent Ltd has rejected your request to act as your agent")
+        document.getElementById("client-banner-text").text() must include("client.banner.text.rejected")
         document.getElementById("client-banner-text-link").attr("href") must include("/client/email")
       }
     }
@@ -103,7 +103,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneSe
 
   class Setup {
     val controller = new ClientBannerPartialInternalController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockMandateService,
       implicitly,

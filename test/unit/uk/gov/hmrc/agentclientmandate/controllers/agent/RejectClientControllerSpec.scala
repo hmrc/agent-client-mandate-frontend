@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RejectClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "RejectClientController" must {
 
@@ -73,8 +73,8 @@ class RejectClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Are you sure you want to reject the request from this client? - GOV.UK")
-          document.getElementById("heading").text() must include("Are you sure you want to reject the request from ACME Limited?")
+          document.title() must be("agent.reject-client.title - GOV.UK")
+          document.getElementById("heading").text() must include("agent.reject-client.header")
         }
       }
     }
@@ -87,8 +87,8 @@ class RejectClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with client reject question")
-          document.getElementsByClass("error-notification").text() must include("The client reject question must be answered")
+          document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+          document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.clientReject")
         }
       }
     }
@@ -140,7 +140,7 @@ class RejectClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         confirmationWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("You have rejected this client on")
+          document.title() must include("agent.reject-client-confirmation.title")
         }
       }
     }
@@ -163,7 +163,7 @@ class RejectClientControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
 
   class Setup {
     val controller = new RejectClientController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,

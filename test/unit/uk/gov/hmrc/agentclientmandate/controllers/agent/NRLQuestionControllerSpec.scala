@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
 
   "NRLQuestionController" must {
 
@@ -67,11 +67,11 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Is your client a non-resident landlord? - GOV.UK")
-          document.getElementById("header").text() must include("Is your client a non-resident landlord?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("nrl_legend").text() must be("Is your client a non-resident landlord?")
-          document.getElementById("submit").text() must be("Continue")
+          document.title() must be("agent.nrl-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.nrl-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("nrl_legend").text() must be("agent.nrl-question.header")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -79,12 +79,12 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Is your client a non-resident landlord? - GOV.UK")
-          document.getElementById("header").text() must include("Is your client a non-resident landlord?")
-          document.getElementById("pre-header").text() must be("This section is: Add a client")
-          document.getElementById("nrl_legend").text() must be("Is your client a non-resident landlord?")
+          document.title() must be("agent.nrl-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.nrl-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("nrl_legend").text() must be("agent.nrl-question.header")
           document.getElementById("nrl-true").attr("checked") must be("checked")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -95,7 +95,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/mandate/agent/paySA-question")
+          redirectLocation(result).get must include(s"/agent/paySA-question")
         }
       }
     }
@@ -105,7 +105,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/mandate/agent/client-permission/nrl")
+          redirectLocation(result).get must include(s"/agent/client-permission/nrl")
         }
       }
     }
@@ -116,8 +116,8 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the non-resident landlord question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the non-resident landlord question")
+          document.getElementsByClass("error-list").text() must include("agent.nrl-question.error.general.nrl")
+          document.getElementsByClass("error-notification").text() must include("agent.nrl-question.nrl.not-selected.error")
         }
       }
     }
@@ -133,7 +133,7 @@ class NRLQuestionControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
   class Setup {
     val controller = new NRLQuestionController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

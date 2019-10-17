@@ -26,10 +26,9 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 
-class RejectClientFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
 
   implicit val request = FakeRequest()
-  implicit val appConfig : AppConfig = app.injector.instanceOf[AppConfig]
 
   feature("The user can view the reject client page") {
 
@@ -44,23 +43,23 @@ class RejectClientFeatureSpec extends FeatureSpec with GuiceOneServerPerSuite wi
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Are you sure you want to reject the request from this client? - GOV.UK")
-      assert(document.title() === "Are you sure you want to reject the request from this client? - GOV.UK")
+      assert(document.title() === "agent.reject-client.title - GOV.UK")
       And("The pre-header text is - Manage your ATED service")
-      assert(document.getElementById("pre-heading").text() === "This section is: Manage your ATED service")
+      assert(document.getElementById("pre-heading").text() === "ated.screen-reader.section agent.edit-mandate-details.pre-header")
       And("The header text is - Are you sure you want to reject the request from ACME Limited?")
-      assert(document.getElementById("heading").text() === "Are you sure you want to reject the request from ACME Limited?")
+      assert(document.getElementById("heading").text() === "agent.reject-client.header")
 
       And("The reject text is - Rejecting a client request means you will not be able to act on their behalf unless they submit another request.")
-      assert(document.getElementById("reject-text").text() === "Rejecting a client request means you will not be able to act for them unless they submit another request.")
+      assert(document.getElementById("reject-text").text() === "agent.reject-client.text")
 
       And("The yes no radio buttons - exist and are set to Yes and No")
       assert(document.getElementById("yesNo-true").attr("value") === "true")
-      assert(document.getElementById("yesNo-true_field").text() === "Yes")
+      assert(document.getElementById("yesNo-true_field").text() === "radio-yes")
       assert(document.getElementById("yesNo-false").attr("value") === "false")
-      assert(document.getElementById("yesNo-false_field").text() === "No")
+      assert(document.getElementById("yesNo-false_field").text() === "radio-no")
 
       And("The submit button is - Confirm")
-      assert(document.getElementById("submit").text() === "Confirm")
+      assert(document.getElementById("submit").text() === "confirm-button")
 
     }
   }

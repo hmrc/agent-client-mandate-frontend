@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "AgentMissingEmailControllerSpec" must {
 
@@ -67,13 +67,13 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         viewEmailAuthorisedAgent() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Receive email notifications from your clients - GOV.UK")
-          document.getElementById("header").text() must include("Receive email notifications from your clients")
-          document.getElementById("pre-header").text() must include("Manage your ATED service")
-          document.getElementById("info").text() must be(s"We can send you a notification when a client accepts or rejects your requests in the $service service. You can use a group email address and change it later.")
-          document.getElementById("email_field").text() must be("Your email address")
-          document.getElementById("submit_button").text() must be("Continue")
-          document.getElementById("skip_question").text() must be("Enter my email at a later date")
+          document.title() must be("agent.missing-email.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.missing-email.header")
+          document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementById("info").text() must be("agent.missing-email.text")
+          document.getElementById("email_field").text() must be("agent.missing-email.email_address")
+          document.getElementById("submit_button").text() must be("continue-button")
+          document.getElementById("skip_question").text() must be("agent.missing-email.trapdoor")
         }
       }
     }
@@ -84,8 +84,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the question")
-          document.getElementsByClass("error-notification").text() must include("You must answer the question")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.useEmailAddress")
+          document.getElementsByClass("error-notification").text() must include("agent.missing-email.must_answer")
         }
       }
 
@@ -94,8 +94,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
         }
       }
 
@@ -105,8 +105,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("The email address you want to use for this client must be 241 characters or less")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.too.long")
         }
       }
       "invalid email is passed" in new Setup {
@@ -114,8 +114,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
         }
       }
     }
@@ -149,7 +149,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec with GuiceOneServerPerSu
   class Setup {
     val controller = new AgentMissingEmailController(
       mockAgentClientMandateService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

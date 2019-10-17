@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "CollectEmailController" must {
 
@@ -66,12 +66,12 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         viewWithAuthorisedClient() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
-          document.getElementById("header").text() must include("What is your email address?")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("email_field").text() must be("What is your email address?")
+          document.title() must be("client.collect-email.title - GOV.UK")
+          document.getElementById("header").text() must include("client.collect-email.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.collect-email.preheader")
+          document.getElementById("email_field").text() must be("client.collect-email.email.label")
           document.getElementById("email").`val`() must be("")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -80,7 +80,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         viewWithAuthorisedClient(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
+          document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
         }
       }
@@ -93,15 +93,15 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         editWithAuthorisedClient() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
-          document.getElementById("header").text() must include("What is your email address?")
-          document.getElementById("pre-heading").text() must include("Appoint an agent")
-          document.getElementById("email_field").text() must be("What is your email address?")
+          document.title() must be("client.collect-email.title - GOV.UK")
+          document.getElementById("header").text() must include("client.collect-email.header")
+          document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.collect-email.preheader")
+          document.getElementById("email_field").text() must be("client.collect-email.email.label")
           document.getElementById("email").`val`() must be("")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
 
-          document.getElementById("backLinkHref").text() must be("Back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/client/review")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/client/review")
         }
 
       }
@@ -112,10 +112,10 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         viewWithAuthorisedClient(Some(cached), Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
+          document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
 
-          document.getElementById("backLinkHref").text() must be("Back")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/api/anywhere")
         }
       }
@@ -126,7 +126,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         viewWithAuthorisedClient(Some(cached), None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
+          document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
 
           document.getElementById("backLinkHref") must be(null)
@@ -142,9 +142,9 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         backWithAuthorisedClient(Some(cached), Some("http://backlink")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your email address? - GOV.UK")
+          document.title() must be("client.collect-email.title - GOV.UK")
 
-          document.getElementById("backLinkHref").text() must be("Back")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("http://backlink")
         }
       }
@@ -158,7 +158,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = Some(cachedData), returnCache = returnData, mode = Some("edit")) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -169,7 +169,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = None, returnCache = returnData) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/search"))
+          redirectLocation(result) must be(Some("/client/search"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -183,8 +183,8 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter the email address you want to use for this client")
+          document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -197,9 +197,9 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
+          document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
           document.getElementsByClass("error-notification").text() must
-            include("The email address you want to use for this client must be 241 characters or less")
+            include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -213,8 +213,8 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email address question")
-          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -233,7 +233,7 @@ class CollectEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
   class Setup {
     val controller = new CollectEmailController(
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig
