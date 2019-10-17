@@ -107,8 +107,8 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def fetchMandateByClient(clientId: String, service: String, clientAuthRetrievals: ClientAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val authLink = clientAuthRetrievals.mandateConnectorUri
+  def fetchMandateByClient(clientId: String, service: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val authLink = "/org/unused"
     val getUrl = s"$serviceUrl$authLink/$mandateUri/$clientId/$service"
     http.GET[HttpResponse](getUrl)
   }

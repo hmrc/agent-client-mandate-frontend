@@ -24,7 +24,8 @@ import uk.gov.hmrc.agentclientmandate.models.Status.{Active, Approved, Cancelled
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import uk.gov.hmrc.agentclientmandate.views.html.partials.client_banner
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.{AuthConnector, MissingBearerToken}
+import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,10 +39,8 @@ class ClientBannerPartialController @Inject()(mcc: MessagesControllerComponents,
 
   def getBanner(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
     implicit request => {
-      withOrgCredId(Some(service)) { clientAuthRetrievals =>
         val mandateHost = appConfig.mandateFrontendHost
-
-        mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
+        mandateService.fetchClientMandateByClient(clientId, service).map {
           case Some(mandate) => mandate.currentStatus.status match {
             case Active => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
             case Approved => Ok(client_banner(service, mandate.agentParty.name, mandateHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
@@ -52,5 +51,4 @@ class ClientBannerPartialController @Inject()(mcc: MessagesControllerComponents,
         }
       }
     }
-  }
 }

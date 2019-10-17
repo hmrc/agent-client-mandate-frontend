@@ -227,7 +227,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec with GuiceOneServerPerSui
         (ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
 
-      val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service", testClientAuthRetrievals)
+      val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service")
       await(response).status must be(OK)
     }
 

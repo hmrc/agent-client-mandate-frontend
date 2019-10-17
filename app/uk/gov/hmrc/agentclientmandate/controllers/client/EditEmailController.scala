@@ -45,12 +45,12 @@ class EditEmailController @Inject()(
 
   def getClientMandateDetails(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
     implicit request => {
-      withOrgCredId(Some(service)) { clientAuthRetrievals =>
+      withOrgCredId(Some(service)) { _ =>
         if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
           Future.successful(BadRequest("The return url is not correctly formatted"))
         }
         else {
-          mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
+          mandateService.fetchClientMandateByClient(clientId, service).map {
             case Some(mandate) => mandate.currentStatus.status match {
               case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
                 val clientDetails = ClientDetails(

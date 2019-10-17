@@ -366,17 +366,17 @@ class AgentClientMandateServiceSpec extends PlaySpec with GuiceOneServerPerSuite
     "fetch mandate for client" when {
       "returns a mandate when client party exists, is active, and for correct service" in new Setup {
         val respJson = Json.toJson(mandateActive)
-        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any()))
+        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, Some(respJson))))
-        val response = service.fetchClientMandateByClient("clientId", "service", testClientAuthRetrievals)
+        val response = service.fetchClientMandateByClient("clientId", "service")
         await(response) must be(Some(mandateActive))
       }
 
       "returns None for all other" in new Setup {
 //        val respJson = Json.toJson(mandateActive)
-        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any()))
+        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
-        val response = service.fetchClientMandateByClient("clientId", "service", testClientAuthRetrievals)
+        val response = service.fetchClientMandateByClient("clientId", "service")
         await(response) must be(None)
       }
     }

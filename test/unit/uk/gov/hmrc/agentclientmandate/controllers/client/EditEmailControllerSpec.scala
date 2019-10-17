@@ -223,7 +223,7 @@ class EditEmailControllerSpec extends PlaySpec with GuiceOneServerPerSuite with 
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
+    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
     val result = controller.getClientMandateDetails("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }

@@ -87,9 +87,9 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     }
   }
 
-  def fetchClientMandateByClient(clientId: String, serviceName: String, clientAuthRetrievals: ClientAuthRetrievals)
+  def fetchClientMandateByClient(clientId: String, serviceName: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
-    agentClientMandateConnector.fetchMandateByClient(clientId, serviceName, clientAuthRetrievals) map {
+    agentClientMandateConnector.fetchMandateByClient(clientId, serviceName) map {
       response => response.status match {
         case OK => response.json.asOpt[Mandate]
         case _ => None
