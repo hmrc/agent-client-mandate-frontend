@@ -231,6 +231,17 @@ class AgentClientMandateConnectorSpec extends PlaySpec with GuiceOneServerPerSui
       await(response).status must be(OK)
     }
 
+    "fetch a mandate for a client by id" in new Setup {
+      val successResponse = Json.toJson(mandate)
+
+      when(mockDefaultHttpClient.GET[HttpResponse]
+        (ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+
+      val response = agentClientMandateConnector.fetchMandateByClientId("clientId", "service")
+      await(response).status must be(OK)
+    }
+
     "does an agent have a missing email" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())

@@ -113,6 +113,11 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     http.GET[HttpResponse](getUrl)
   }
 
+  def fetchMandateByClientId(clientId: String, service: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val getUrl = s"$serviceUrl/org/${java.util.UUID.randomUUID.toString}/$mandateUri/$clientId/$service"
+    http.GET[HttpResponse](getUrl)
+  }
+
   def doesAgentHaveMissingEmail(service: String, authRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val AgentAuthRetrievals(arn, agentCode, _, _, _) = authRetrievals
     val authLink = s"/agent/$agentCode"

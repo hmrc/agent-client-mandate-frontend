@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package unit.uk.gov.hmrc.agentclientmandate.controllers.client
+package unit.uk.gov.hmrc.agentclientmandate.controllers.internal
 
 import java.util.UUID
 
@@ -28,25 +28,23 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
-import uk.gov.hmrc.agentclientmandate.controllers.client.ClientBannerPartialController
+import uk.gov.hmrc.agentclientmandate.controllers.internal.ClientBannerPartialInternalController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.RunMode
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ClientBannerPartialInternalControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "ClientBannerPartialController" must {
 
     "return NOT_FOUND if can't find mandate" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClientId(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(None))
       viewWithAuthorisedClient() { result =>
         status(result) must be(NOT_FOUND)
@@ -54,7 +52,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     }
 
     "return partial if mandate is found and approved" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClientId(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(approvedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -65,7 +63,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     }
 
     "return partial if mandate is found and active" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClientId(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(activeMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -76,7 +74,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     }
 
     "return partial if mandate is found and cancelled" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClientId(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(cancelledMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -87,7 +85,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     }
 
     "return partial if mandate is found and rejected" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClientId(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(rejectedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -104,7 +102,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
 
 
   class Setup {
-    val controller = new ClientBannerPartialController(
+    val controller = new ClientBannerPartialInternalController(
       app.injector.instanceOf[MessagesControllerComponents],
       mockAuthConnector,
       mockMandateService,
@@ -115,7 +113,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
     def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
       implicit val hc: HeaderCarrier = HeaderCarrier()
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.getBanner("clientId", "service", "/api/anywhere")
+      val result = controller.getClientBannerPartial("clientId", "service", "/api/anywhere")
         .apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
@@ -125,7 +123,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with GuiceOneServerPerS
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      val result = controller.getBanner("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      val result = controller.getClientBannerPartial("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
   }
