@@ -49,25 +49,6 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
     }
   }
 
-  "fallbackHeaderCarrier" should {
-    "return a headercarrier" when {
-      "there is authorization in the request" in new Setup {
-        authorisedWrappers.fallbackHeaderCarrier(hc, fr).authorization shouldBe Some(Authorization("value"))
-      }
-
-      "there is a HeaderCarrier" in new Setup {
-        authorisedWrappers.fallbackHeaderCarrier(hc.copy(authorization = Some(Authorization("test"))), FakeRequest()).authorization shouldBe
-          Some(Authorization("test"))
-      }
-    }
-
-    "fail to return anything" when {
-      "neither authorisation in the request or the HeaderCarrier" in new Setup {
-        intercept[MissingBearerToken](authorisedWrappers.fallbackHeaderCarrier(hc, FakeRequest()))
-      }
-    }
-  }
-
   "agentAuthenticated" should {
     "authenticate an agent" when {
       "the agent has an enrolment, with no retrieval" in new Setup {
