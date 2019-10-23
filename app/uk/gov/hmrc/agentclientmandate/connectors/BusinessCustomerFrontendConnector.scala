@@ -44,7 +44,5 @@ class BusinessCustomerFrontendConnector @Inject()(
     http.GET[HttpResponse](getUrl)
   }
 
-  override def crypto: String => String = { str =>
-    cryp.crypto.encrypt(PlainText.apply(str)).value
-  }
+  override def crypto: String => String = identity
 }

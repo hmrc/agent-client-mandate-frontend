@@ -65,7 +65,7 @@ class BusinessCustomerFrontendConnectorSpec extends PlaySpec with GuiceOneServer
     }
 
     "crypto" in new Setup {
-      connector.crypto("test").length mustBe 48
+      connector.crypto("test").length mustBe 4
     }
   }
 }
