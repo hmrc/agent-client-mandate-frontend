@@ -74,11 +74,6 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
     }.recover(authErrorHandling(service, isAnAgent = false))
   }
 
-  def fallbackHeaderCarrier(implicit hc: HeaderCarrier, req: Request[_]): HeaderCarrier = {
-    if(hc.authorization.isEmpty) hc.copy(authorization = Some(Authorization(req.headers.get("Authorization")
-      .getOrElse(throw MissingBearerToken("No auth header in hc or header"))))) else hc
-  }
-
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])
                         (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig, req: Request[_]): Future[Result] = {
     agentAuthenticated(service,
@@ -118,7 +113,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
           Logger.warn("[withAgentRefNumber] No internal ID found for agent")
           Future.successful(InternalServerError)
       }
-    }(fallbackHeaderCarrier, ec, appConfig)
+    }
   }
 
   def withOrgCredId(service: Option[String])(body: ClientAuthRetrievals => Future[Result])
