@@ -26,6 +26,7 @@ import play.api.mvc.Request
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.BusinessCustomerFrontendConnector
+import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.filters.frontend.crypto.SessionCookieCrypto
@@ -33,13 +34,19 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
-class BusinessCustomerFrontendConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class BusinessCustomerFrontendConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
-  val mockSessionCookieCrypto: SessionCookieCrypto = app.injector.instanceOf[SessionCookieCrypto]
+  val mockSessionCookieCrypto: SessionCookieCrypto = mock[SessionCookieCrypto]
+  val mockEncWithDec: Encrypter with Decrypter = mock[Encrypter with Decrypter]
 
   override def beforeEach(): Unit = {
+    when(mockSessionCookieCrypto.crypto)
+      .thenReturn(mockEncWithDec)
+    when(mockEncWithDec.encrypt(ArgumentMatchers.any()))
+      .thenReturn(Crypted("test"))
+
     reset(mockDefaultHttpClient)
   }
 

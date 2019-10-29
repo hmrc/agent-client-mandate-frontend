@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
-class DelegationConnectorSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach {
+class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
   val mockDefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig = mock[ServicesConfig]

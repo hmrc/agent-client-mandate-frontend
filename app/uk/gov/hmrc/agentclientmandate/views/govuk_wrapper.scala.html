@@ -43,7 +43,7 @@
 }
 
 @head = {
-    @uiLayouts.head(
+    @appConfig.customHeadTemplate(
       linkElem = Some(linkElement),
       headScripts = None)
     <meta name="format-detection" content="telephone=no" />
@@ -84,7 +84,7 @@
 @*afterHeader = {}*@
 
 @bodyEnd = {
-    @uiLayouts.footer(
+    @appConfig.customFooterTemplate(
       analyticsToken = Some(appConfig.analyticsToken),
       analyticsHost = appConfig.analyticsHost,
       ssoUrl = None,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package views.agent
+package views.agent.agentSummary
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -60,11 +60,11 @@ trait ViewTestHelper {
   when(mockAppConfig.configuration)
     .thenReturn(mockConfig)
 
+  when(mockAppConfig.serviceSignOutUrl(ArgumentMatchers.any()))
+    .thenReturn("http://localhost:9916/ated/logout")
+
   val optimizelySnippet: OptimizelySnippet = new OptimizelySnippet(mockOptConfig)
   val gtmSnippet: GTMSnippet = new GTMSnippet(mockGtmConfig)
-
-  when(mockServicesConfig.getString(ArgumentMatchers.eq("microservice.delegated-service-sign-out-url.ated")))
-    .thenReturn("http://localhost:9916/ated/logout")
 
   when(mockAppConfig.customHeadTemplate)
     .thenReturn(new Head(optimizelySnippet, mockAssetsConfig, gtmSnippet))

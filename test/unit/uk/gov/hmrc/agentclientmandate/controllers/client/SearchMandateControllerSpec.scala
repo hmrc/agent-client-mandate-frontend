@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup {
+class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup {
 
   "SearchMandateController" must {
 
@@ -73,10 +73,10 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedClient(searchMandateController)() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your unique authorisation number? - GOV.UK")
-          document.getElementById("header").text() must include("What is your unique authorisation number?")
+          document.title() must be("client.search-mandate.title - GOV.UK")
+          document.getElementById("header").text() must include("client.search-mandate.header")
           document.getElementById("mandateRef").`val`() must be("")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -85,10 +85,10 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         viewWithAuthorisedClient(searchMandateController)(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("What is your unique authorisation number? - GOV.UK")
-          document.getElementById("header").text() must include("What is your unique authorisation number?")
+          document.title() must be("client.search-mandate.title - GOV.UK")
+          document.getElementById("header").text() must include("client.search-mandate.header")
           document.getElementById("mandateRef").`val`() must be("ABC123")
-          document.getElementById("submit").text() must be("Continue")
+          document.getElementById("submit").text() must be("continue-button")
         }
       }
 
@@ -105,7 +105,7 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val returnCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
 
@@ -119,7 +119,7 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val returnCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/review"))
+          redirectLocation(result) must be(Some("/client/review"))
         }
       }
 
@@ -143,7 +143,7 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         val returnCache = ClientCache(mandate = Some(mandate))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/client/email"))
+          redirectLocation(result) must be(Some("/client/email"))
         }
       }
     }
@@ -155,8 +155,8 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("You must answer unique authorisation number question")
+          document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -168,8 +168,8 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
-          document.getElementsByClass("error-notification").text() must include("A unique authorisation number cannot be more than 8 characters")
+          document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef.length")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -181,9 +181,9 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
+          document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must
-            include("The unique authorisation number you entered cannot be found. Check the number, or enter a different number.")
+            include("lient.search-mandate.error.mandateRef.not-found-by-mandate-service")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -196,9 +196,9 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the unique authorisation number question")
+          document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must
-            include("The unique authorisation number you entered has already been used. Check the number, or enter a different number.")
+            include("client.search-mandate.error.mandateRef.already-used-by-mandate-service")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -237,7 +237,7 @@ class SearchMandateControllerSpec extends PlaySpec with GuiceOneServerPerSuite w
 
   class Setup {
     val searchMandateController = new SearchMandateController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockDataCacheService,
       mockMandateService,

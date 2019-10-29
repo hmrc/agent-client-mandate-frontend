@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "MandateDetailsController" must {
 
@@ -58,14 +58,14 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
         viewWithAuthorisedAgent(ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Check your client’s details are correct - GOV.UK")
-          document.getElementById("pre-header").text must be("This section is: Add a client")
-          document.getElementById("header").text must be("Check your client’s details are correct")
-          document.getElementById("email-address-label").text must be("Your email address")
-          document.getElementById("submit").text must be("Confirm and add client")
+          document.title() must be("agent.check-client-details.header - GOV.UK")
+          document.getElementById("pre-header").text must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text must be("agent.check-client-details.header")
+          document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")
+          document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
-          document.getElementById("backLinkHref").text() must be("Back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
         }
       }
 
@@ -81,14 +81,14 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
         viewWithAuthorisedAgent(ControllerPageIdConstants.overseasClientQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Check your client’s details are correct - GOV.UK")
-          document.getElementById("pre-header").text must be("This section is: Add a client")
-          document.getElementById("header").text must be("Check your client’s details are correct")
-          document.getElementById("email-address-label").text must be("Your email address")
-          document.getElementById("submit").text must be("Confirm and add client")
+          document.title() must be("agent.check-client-details.header - GOV.UK")
+          document.getElementById("pre-header").text must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text must be("agent.check-client-details.header")
+          document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")
+          document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
-          document.getElementById("backLinkHref").text() must be("Back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/overseas-client-question")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/agent/overseas-client-question")
         }
       }
     }
@@ -106,7 +106,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/add-client"))
+          redirectLocation(result) must be(Some(s"/agent/add-client"))
         }
       }
     }
@@ -123,7 +123,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/client-display-name"))
+          redirectLocation(result) must be(Some(s"/agent/client-display-name"))
         }
       }
     }
@@ -142,7 +142,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
       "form is submitted" in new Setup {
         submitWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/unique-reference"))
+          redirectLocation(result) must be(Some(s"/agent/unique-reference"))
         }
       }
     }
@@ -157,7 +157,7 @@ class MandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite 
 
   class Setup {
     val controller = new MandateDetailsController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockDataCacheService,
       mockMandateService,
       implicitly,

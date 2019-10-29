@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, Authenticated
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "UpdateOcrDetailsController" should {
 
@@ -88,7 +88,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
         val fakeRequest = FakeRequest().withJsonBody(inputJson)
         saveWithAuthorisedUser(updateRegDetails, "abc")(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/mandate/agent/edit")
+          redirectLocation(result).get must include("/agent/edit")
         }
       }
     }
@@ -131,7 +131,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuit
     val controller = new UpdateOcrDetailsController(
       mockAgentClientMandateService,
       mockDataCacheService,
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
       mockAppConfig

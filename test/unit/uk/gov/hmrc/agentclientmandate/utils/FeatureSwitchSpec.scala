@@ -17,6 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
@@ -24,13 +25,13 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class FeatureSwitchSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach {
+class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
   override def beforeEach: Unit = {
     System.clearProperty("feature.test")
   }
 
-  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  implicit val appConfig: AppConfig = mock[AppConfig]
   implicit val config: ServicesConfig = appConfig.servicesConfig
 
   "FeatureSwitch" should {

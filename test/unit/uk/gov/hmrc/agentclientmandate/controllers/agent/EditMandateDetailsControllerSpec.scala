@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
   "EditMandateControllerSpec" must {
 
@@ -50,13 +50,13 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         viewWithAuthorisedAgent(Some(mandate)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Edit test client4 - GOV.UK")
-          document.getElementById("header").text() must include("Edit test client4")
-          document.getElementById("pre-header").text() must include("Manage your ATED service")
-          document.getElementById("sub-heading").text() must be("Unique authorisation number AS123456")
-          document.getElementById("displayName_field").text() must include("Display name")
-          document.getElementById("displayName_hint").text() must include("This does not change the official company name.")
-          document.getElementById("submit").text() must be("Save changes")
+          document.title() must be("agent.edit-mandate-details.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.edit-mandate-details.header")
+          document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementById("sub-heading").text() must be("agent.edit-mandate-details.sub-heading")
+          document.getElementById("displayName_field").text() must include("agent.edit-mandate-details.displayName agent.edit-mandate-details.hint")
+          document.getElementById("displayName_hint").text() must include("agent.edit-mandate-details.hint")
+          document.getElementById("submit").text() must be("agent.edit-mandate-details.submit")
         }
       }
     }
@@ -76,9 +76,9 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
+          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
           document.getElementsByClass("error-notification").text() must
-            include("You must answer the client display name question Enter the email address you want to use for this client")
+            include("agent.edit-client.error.dispName client.email.error.email.empty")
         }
       }
 
@@ -87,8 +87,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
-          document.getElementsByClass("error-notification").text() must include("Enter an email address in the correct format, like name@example.com")
+          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
+          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
         }
       }
 
@@ -97,9 +97,9 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("There is a problem with the email question")
+          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
           document.getElementsByClass("error-notification").text() must
-            include("The email address you want to use for this client must be 241 characters or less")
+            include("client.email.error.email.too.long")
         }
       }
     }
@@ -129,7 +129,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
+          redirectLocation(result) must be(Some(s"/agent/summary"))
         }
       }
     }
@@ -139,7 +139,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/edit-client/AS123456"))
+          redirectLocation(result) must be(Some(s"/agent/edit-client/AS123456"))
         }
       }
     }
@@ -181,7 +181,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with GuiceOneServerPerSu
 
   class Setup {
     val controller = new EditMandateDetailsController(
-      app.injector.instanceOf[MessagesControllerComponents],
+      stubbedMessagesControllerComponents,
       mockAcmService,
       implicitly,
       mockAppConfig,
