@@ -29,7 +29,7 @@ trait MicroService {
     import scoverage.ScoverageKeys
     Seq(
       ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;app.Routes.*;internal.Routes.*;prod.*;testOnlyDoNotUseInAppConf.*;uk.gov.hmrc.agentclientmandate.config.*;uk.gov.hmrc.agentclientmandate.views.*;uk.gov.hmrc.BuildInfo*;uk.gov.hmrc.agentclientmandate.viewModelsAndForms.*;uk.gov.hmrc.agentclientmandate.controllers.testOnly.*",
-      ScoverageKeys.coverageMinimum := 100,
+      ScoverageKeys.coverageMinimum := 90,
       ScoverageKeys.coverageFailOnMinimum := true,
       ScoverageKeys.coverageHighlighting := true
     )
