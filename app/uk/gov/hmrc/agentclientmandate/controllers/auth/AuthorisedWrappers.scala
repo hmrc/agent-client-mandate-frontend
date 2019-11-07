@@ -36,42 +36,41 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
 
   lazy private val origin: String = "agent-client-mandate-frontend"
 
-  protected def continueUrl(isAnAgent: Boolean)(implicit appConfig: AppConfig): String => String = { service: String =>
-    val prefix = if (isAnAgent) appConfig.loginCallbackAgent else appConfig.loginCallbackClient
-
-    s"$prefix/$service"
+  protected def continueUrl(isAnAgent: Boolean)(implicit appConfig: AppConfig): String = {
+    if (isAnAgent) appConfig.loginCallbackAgent else appConfig.loginCallbackClient
   }
 
   protected def loginUrl(implicit appConfig: AppConfig): String = s"${appConfig.companyAuthHost}/${appConfig.loginPath}"
 
-  private def loginParams(service: String, isAnAgent: Boolean)(implicit appConfig: AppConfig): Map[String, Seq[String]] = Map(
-    "continue" -> Seq(continueUrl(isAnAgent)(appConfig)(service)),
+  private def loginParams(isAnAgent: Boolean)(implicit appConfig: AppConfig): Map[String, Seq[String]] = Map(
+    "continue" -> Seq(continueUrl(isAnAgent)),
     "origin" -> Seq(origin)
   )
 
-  private def authErrorHandling(service: Option[String] = None, isAnAgent: Boolean = true)
+  private def authErrorHandling(isAnAgent: Boolean = true)
                                (implicit appConfig: AppConfig): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession => Redirect(loginUrl, loginParams(service.getOrElse(""), isAnAgent))
+    case _: NoActiveSession =>
+      Redirect(loginUrl, loginParams(isAnAgent))
     case InternalError(e)   =>
       Logger.warn(s"[authErrorHandling] Call to auth failed - $e")
       InternalServerError
     case e: AuthorisationException =>
       Logger.info(s"[authErrorHandling] Authorisation exception of type: - ${e.getClass.toString}")
-      Redirect(loginUrl, loginParams(service.getOrElse(""), isAnAgent))
+      Redirect(loginUrl, loginParams(isAnAgent))
   }
 
   def agentAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
                            (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     authorised(Enrolment(agentRefEnrolment) and AuthProviders(GovernmentGateway) and AffinityGroup.Agent).retrieve(retrieval) {
       body
-    }.recover(authErrorHandling(service))
+    }.recover(authErrorHandling())
   }
 
   def clientAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
                             (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     authorised(AffinityGroup.Organisation and AuthProviders(GovernmentGateway)).retrieve(retrieval) {
       body
-    }.recover(authErrorHandling(service, isAnAgent = false))
+    }.recover(authErrorHandling(isAnAgent = false))
   }
 
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])

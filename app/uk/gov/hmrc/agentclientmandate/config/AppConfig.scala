@@ -19,8 +19,7 @@ package uk.gov.hmrc.agentclientmandate.config
 import java.util.Base64
 
 import javax.inject.{Inject, Named}
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.agentclientmandate.controllers.auth.ExternalUrls
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.config.AssetsConfig
 import uk.gov.hmrc.play.views.html.layouts.{Footer, GTMSnippet, Head, OptimizelySnippet}
