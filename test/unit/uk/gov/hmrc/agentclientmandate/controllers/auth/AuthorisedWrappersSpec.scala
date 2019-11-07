@@ -73,6 +73,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
 
         when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(MissingBearerToken("No bearer token")))
+        when(mockAppConfig.loginCallbackAgent).thenReturn("/mandate/agent/summary")
 
         val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
         status(result) shouldBe 303

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.agentclientmandate.controllers.auth
+package uk.gov.hmrc.agentclientmandate.config
 
-import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.util.Try
@@ -30,7 +29,7 @@ trait ExternalUrls {
   }"
   val loginCallbackAgent = s"${
     Try(servicesConfig.getString(s"microservice.services.auth.login-callback-agent.url")).
-      getOrElse("/mandate/agent/service")
+      getOrElse("/mandate/agent/summary")
   }"
   val loginCallbackClient = s"${
     Try(servicesConfig.getString(s"microservice.services.auth.login-callback-client.url")).

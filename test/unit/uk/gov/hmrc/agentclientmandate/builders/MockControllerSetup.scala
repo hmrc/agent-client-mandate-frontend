@@ -67,6 +67,8 @@ trait MockControllerSetup {
     .thenReturn("http://localhost:9916/ated/account-summary")
   when(mockAppConfig.environment)
     .thenReturn(mockEnvironment)
+  when(mockAppConfig.loginCallbackAgent).thenReturn("/mandate/agent/summary")
+  when(mockAppConfig.loginCallbackClient).thenReturn("/mandate/client/email")
 
   val mockOptConfig: OptimizelyConfig = mock[OptimizelyConfig]
   val mockGtmConfig: GTMConfig = mock[GTMConfig]

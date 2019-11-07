@@ -1,23 +1,18 @@
+import play.routes.compiler.InjectedRoutesGenerator
+import play.sbt.routes.RoutesKeys.routesGenerator
 import sbt.Keys._
-import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import play.sbt.routes.RoutesKeys.routesGenerator
-import play.routes.compiler.{InjectedRoutesGenerator, StaticRoutesGenerator}
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-import uk.gov.hmrc.SbtArtifactory
 
 trait MicroService {
 
   import uk.gov.hmrc._
-  import DefaultBuildSettings.scalaSettings
-  import DefaultBuildSettings.defaultSettings
-  import DefaultBuildSettings.addTestReportOption
+  import DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
   import TestPhases.oneForkedJvmPerTest
   import uk.gov.hmrc.SbtAutoBuildPlugin
   import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
   import uk.gov.hmrc.versioning.SbtGitVersioning
-  import scoverage.ScoverageSbtPlugin._
 
   val appName: String
 
@@ -28,7 +23,7 @@ trait MicroService {
   lazy val scoverageSettings = {
     import scoverage.ScoverageKeys
     Seq(
-      ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;app.Routes.*;internal.Routes.*;prod.*;testOnlyDoNotUseInAppConf.*;uk.gov.hmrc.agentclientmandate.config.*;uk.gov.hmrc.agentclientmandate.views.*;uk.gov.hmrc.BuildInfo*;uk.gov.hmrc.agentclientmandate.viewModelsAndForms.*;uk.gov.hmrc.agentclientmandate.controllers.testOnly.*",
+      ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;app.Routes.*;internal.Routes.*;prod.*;testOnlyDoNotUseInAppConf.*;uk.gov.hmrc.agentclientmandate.ServiceBindings;uk.gov.hmrc.agentclientmandate.config.*;uk.gov.hmrc.agentclientmandate.views.*;uk.gov.hmrc.BuildInfo*;uk.gov.hmrc.agentclientmandate.viewModelsAndForms.*;uk.gov.hmrc.agentclientmandate.controllers.testOnly.*",
       ScoverageKeys.coverageMinimum := 90,
       ScoverageKeys.coverageFailOnMinimum := true,
       ScoverageKeys.coverageHighlighting := true
