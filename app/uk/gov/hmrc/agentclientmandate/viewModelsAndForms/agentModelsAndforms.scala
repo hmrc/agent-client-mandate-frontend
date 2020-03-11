@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentclientmandate.models.RegisteredAddressDetails
 import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils.{emailRegex, _}
@@ -186,6 +185,19 @@ object ClientPermissionForm {
     mapping(
       "hasPermission" -> optional(boolean).verifying("agent.client-permission.hasPermission.not-selected.error", a => a.isDefined)
     )(ClientPermission.apply)(ClientPermission.unapply)
+  )
+
+}
+
+case class PrevUniqueAuthNum(authNum: Option[Boolean] = None)
+
+object PrevUniqueAuthNumForm{
+  implicit val formats: OFormat[PrevUniqueAuthNum] = Json.format[PrevUniqueAuthNum]
+
+  def prevUniqueAuthNumForm = Form(
+    mapping(
+      "authNum" -> optional(boolean).verifying("agent.prev-auth-num.not-selected.field-error", a => a.isDefined)
+    )(PrevUniqueAuthNum.apply)(PrevUniqueAuthNum.unapply)
   )
 
 }

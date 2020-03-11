@@ -67,6 +67,12 @@ POST    /agent/client-permission/:callingPage   uk.gov.hmrc.agentclientmandate.c
 GET     /agent/client-registered-previously/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBeforeController.view(service = "ated", callingPage: String)
 POST    /agent/client-registered-previously/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBeforeController.submit(service = "ated", callingPage: String)
 
+GET     /agent/previous-authorisation-number/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousUniqueAuthorisationNumberController.view(service = "ated", callingPage: String)
+POST    /agent/previous-authorisation-number/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousUniqueAuthorisationNumberController.submit(service = "ated", callingPage: String)
+
+GET     /agent/inform-HMRC/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.InformHmrcController.view(service = "ated", callingPage: String)
+POST    /agent/inform-HMRC/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.InformHmrcController.continue(service = "ated", callingPage: String)
+
 GET     /agent/search-previous/:callingPage       uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousMandateRefController.view(service = "ated", callingPage: String)
 POST     /agent/search-previous/:callingPage      uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousMandateRefController.submit(service = "ated", callingPage: String)
 

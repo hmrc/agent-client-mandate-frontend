@@ -1,0 +1,66 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
+@import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
+
+@(prevUniqueAuthNumForm: Form[PrevUniqueAuthNum], callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@implicitFormInstance = @{ Some(prevUniqueAuthNumForm) }
+
+
+@main_template(title = messages("agent.prev-auth-num.title"), delegatedService = Some(service)) {
+    @pageHeadersAndError(backLink, "pre-header", messages("agent.add-a-client.sub-header"), "header", messages("agent.prev-auth-num.header"),
+        Some(mandateErrorSummary(prevUniqueAuthNumForm, "agent.prev-auth-num.not-selected.field-error")))
+
+    <p>@messages("agent.prev-auth-num.p")</p>
+
+    <details>
+        <summary id="titleNumber-reveal" class="summary" data-journey-click="accordion - click:@messages("agent.prev-auth-num.header"):@messages("agent.prev-auth-num.accordion")">
+        @messages("agent.prev-auth-num.accordion")
+        </summary>
+        <div class="panel-indent">
+            <p id="titleNumber-text">@Html(messages("agent.prev-auth-num.accordion.p"))</p>
+            <p id="titleNumber-text-2">@Html(messages("agent.prev-auth-num.accordion.p2"))</p>
+        </div>
+    </details>
+
+    @form(action = routes.PreviousUniqueAuthorisationNumberController.submit(callingPage)) {
+
+        <div class="form-group" id="prevUniqueAuthNumId">
+        @mandateInputRadioGroup(
+            prevUniqueAuthNumForm("authNum"),
+            Seq("true" -> messages("radio-yes"),
+                "false" -> messages("radio-no")),
+            '_groupClass -> "inline",
+            '_legend -> messages("agent.prev-auth-num.header"),
+            '_legendClass -> "visuallyhidden",
+            '_labelClass -> "block-label",
+            '_labelAfter -> true,
+            '_trackGA -> true
+        )
+        </div>
+
+        <button class="button" id="submit" type="submit">@messages("save-and-continue-button")</button>
+
+    }
+
+}
+

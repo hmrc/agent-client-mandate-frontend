@@ -1,5 +1,5 @@
 @*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-prev-registered.header"),
   Some(mandateErrorSummary(prevRegisteredForm, "agent.client-permission.error.general")))
 
+    <p>@Messages("agent.client-prev-registered.p")</p>
+
   @form(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {
 
     <div class="form-group" id="registeredBefore">
@@ -45,7 +47,7 @@
       )
     </div>
 
-    <button class="button" id="submit" type="submit">@Messages("continue-button")</button>
+    <button class="button" id="submit" type="submit">@Messages("save-and-continue-button")</button>
 
   }
 

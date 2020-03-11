@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,16 @@ object ClientEmailForm extends Constraints {
           )
           (MandateReference.apply)(MandateReference.unapply)
         )
+
+      def clientAuthNumForm =
+      Form(
+        mapping(
+          "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
+            .verifying("client.search-mandate.error.clientAuthNum", x => x.nonEmpty)
+            .verifying("client.search-mandate.error.clientAuthNum.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
+        )
+        (MandateReference.apply)(MandateReference.unapply)
+      )
     }
 
     case class ClientCache(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class HasClientRegisteredBeforeController @Inject()(
           data => {
             dataCacheService.cacheFormData[PrevRegistered](prevRegisteredFormId, data)
             val result = if (data.prevRegistered.getOrElse(false)) {
-              Redirect(routes.PreviousMandateRefController.view(callingPage))
+              Redirect(routes.PreviousUniqueAuthorisationNumberController.view(callingPage))
             } else {
               Redirect(appConfig.nonUkUri(service, routes.HasClientRegisteredBeforeController.view(callingPage).url))
             }

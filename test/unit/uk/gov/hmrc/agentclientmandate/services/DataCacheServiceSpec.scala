@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.{JsValue, Json, OFormat}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
@@ -56,11 +55,13 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
     "return None" when {
       "formId of the cached form does not exist for defined data type" in new Setup {
 
-        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(None)
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(CacheMap("test", Map())))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(None)
@@ -70,11 +71,13 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
     "return Some" when {
       "formId of the cached form does exist for defined data type" in new Setup {
 
-        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(Some(formData))
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(Some(formData))
@@ -83,11 +86,13 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
     "save form data" when {
       "valid form data with a valid form id is passed" in new Setup {
-        when(mockSessionCache.cache[FormData](ArgumentMatchers.eq(formId), ArgumentMatchers.eq(formData))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockSessionCache.cache[FormData](ArgumentMatchers.eq(formId), ArgumentMatchers.eq(formData))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
           Future.successful(cacheMap)
         }
 
-        when(mockDefaultHttpClient.PUT[FormData, CacheMap](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.PUT[FormData, CacheMap](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
 
         await(testDataCacheService.cacheFormData[FormData](formId, formData)) must be(formData)

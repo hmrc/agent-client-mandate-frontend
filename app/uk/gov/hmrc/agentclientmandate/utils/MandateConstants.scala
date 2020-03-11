@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ trait MandateConstants {
   val overseasTaxRefFormId = "overseas-tax-ref"
   val nrlFormId = "nrl-form-id"
   val clientPermissionFormId = "client-permission-form-id"
+  val prevUniqueAuthNumFormId = "prev-unique-auth-num-form-id"
   val prevRegisteredFormId = "previously-registered-form-id"
   val oldNonUkMandate = "old-nonuk-mandate-form-id"
   val callingPageCacheId = "calling-page-id"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
 import play.api.Logger
-import play.api.mvc.{Request, Result}
 import play.api.mvc.Results._
+import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, ClientAuthRetrievals}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
@@ -26,7 +26,6 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.Authorization
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,19 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.mvc.{AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousMandateRefController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.config.RunMode
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
@@ -132,7 +129,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
-          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -145,7 +142,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
-          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
+          document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -159,7 +156,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
           document.getElementsByClass("error-notification").text() must
-            include("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
+            include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())

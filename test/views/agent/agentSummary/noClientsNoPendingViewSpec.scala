@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,10 @@ import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.i18n.{Lang, Messages}
-import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
-import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
 class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
