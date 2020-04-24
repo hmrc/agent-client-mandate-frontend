@@ -16,16 +16,12 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.i18n.{Messages, MessagesApi}
-import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{MandateReference, MandateReferenceForm}
+import unit.uk.gov.hmrc.agentclientmandate.builders.MockControllerSetup
 
-class ClientModelsAndFormsSpec extends PlaySpec with GuiceOneServerPerSuite {
-
-  implicit lazy val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit lazy val messages: Messages = messagesApi.preferred(FakeRequest())
+class ClientModelsAndFormsSpec extends PlaySpec with MockitoSugar with MockControllerSetup {
 
   "clientAuthNumForm" must {
 
