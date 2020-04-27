@@ -36,6 +36,8 @@
   analyticsJs: Option[Html] = None)(implicit request: Request[_], messages: Messages)
 
 @linkElement = {
+<link rel="stylesheet" type="text/css" href='@controllers.routes.Assets.at("stylesheets/palette.css")'>
+<link rel="stylesheet" type="text/css" href='@controllers.routes.Assets.at("stylesheets/focus.css")'>
 <link rel="stylesheet" href='@controllers.routes.Assets.at("stylesheets/main.css")'/>
 <link rel="stylesheet" href='@controllers.routes.Assets.at("jquery/jquery-ui.min.css")'/>
 <link rel="stylesheet" href='@controllers.routes.Assets.at("jquery/jquery-ui.structure.min.css")'/>
