@@ -44,6 +44,6 @@
         
     </div>
 
-    <a href="@routes.AgentSummaryController.view()" class="button" id="finish_btn">@Messages("agent.reject-client-confirmation.view-all-clients")</a>
-
+@helper.form(action=routes.AgentSummaryController.view()){
+<button class="button" id="finish_btn">@Messages("agent.reject-client-confirmation.view-all-clients")</button>}
 }

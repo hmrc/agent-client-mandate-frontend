@@ -55,6 +55,7 @@
       </ol>
     </div>
 
-    <a href="@routes.AgentSummaryController.view()" class="button" id="submit">@Messages("agent.unique-reference.button")</a>
+@helper.form(action=routes.AgentSummaryController.view()){
+<button class="button" role = "button" id="submit">@Messages("agent.unique-reference.button")</button>}
 
 }

@@ -43,6 +43,7 @@ ga('set', 'page', page);
         <p id="non-uk-with-reference">@Messages("agent.remove-client-confirmation.non-uk-client-old-unique-refno", mandateId)</p>
     }
 
-    <a href="@routes.AgentSummaryController.view()" class="button" id="finish_btn" >@Messages("agent.remove-client-confirmation.view-all-clients")</a>
+@helper.form(action=routes.AgentSummaryController.view()){
+<button class="button" role="button" id="finish_btn" >@Messages("agent.remove-client-confirmation.view-all-clients")</button> }
 
 }
