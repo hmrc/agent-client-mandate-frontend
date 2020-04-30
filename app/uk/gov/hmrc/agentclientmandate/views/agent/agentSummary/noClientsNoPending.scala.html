@@ -29,8 +29,8 @@
 
 @main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if(isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), delegatedService = Some(service)){
   <header class="page-header page-header-margin">
-    <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
     <p id="pre-header" class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</p>
+    <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
   </header>
 
   @clientsCancelledPartial(clientsCancelled, service)

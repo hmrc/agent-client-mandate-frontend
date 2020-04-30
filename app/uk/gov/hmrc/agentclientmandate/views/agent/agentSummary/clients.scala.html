@@ -32,9 +32,9 @@
 
 <span class="screen-reader-text">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
 
-<header class="page-header page-heFader-margin">
-  <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
+<header class="page-header page-header-margin">
   <p id="pre-header" class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</p>
+  <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
 </header>
 
 @clientsCancelledPartial(clientsCancelled, service)

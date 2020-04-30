@@ -47,7 +47,7 @@
 
   @form(action = routes.EditMandateDetailsController.submit(mandateId)) {
   <fieldset>
-    <legend class="visuallyhidden">@Messages("agent.edit-mandate-details.header")</legend>
+    <legend class="visuallyhidden">@Messages("agent.edit-mandate-details.header", clientParty.getOrElse(""))</legend>
 
     @mandateInput(editMandateDetailsForm("displayName"),
     '_label -> Messages("agent.edit-mandate-details.displayName"),
