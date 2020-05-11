@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentclientmandate.controllers.client
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.ClientDetails
@@ -112,7 +112,7 @@ class EditEmailController @Inject()(
     dataCacheService.cacheFormData[String](backLinkId, redirectUrl)
   }
 
-  private def getBackLink(implicit hc: HeaderCarrier, request: Request[AnyContent]) :Future[Option[String]]= {
+  private def getBackLink(implicit hc: HeaderCarrier) :Future[Option[String]]= {
     dataCacheService.fetchAndGetFormData[String](backLinkId)
       .map {_.filter(_.trim.nonEmpty)}
   }

@@ -76,7 +76,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       }
 
       "client requests(GET) there are active mandates" in new Setup {
-        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))
+        )
         viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
@@ -94,7 +96,11 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       }
 
       "client requests(GET) there are more than or equal to 15 active mandates" in new Setup {
-        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive, mandateActive, mandateActive,
+          mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
+          mandateActive, mandateActive, mandateActive, mandateActive, mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))
+        )
         viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
@@ -113,7 +119,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "return check pending details view for agent who wants to see this" when {
       "client requests(GET) for check client details view" in new Setup {
-        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        val mockMandates = Some(Mandates(activeMandates = Seq(mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))
+        )
 
         viewAuthorisedAgent(controller)(mockMandates, Some("pending-clients")) { result =>
 
@@ -130,7 +138,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "return check pending details view for agent when that's all they have" when {
       "client requests(GET) for check client details view" in new Setup {
-        val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Seq(mandateNew,
+          mandatePendingActivation, mandateApproved, mandatePendingCancellation))
+        )
 
         viewAuthorisedAgent(controller)(mockMandates) { result =>
 
@@ -148,7 +158,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
     "redirect to delegated service specific page" when {
       "agent selects and begins delegation on a particular client" in new Setup {
 
-        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(Some(mandateActive))
         }
 
@@ -156,7 +168,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+        )
         val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
@@ -164,7 +178,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "agent selects and begins delegation but client does not exist" in new Setup {
 
-        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(Some(mandateActive.copy(clientParty = None)))
         }
 
@@ -172,7 +188,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+        )
         val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
         redirectLocation(result) must be(Some("http://localhost:9916/ated/account-summary"))
@@ -181,7 +199,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       "agent selects client but it fails as we have no serviceId" in new Setup {
 
         val mandateWithNoSubscription = mandateActive.copy(subscription = mandateActive.subscription.copy(referenceNumber = None))
-        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(Some(mandateWithNoSubscription))
         }
 
@@ -189,7 +209,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true))
+        when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+        )
 
         val thrown = the[RuntimeException] thrownBy await(controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId)))
         thrown.getMessage must include(s"[AgentSummaryController][doDelegation] Failed to doDelegation to for mandateId 1 for service $service")
@@ -210,7 +232,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(false)
         }
 
@@ -223,10 +247,14 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         implicit val hc: HeaderCarrier = HeaderCarrier()
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(true)
         }
-        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        ) thenReturn {
           Future.successful(None)
         }
 
@@ -238,7 +266,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
     "update view" when {
       "user updates filters" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("showAllClients" -> "allClients")
-        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
+        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        ) { result =>
           status(result) must be(OK)
         }
       }
@@ -252,7 +282,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "user submits bad data" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("allClients" -> "client display name")
-        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))) { result =>
+        updateAuthorisedAgent(controller)(fakeRequest, Some(Mandates(activeMandates = Seq(mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)))
+        ) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
@@ -297,28 +329,55 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
   val clientParty3: Party = Party("12345671", "test client3", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
   val clientParty4: Party = Party("12345671", "test client4", PartyType.Individual, ContactDetails("aa.aa@a.com", None))
 
-  val mandateNew: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty1), currentStatus = MandateStatus(Status.New, time1, "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 1")
+  val mandateNew: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None,
+    None, agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(clientParty1), currentStatus = MandateStatus(Status.New, time1, "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 1")
 
-  val mandateActive: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty), currentStatus = MandateStatus(Status.Active, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(Some(atedUtr.utr), Service("ated", "ATED")), clientDisplayName = "client display name 2")
+  val mandateActive: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")),
+    None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com",
+      None)), clientParty = Some(clientParty), currentStatus = MandateStatus(Status.Active, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(Some(atedUtr.utr),
+      Service("ated", "ATED")), clientDisplayName = "client display name 2")
 
-  val mandateApproved: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty3), currentStatus = MandateStatus(Status.Approved, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(Some(atedUtr.utr), Service("ated", "ATED")), clientDisplayName = "client display name 3")
+  val mandateApproved: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")),
+    None, None, agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com",
+      None)), clientParty = Some(clientParty3), currentStatus = MandateStatus(Status.Approved, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(Some(atedUtr.utr),
+      Service("ated", "ATED")), clientDisplayName = "client display name 3")
 
-  val mandatePendingCancellation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123458", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty4), currentStatus = MandateStatus(Status.PendingCancellation, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 4")
+  val mandatePendingCancellation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName",
+    Some("agentCode")), None, None, agentParty = Party("JARN123458", "agency name", PartyType.Organisation,
+    ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty4),
+    currentStatus = MandateStatus(Status.PendingCancellation, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name 4")
 
-  val mandatePendingActivation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None, agentParty = Party("JARN123451", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty2), currentStatus = MandateStatus(Status.PendingActivation, time1, "credId"), statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
+  val mandatePendingActivation: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName",
+    Some("agentCode")), None, None, agentParty = Party("JARN123451", "agency name", PartyType.Organisation,
+    ContactDetails("agent@agent.com", None)), clientParty = Some(clientParty2),
+    currentStatus = MandateStatus(Status.PendingActivation, time1, "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name 5")
 
   def viewAuthorisedAgent(controller: AgentSummaryController)(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(),
+      ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
     when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
+
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())) thenReturn Future.successful("text")
+
+    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
     val result = controller.view(service, tabName).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -329,35 +388,48 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+    when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(true)
     }
-    when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+    when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+    ) thenReturn {
       Future.successful(Some(mandateActive))
     }
-    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
-      Future.successful(Some(Mandates(activeMandates = Seq(mandateActive), pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
+    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(),
+      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())) thenReturn {
+        Future.successful(Some(Mandates(activeMandates = Seq(mandateActive),
+          pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
     }
     when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
 
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())) thenReturn Future.successful("text")
 
     val result = controller.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
-  def updateAuthorisedAgent(controller: AgentSummaryController)(request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
+  def updateAuthorisedAgent(controller: AgentSummaryController)(
+    request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-    when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
-      Future.successful(mockMandates)
+    when(mockAgentClientMandateService.fetchAllClientMandates(
+      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())) thenReturn {
+        Future.successful(mockMandates)
     }
     when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
+    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
     val result = controller.update(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)

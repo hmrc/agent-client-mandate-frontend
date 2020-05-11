@@ -25,8 +25,9 @@ import scala.concurrent.Future
 
 object AuthenticatedWrapperBuilder {
   def mockAuthorisedClient(mockAuthConnector: AuthConnector) {
-    when(mockAuthConnector.authorise[Option[Credentials]](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
-      Future.successful(Some(Credentials("ggCredId", "GovernmentGateway")))
+    when(mockAuthConnector.authorise[Option[Credentials]](ArgumentMatchers.any(), ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        Future.successful(Some(Credentials("ggCredId", "GovernmentGateway")))
     }
   }
 
@@ -52,8 +53,9 @@ object AuthenticatedWrapperBuilder {
           agentInformation),
         optCredentials)
 
-    when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
-      Future.successful(retrievalConstruction)
+    when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(
+      ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+        Future.successful(retrievalConstruction)
     }
   }
 

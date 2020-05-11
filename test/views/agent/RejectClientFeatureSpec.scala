@@ -36,7 +36,8 @@ class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       Given("A user visits the page")
       When("The user views the page")
 
-      val html = views.html.agent.rejectClient("ATED", new YesNoQuestionForm("agent.reject-client.error").yesNoQuestionForm, "ACME Limited", "", Some("http://"))
+      val html = views.html.agent.rejectClient("ATED", new YesNoQuestionForm("agent.reject-client.error")
+        .yesNoQuestionForm, "ACME Limited", "", Some("http://"))
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Are you sure you want to reject the request from this client? - GOV.UK")

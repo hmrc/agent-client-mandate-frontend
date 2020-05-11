@@ -84,7 +84,8 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     "agent requests(GET) for 'select service question' view and single service feature is enabled" when {
       "redirect to 'summary page for ated' view for AUTHORISED agent" in new Setup {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(false))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
@@ -93,7 +94,8 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
       }
 
       "redirect to 'missing email' view for AUTHORISED agent" in new Setup {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(true))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
@@ -104,7 +106,8 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     "valid form is submitted" when {
       "redirect to 'agent summary page for service' Page" in new Setup {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(false))
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
@@ -114,7 +117,8 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
       }
 
       "redirect to 'missing email' Page" in new Setup {
-        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(true))
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>

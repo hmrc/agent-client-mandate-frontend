@@ -90,7 +90,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
       }
 
       "valid form is submitted but email provided is too long" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> tooLongEmail)
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -189,7 +190,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
       val result = controller.view(service, mandateId).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -201,8 +203,10 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(getMandate))
-      when(mockAcmService.editMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(editMandate))
+      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(getMandate))
+      when(mockAcmService.editMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(editMandate))
       val result = controller.submit(service, mandateId).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
     }

@@ -130,9 +130,11 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
           document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.clientAuthNum")
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -143,9 +145,11 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
           document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.clientAuthNum")
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -157,9 +161,11 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
           document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
           document.getElementsByClass("error-notification").text() must
             include("client.search-mandate.error.clientAuthNum")
-          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -248,7 +254,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
-      when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+      when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
       when(mockDataCacheService.cacheFormData[ClientCache]
         (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(returnCache))

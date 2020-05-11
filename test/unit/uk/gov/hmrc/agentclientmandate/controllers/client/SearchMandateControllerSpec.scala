@@ -101,7 +101,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
+          mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/client/review"))
         }
@@ -115,7 +116,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
+          mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/client/review"))
         }
@@ -128,7 +130,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         val cachedData = ClientCache(email = None)
         val mandate1 = mandate.copy(clientParty = clientParty)
         val returnCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
+          mandate = Some(mandate1), returnCache = returnCache) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("email not cached")
         }
@@ -139,7 +142,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       "valid form is submitted, mandate is found from backend, but cache object doesn't exist" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
         val returnCache = ClientCache(mandate = Some(mandate))
-        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None,
+          mandate = Some(mandate), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/client/email"))
         }
@@ -155,9 +159,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef")
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -168,9 +174,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must include("client.search-mandate.error.mandateRef.length")
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -182,24 +190,29 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must
             include("lient.search-mandate.error.mandateRef.not-found-by-mandate-service")
-          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
       "agent reference is already used" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
         val returnCache = ClientCache(mandate = Some(mandate1))
-        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
+        submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None,
+          mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.search-mandate.error.general.mandateRef")
           document.getElementsByClass("error-notification").text() must
             include("client.search-mandate.error.mandateRef.already-used-by-mandate-service")
-          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -277,8 +290,10 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
-    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(returnCache))
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)

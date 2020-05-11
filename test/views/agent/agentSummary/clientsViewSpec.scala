@@ -137,7 +137,9 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       When("The agent views the mandates")
       implicit val request = FakeRequest()
 
-      val activeMandates = Seq(mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive)
+      val activeMandates = Seq(mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
+        mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
+        mandateActive, mandateActive)
 
       val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
 

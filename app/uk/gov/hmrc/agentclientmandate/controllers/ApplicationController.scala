@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 @Singleton
 class ApplicationController @Inject()(mcc: MessagesControllerComponents) extends FrontendController(mcc) {
-  def keepAlive: Action[AnyContent] = Action { implicit request =>
+  def keepAlive: Action[AnyContent] = Action {
     Ok("OK")
   }
 }

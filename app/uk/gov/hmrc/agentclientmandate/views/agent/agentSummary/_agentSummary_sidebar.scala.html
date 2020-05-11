@@ -14,8 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.play.views.html._
-@import uk.gov.hmrc.play.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.models.AgentDetails
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
@@ -33,8 +31,11 @@
          <li class="font-xsmall" id="sidebar.addressLine4">@agentDetails.addressDetails.addressLine4</li>
          <li class="font-xsmall" id="sidebar.postcode">@agentDetails.addressDetails.postalCode</li>
          <li class="font-xsmall" id="sidebar.countrycode">@agentDetails.addressDetails.countryCode</li>
-
-         <li class="font-xsmall"><a href="@uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view()" id="change-details-link">@Messages("mandate.agent.change.details")</a></li>
+         <li class="font-xsmall">
+             <a href="@uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view()" id="change-details-link">
+                @messages("mandate.agent.change.details")
+             </a>
+         </li>
 
       </ul>
    </div>

@@ -114,25 +114,30 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
       "email field and confirmEmail field has more than expected length" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> tooLongEmail)
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("error-notification").text() must
             include("client.email.error.email.too.long")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -143,10 +148,12 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -157,7 +164,8 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitWithAuthorisedClient(controller)(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -171,9 +179,12 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
         .thenReturn(Future.successful(None))
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       status(result) must be(BAD_REQUEST)
-      verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-      verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-      verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+      verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+        ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+      verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](
+        ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+      verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+        ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
     }
 
   }
@@ -220,7 +231,8 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
+    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
     val result = controller.getClientMandateDetails("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -234,7 +246,8 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/api/anywhere"))
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq("MANDATE_ID"),
       ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("mandateId"))
-    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some(mandate))
+    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())) thenReturn Future.successful(Some(mandate))
     val result = controller.view("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }

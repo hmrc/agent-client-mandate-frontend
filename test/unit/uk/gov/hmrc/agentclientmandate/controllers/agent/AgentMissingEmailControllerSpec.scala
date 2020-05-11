@@ -86,7 +86,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
         }
       }
 
-      " user selected option 'yes' for use email address and left email as empty" in new Setup {
+      "user selected option 'yes' for use email address and left email as empty" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
@@ -96,9 +96,9 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
         }
       }
 
-
       "email field has more than expected length" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        val tooLongEmail: String = "aaa@" + "a" * 237 + ".com"
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true", "email" -> tooLongEmail)
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -106,6 +106,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
           document.getElementsByClass("error-notification").text() must include("client.email.error.email.too.long")
         }
       }
+
       "invalid email is passed" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
@@ -123,12 +124,11 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
-          verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())
+          verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(ArgumentMatchers.any(),
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())
         }
       }
     }
-
-
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]

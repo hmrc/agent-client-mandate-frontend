@@ -146,7 +146,8 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(
+        ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(cachedData))
       when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
         .thenReturn (Future.successful(agentDetails))
@@ -167,7 +168,8 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(updatedRegDetails))
       val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
       test(result)

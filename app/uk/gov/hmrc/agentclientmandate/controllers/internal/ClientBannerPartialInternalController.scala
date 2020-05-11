@@ -39,14 +39,18 @@ class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerCom
 
     mandateService.fetchClientMandateByClientId(clientId, service).map {
       case Some(mandate) => mandate.currentStatus.status match {
-        case Active => Ok(client_banner(service, mandate.agentParty.name, mandateHost
-          + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
-        case Approved => Ok(client_banner(service, mandate.agentParty.name, mandateHost
-          + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
-        case Rejected => Ok(client_banner(service, mandate.agentParty.name, mandateHost
-          + uk.gov.hmrc.agentclientmandate.controllers.client.routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "rejected", "cancelled_rejected"))
-        case Cancelled => Ok(client_banner(service, mandate.agentParty.name, mandateHost
-          + uk.gov.hmrc.agentclientmandate.controllers.client.routes.CollectEmailController.view().url, "attorneyBanner--client-request-rejected", "cancelled", "cancelled_rejected"))
+        case Active => Ok(client_banner(service, mandate.agentParty.name,
+          mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(
+          mandate.id, returnUrl).url, "attorneyBanner--client-request-accepted", "active", "approved_active"))
+        case Approved => Ok(client_banner(service, mandate.agentParty.name,
+          mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(
+            mandate.id, returnUrl).url, "attorneyBanner--client-request-requested", "approved", "approved_active"))
+        case Rejected => Ok(client_banner(service, mandate.agentParty.name,
+          mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.CollectEmailController.view().url,
+          "attorneyBanner--client-request-rejected", "rejected", "cancelled_rejected"))
+        case Cancelled => Ok(client_banner(service, mandate.agentParty.name,
+          mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.CollectEmailController.view().url,
+          "attorneyBanner--client-request-rejected", "cancelled", "cancelled_rejected"))
       }
       case None => NotFound
     }

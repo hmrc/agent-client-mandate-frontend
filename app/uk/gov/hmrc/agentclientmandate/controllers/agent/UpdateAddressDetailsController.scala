@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentclientmandate.controllers.agent
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, BusinessRegistrationDisplayDetails}
@@ -51,7 +51,8 @@ class UpdateAddressDetailsController @Inject()(
         agentDetails match {
           case Some(agentDetail) =>
             val agentAddress = EditAgentAddressDetails(agentDetail.agentName, agentDetail.addressDetails)
-            Ok(views.html.agent.editDetails.update_address_details(editAgentAddressDetailsForm.fill(agentAddress), service, displayDetails(service), getBackLink(service)))
+            Ok(views.html.agent.editDetails.update_address_details(editAgentAddressDetailsForm
+              .fill(agentAddress), service, displayDetails(service), getBackLink(service)))
           case None =>
             Logger.warn(s"[UpdateAddressDetailsController][view] - No business details found to edit")
             throw new RuntimeException("No Registration Details found")
@@ -90,7 +91,7 @@ class UpdateAddressDetailsController @Inject()(
     Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view().url)
   }
 
-  private def displayDetails(service: String)(implicit request: Request[_]): BusinessRegistrationDisplayDetails = {
+  private def displayDetails(service: String): BusinessRegistrationDisplayDetails = {
     BusinessRegistrationDisplayDetails("NUK",
       "agent.edit-details.agent.non-uk.header",
       "agent.edit-details.text.agent",

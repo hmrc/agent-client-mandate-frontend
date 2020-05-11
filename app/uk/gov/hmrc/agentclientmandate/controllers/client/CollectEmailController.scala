@@ -116,11 +116,11 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
   }
 
   val backLinkId = "CollectEmailController:BackLink"
-  private def saveBackLink(service: String, redirectUrl: Option[String])(implicit hc: _root_.uk.gov.hmrc.http.HeaderCarrier) = {
+  private def saveBackLink(service: String, redirectUrl: Option[String])(implicit hc: _root_.uk.gov.hmrc.http.HeaderCarrier): Future[String] = {
     dataCacheService.cacheFormData[String](backLinkId, redirectUrl.getOrElse(DelegationUtils.getDelegatedServiceRedirectUrl(service)))
   }
 
-  private def getBackLink(service: String, mode: Option[String])(implicit hc: HeaderCarrier, request: Request[AnyContent]) :Future[Option[String]]= {
+  private def getBackLink(service: String, mode: Option[String])(implicit hc: HeaderCarrier): Future[Option[String]] = {
     mode match {
       case Some("edit") => Future.successful(Some(routes.ReviewMandateController.view().url))
       case _ =>

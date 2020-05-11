@@ -110,13 +110,15 @@ class AgentSummaryController @Inject()(
                        agentDetails: AgentDetails,
                        clientsCancelled: Option[Seq[String]],
                        screenReaderText: String,
-                       tabName: Option[String] = None)(implicit request: Request[_]) = {
+                       tabName: Option[String] = None)(implicit request: Request[_]): Result = {
 
     mandates match {
       case Some(x) if x.pendingMandates.nonEmpty && tabName.contains("pending-clients") =>
         Ok(views.html.agent.agentSummary.pending(service, x, agentDetails, clientsCancelled, screenReaderText))
       case Some(x) if x.activeMandates.nonEmpty =>
-        Ok(views.html.agent.agentSummary.clients(service, x, agentDetails, clientsCancelled, screenReaderText, filterClientsForm.fill(FilterClients(None, "allClients"))))
+        Ok(views.html.agent.agentSummary.clients(
+          service, x, agentDetails, clientsCancelled, screenReaderText, filterClientsForm.fill(FilterClients(None, "allClients")))
+        )
       case Some(x) if x.pendingMandates.nonEmpty =>
         Ok(views.html.agent.agentSummary.pending(service, x, agentDetails, clientsCancelled, screenReaderText))
       case _ =>
@@ -144,7 +146,10 @@ class AgentSummaryController @Inject()(
             clientsCancelled <- agentClientMandateService.fetchClientsCancelled(agentAuthRetrievals, service)
             _ <- dataCacheService.cacheFormData[String](screenReaderTextId, "")
           } yield {
-            Ok(views.html.agent.agentSummary.clients(service, mandates.getOrElse(Mandates(Seq(), Seq())), agentDetails, clientsCancelled, "", filterClientsForm.fill(data), true))
+            Ok(views.html.agent.agentSummary.clients(
+              service, mandates.getOrElse(Mandates(Seq(), Seq())), agentDetails,
+              clientsCancelled, "", filterClientsForm.fill(data), isUpdate = true)
+            )
           }
         }
       )

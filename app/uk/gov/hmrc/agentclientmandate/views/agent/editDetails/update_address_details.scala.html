@@ -29,12 +29,12 @@
 <script src='@controllers.routes.Assets.at("javascript/mandate-country-auto-complete.js")'></script>
 <script>
     $(document).ready(function() {
-      countryCodeAutoComplete("#businessAddress\\.country")
+      countryCodeAutoComplete("#businessAddress\\.country");
       var classOfSelect1 = $('#businessAddress\\.country_').attr('class');
-      $("#businessAddress\\.country").addClass(classOfSelect1)
+      $("#businessAddress\\.country").addClass(classOfSelect1);
       var labelText1 = $("#businessAddress\\.country_field").text();
-      var divId1 = "businessAddress\\.country_div"
-      var fieldId1 = "businessAddress.country_"
+      var divId1 = "businessAddress\\.country_div";
+      var fieldId1 = "businessAddress.country_";
       createLabelForHiddenSelect(divId1, fieldId1, labelText1);
     });
 </script>

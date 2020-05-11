@@ -16,15 +16,10 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import java.util.Properties
-
-import play.api.{Environment, Mode, Play}
+import play.api.Mode
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
-import uk.gov.hmrc.play.bootstrap.config.RunMode
-
-import scala.io.Source
 
 object AgentClientMandateUtils {
 
@@ -89,5 +84,6 @@ object AgentClientMandateUtils {
 
   def isRelativeOrDev(url: String)(implicit runMode: AppConfig): Boolean = isRelativeUrl(url) || runMode.environment.mode == Mode.Dev
 
-  def isNonUkClient(mandate: Mandate): Boolean = !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
+  def isNonUkClient(mandate: Mandate): Boolean =
+    !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
 }

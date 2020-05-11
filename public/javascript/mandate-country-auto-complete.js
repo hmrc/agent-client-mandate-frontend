@@ -1,5 +1,5 @@
 function trimCountry(countryVal) {
-    var trimmedCountry = countryVal
+    var trimmedCountry = countryVal;
     var position = countryVal.search(":");
     if (position > 0){
       trimmedCountry = countryVal.substring(0, position).trim();
@@ -10,7 +10,7 @@ function trimCountry(countryVal) {
 
 
 function createLabelForHiddenSelect(divId, fieldId, labelText) {
-    var selectDiv = $('#' + divId)
+    var selectDiv = $('#' + divId);
     var newLabel = $("<label>").attr('for', fieldId).text(labelText).attr('class', "visuallyhidden");
     selectDiv.append(newLabel);
 }
@@ -114,7 +114,7 @@ function countryCodeAutoComplete(selectId) {
 
         // Remove invalid value
         this.input
-          .val( "" )
+          .val( "" );
 //          .attr( "title", value + " didn't match any item" );
         this.element.val( "" );
         this.input.autocomplete( "instance" ).term = "";

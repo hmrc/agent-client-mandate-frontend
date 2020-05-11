@@ -40,7 +40,7 @@ object FeatureSwitch {
   def disable(switch: FeatureSwitch)(implicit config: ServicesConfig): FeatureSwitch = setProp(switch.name, value = false)
 
   def setProp(name: String, value: Boolean)(implicit config: ServicesConfig): FeatureSwitch = {
-    val systemProps = sys.props.+=((systemPropertyName(name), value.toString))
+    sys.props.+=((systemPropertyName(name), value.toString))
     forName(name)
   }
 

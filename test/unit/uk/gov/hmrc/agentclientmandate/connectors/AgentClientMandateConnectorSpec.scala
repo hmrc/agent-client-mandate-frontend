@@ -90,7 +90,8 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
 
       val response = agentClientMandateConnector.createMandate(mandateDto, testAgentAuthRetrievals)
       await(response).status must be(OK)
@@ -114,7 +115,8 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
 
       val response = await(agentClientMandateConnector.approveMandate(mandate, testClientAuthRetrievals))
       response.status must be(OK)

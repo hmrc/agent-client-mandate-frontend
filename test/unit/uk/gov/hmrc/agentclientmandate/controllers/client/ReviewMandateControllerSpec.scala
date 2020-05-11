@@ -149,7 +149,8 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(ClientCache()))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

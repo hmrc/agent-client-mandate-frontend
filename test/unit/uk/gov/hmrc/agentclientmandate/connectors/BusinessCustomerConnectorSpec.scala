@@ -59,7 +59,8 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(responseJson))))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(OK)
@@ -75,7 +76,8 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson = Some(responseJson))))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(INTERNAL_SERVER_ERROR)
