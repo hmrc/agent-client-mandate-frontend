@@ -44,7 +44,8 @@ class CollectAgentEmailController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
-          case Some(clientMandateDisplayDetails) => Ok(views.html.agent.agentEnterEmail(agentEmailForm.fill(AgentEmail(clientMandateDisplayDetails.agentLastUsedEmail)), service, None, getBackLink(service, None)))
+          case Some(clientMandateDisplayDetails) => Ok(views.html.agent.agentEnterEmail(
+            agentEmailForm.fill(AgentEmail(clientMandateDisplayDetails.agentLastUsedEmail)), service, None, getBackLink(service, None)))
           case None => Ok(views.html.agent.agentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
         }
       }

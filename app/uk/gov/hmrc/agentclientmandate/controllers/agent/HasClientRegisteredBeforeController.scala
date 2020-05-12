@@ -52,7 +52,8 @@ class HasClientRegisteredBeforeController @Inject()(
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
           else Future.successful(HttpResponse(OK))
         }
-      } yield Ok(views.html.agent.hasClientRegisteredBefore(prevRegisteredForm.fill(prevRegistered.getOrElse(PrevRegistered())), callingPage, service, getBackLink(service, callingPage)))
+      } yield Ok(views.html.agent.hasClientRegisteredBefore(prevRegisteredForm.fill(prevRegistered.getOrElse(PrevRegistered())),
+        callingPage, service, getBackLink(service, callingPage)))
     }
   }
 
@@ -62,7 +63,9 @@ class HasClientRegisteredBeforeController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         prevRegisteredForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.hasClientRegisteredBefore(formWithErrors, callingPage, service, getBackLink(service, callingPage)))
+            val result = BadRequest(views.html.agent.hasClientRegisteredBefore(
+              formWithErrors, callingPage, service, getBackLink(service, callingPage))
+            )
             Future.successful(result)
           },
           data => {

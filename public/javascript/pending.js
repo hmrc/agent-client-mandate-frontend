@@ -1,4 +1,4 @@
-var crTab = document.getElementById("pending-clients")
+var crTab = document.getElementById("pending-clients");
 var prevUrl = document.referrer;
 
 if (prevUrl.includes("summary")) {

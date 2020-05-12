@@ -179,7 +179,8 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(clientCache))
 
-    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
 
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)

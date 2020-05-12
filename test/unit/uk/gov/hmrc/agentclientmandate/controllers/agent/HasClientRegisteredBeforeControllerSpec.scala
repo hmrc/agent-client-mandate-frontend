@@ -104,7 +104,8 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "false")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"http://localhost:9923/business-customer/agent/register/non-uk-client/ated?backLinkUrl=http://localhost:9959/mandate/agent/client-registered-previously/callPage"))
+          redirectLocation(result) must be(Some(s"http://localhost:9923/business-customer/agent/register/non-uk-client" +
+            s"/ated?backLinkUrl=http://localhost:9959/mandate/agent/client-registered-previously/callPage"))
         }
       }
     }

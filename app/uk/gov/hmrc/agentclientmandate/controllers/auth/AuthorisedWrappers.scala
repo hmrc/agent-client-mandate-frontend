@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
 import play.api.Logger
+import play.api.mvc.Result
 import play.api.mvc.Results._
-import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, ClientAuthRetrievals}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
@@ -73,7 +73,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
   }
 
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig, req: Request[_]): Future[Result] = {
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     agentAuthenticated(service,
       Retrievals.authorisedEnrolments and
         Retrievals.internalId and

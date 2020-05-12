@@ -52,7 +52,8 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
           else Future.successful(HttpResponse(OK))
         }
-      } yield Ok(views.html.agent.previousUniqueAuthorisationNumber(prevUniqueAuthNumForm.fill(prevUniqueAuthNum.getOrElse(PrevUniqueAuthNum())), callingPage, service, getBackLink(service, callingPage)))
+      } yield Ok(views.html.agent.previousUniqueAuthorisationNumber(prevUniqueAuthNumForm
+        .fill(prevUniqueAuthNum.getOrElse(PrevUniqueAuthNum())), callingPage, service, getBackLink(service, callingPage)))
     }
   }
 

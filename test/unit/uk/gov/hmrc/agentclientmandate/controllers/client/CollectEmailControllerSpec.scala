@@ -157,7 +157,8 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/client/review"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -168,7 +169,8 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/client/search"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -182,28 +184,32 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
           document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
       "email field and confirmEmail field has more than expected length" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com")
+        val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
+        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> tooLongEmail)
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
           document.getElementsByClass("error-notification").text() must
             include("client.email.error.email.too.long")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
-
 
       "invalid email id is passed" in new Setup {
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
@@ -212,10 +218,12 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
           document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
             .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 

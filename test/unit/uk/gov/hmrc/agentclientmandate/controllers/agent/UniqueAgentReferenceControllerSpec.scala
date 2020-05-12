@@ -122,7 +122,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
     test(result)
   }
 
-  def viewWithAuthorisedAgent(controller: UniqueAgentReferenceController)(clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedAgent(controller: UniqueAgentReferenceController)(
+    clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
     implicit val hc: HeaderCarrier = HeaderCarrier()
 

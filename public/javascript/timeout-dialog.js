@@ -77,7 +77,7 @@ String.prototype.format = function() {
       dialog_width: 340,
       close_on_escape: false,
       background_no_scroll: false
-    }
+    };
 
     $.extend(settings, options);
 
@@ -98,8 +98,8 @@ String.prototype.format = function() {
         var self = this;
         self.destroyDialog();
         if(settings.background_no_scroll){$('html').addClass('noScroll');}
-        var time =  secondsToTime(settings.countdown)
-        var timeout =  secondsToTime(settings.timeout)
+        var time =  secondsToTime(settings.countdown);
+        var timeout =  secondsToTime(settings.timeout);
          //ignored seconds time.m used below
         $('<div id="timeout-dialog">' +
             '<p id="timeout-message">' + settings.message.format('<span id="timeout-countdown">' + time.m  + '</span>'
@@ -140,7 +140,7 @@ String.prototype.format = function() {
             // close the dialog
             self.keepAlive();
           }
-        }
+        };
 
         document.addEventListener("keydown", self.escPress, true);
 

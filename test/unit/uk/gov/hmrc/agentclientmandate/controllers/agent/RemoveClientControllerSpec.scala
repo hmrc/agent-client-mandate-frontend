@@ -132,7 +132,8 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "agent requests(GET) for 'remove client question' view" in new Setup {
 
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
       viewWithAuthorisedAgent { result =>
@@ -149,7 +150,8 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   "returns BAD_REQUEST" when {
     "invalid form is submitted" in new Setup {
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
@@ -165,7 +167,8 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
   "submitting form " when {
     "submitted with false will redirect to agent summary" in new Setup {
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(SEE_OTHER)
@@ -174,9 +177,11 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
     }
 
     "submitted with true will redirect to confirmation" in new Setup {
-      when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
+      when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(SEE_OTHER)
@@ -185,13 +190,15 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
     }
 
     "submitted with true throws exception" in new Setup {
-      when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
+      when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
       val userId = s"user-${UUID.randomUUID}"
       implicit val hc: HeaderCarrier = HeaderCarrier()
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
       val thrown = the[RuntimeException] thrownBy await(controller.confirm(service, "ABC123")
@@ -205,7 +212,8 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "agent requests(GET) for 'client remove confirmation' view" in new Setup {
 
-      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
       showConfirmationWithAuthorisedAgent { result =>

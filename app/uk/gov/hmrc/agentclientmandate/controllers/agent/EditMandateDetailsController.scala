@@ -46,7 +46,8 @@ class EditMandateDetailsController @Inject()(
           case Some(mandate) =>
             val editMandateDetails = EditMandateDetails(displayName = mandate.clientDisplayName,
               email = mandate.agentParty.contactDetails.email)
-            Ok(views.html.agent.editClient(editMandateDetailsForm.fill(editMandateDetails), service, mandateId, mandate.clientDisplayName, mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
+            Ok(views.html.agent.editClient(editMandateDetailsForm.fill(editMandateDetails), service, mandateId,
+              mandate.clientDisplayName, mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
           case _ => throw new RuntimeException(s"No Mandate returned with id $mandateId for service $service")
         }
       }
@@ -59,7 +60,8 @@ class EditMandateDetailsController @Inject()(
           formWithError => {
             acmService.fetchClientMandate(mandateId, authRetrievals) map {
               case Some(mandate) =>
-                BadRequest(views.html.agent.editClient(formWithError, service, mandateId, mandate.clientDisplayName, mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
+                BadRequest(views.html.agent.editClient(formWithError, service, mandateId, mandate.clientDisplayName,
+                  mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
               case _ => throw new RuntimeException(s"No Mandate returned with id $mandateId for service $service")
             }
           },

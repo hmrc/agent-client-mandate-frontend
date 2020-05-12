@@ -50,7 +50,8 @@ class ReviewMandateController @Inject()(
 
               // $COVERAGE-OFF$
               val updatedClientParty: Option[Party] =
-                x.clientParty.map(_.copy(contactDetails = clientContactDetailsUpdated.getOrElse(ContactDetails(cache.email.map(_.email).getOrElse(throw new RuntimeException("email not cached"))))))
+                x.clientParty.map(_.copy(contactDetails = clientContactDetailsUpdated.getOrElse(
+                  ContactDetails(cache.email.map(_.email).getOrElse(throw new RuntimeException("email not cached"))))))
               // $COVERAGE-ON$
 
               val updatedMandate = x.copy(clientParty = updatedClientParty)

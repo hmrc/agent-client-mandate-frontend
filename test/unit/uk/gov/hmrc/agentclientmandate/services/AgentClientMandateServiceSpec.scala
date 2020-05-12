@@ -497,13 +497,13 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "ETMP update for ocr details failed" in new Setup {
         val nonUkiOcrChanges = Identification("idnumber", "FR", "issuingInstitution")
-//        val cachedData = Some(AgentBuilder.buildAgentDetails)
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(None))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any()))
           .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
         when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
-        val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges), editAgentDetails = None)
+        val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,
+          editNonUKIdDetails = Some(nonUkiOcrChanges), editAgentDetails = None)
         await(response) must be(None)
       }
     }

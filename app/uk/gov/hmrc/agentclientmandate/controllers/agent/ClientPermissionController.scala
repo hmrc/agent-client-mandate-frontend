@@ -53,7 +53,8 @@ class ClientPermissionController @Inject()(
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK))
           }
-        } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(service, callingPage)))
+        } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(
+          clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(service, callingPage)))
       }
   }
 

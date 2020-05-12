@@ -69,7 +69,8 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
       "agent requests(GET) for check client details view and email has been cached previously and it's from Overseas" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
-          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(),
+          ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
           (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
@@ -113,7 +114,8 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
       "agent requests(GET) for check client details view and display name has NOT been cached previously" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
-          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Some(AgentEmail(""))))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
           (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
         when(mockDataCacheService.cacheFormData[String]
@@ -186,7 +188,8 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockMandateService.createMandate(ArgumentMatchers.eq(service), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandateId))
+      when(mockMandateService.createMandate(ArgumentMatchers.eq(service), ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(mandateId))
       val fakeRequest = FakeRequest().withFormUrlEncodedBody()
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       test(result)

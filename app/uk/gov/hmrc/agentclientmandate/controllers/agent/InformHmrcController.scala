@@ -23,11 +23,8 @@ import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnec
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
-import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegisteredForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,7 +46,6 @@ class InformHmrcController @Inject()(
     }
   }
 
-
   def continue(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
@@ -57,7 +53,7 @@ class InformHmrcController @Inject()(
       }
   }
 
-  private def getBackLink(callingPage: String) = {
+  private def getBackLink(callingPage: String): Option[String] = {
     Some(routes.PreviousUniqueAuthorisationNumberController.view(callingPage).url)
   }
 }

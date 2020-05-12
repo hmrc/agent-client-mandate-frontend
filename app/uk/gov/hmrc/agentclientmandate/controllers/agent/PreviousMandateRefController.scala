@@ -47,7 +47,8 @@ class PreviousMandateRefController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) map { a =>
           a.flatMap(_.mandate) match {
-            case Some(x) => Ok(views.html.agent.searchPreviousMandate(service, clientAuthNumForm.fill(MandateReference(x.id)), callingPage, getBackLink(service, callingPage)))
+            case Some(x) => Ok(views.html.agent.searchPreviousMandate(service, clientAuthNumForm.fill(MandateReference(x.id)),
+              callingPage, getBackLink(service, callingPage)))
             case None => Ok(views.html.agent.searchPreviousMandate(service, clientAuthNumForm, callingPage, getBackLink(service, callingPage)))
           }
         }
@@ -67,8 +68,9 @@ class PreviousMandateRefController @Inject()(
               case Some(x) =>
                 dataCacheService.cacheFormData[OldMandateReference](oldNonUkMandate, OldMandateReference(x.id,
                   x.subscription.referenceNumber.getOrElse(throw new RuntimeException("No Client Ref no. found!"))))
-                dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(Some(ClientEmail(x.clientParty.map(_.contactDetails.email).getOrElse(""))), Some(x))) flatMap { cacheResp =>
-                  Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(service, routes.PreviousMandateRefController.view(callingPage).url)))
+                dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(Some(ClientEmail(x.clientParty
+                  .map(_.contactDetails.email).getOrElse(""))), Some(x))) flatMap { cacheResp =>
+                    Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(service, routes.PreviousMandateRefController.view(callingPage).url)))
                 }
               case None =>
                 val errorMsg = "client.search-mandate.error.clientAuthNum"

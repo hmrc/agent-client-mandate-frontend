@@ -74,7 +74,8 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
       "client submits" in new Setup {
         continueWithAuthorisedAgent(informHmrcController) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("http://localhost:9923/business-customer/agent/register/non-uk-client/ated?backLinkUrl=http://localhost:9959/mandate/agent/inform-HMRC/callPage"))
+          redirectLocation(result) must be(Some("http://localhost:9923/business-customer/agent/register/" +
+            "non-uk-client/ated?backLinkUrl=http://localhost:9959/mandate/agent/inform-HMRC/callPage"))
         }
       }
     }
@@ -114,7 +115,8 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
       when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
       when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }

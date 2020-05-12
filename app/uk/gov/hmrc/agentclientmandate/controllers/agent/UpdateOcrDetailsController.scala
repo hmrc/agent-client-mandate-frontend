@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.i18n.{I18nSupport, Messages}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
@@ -67,7 +67,11 @@ class UpdateOcrDetailsController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
         NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest).fold(
-          formWithErrors => Future.successful(BadRequest(views.html.agent.editDetails.update_ocr_details(formWithErrors, service, displayDetails(service), getBackLink(service)))),
+          formWithErrors => Future.successful(
+            BadRequest(views.html.agent.editDetails.update_ocr_details(
+              formWithErrors, service, displayDetails(service), getBackLink(service)
+            ))
+          ),
           updateDetails => {
             for {
               updatedDetails <- agentClientMandateService.updateRegisteredDetails(
@@ -96,7 +100,7 @@ class UpdateOcrDetailsController @Inject()(
     Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view().url)
   }
 
-  private def displayDetails(service: String)(implicit messages: Messages): BusinessRegistrationDisplayDetails = {
+  private def displayDetails(service: String): BusinessRegistrationDisplayDetails = {
     BusinessRegistrationDisplayDetails("NUK",
       "agent.edit-details.agent.non-uk.header",
       "agent.edit-details.text.agent",
