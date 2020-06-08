@@ -17,7 +17,7 @@
 package views.agent
 
 import org.jsoup.Jsoup
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.views

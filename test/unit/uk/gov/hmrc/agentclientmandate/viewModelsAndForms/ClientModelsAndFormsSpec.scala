@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.viewModelsAndForms
 
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{MandateReference, MandateReferenceForm}
 import unit.uk.gov.hmrc.agentclientmandate.builders.MockControllerSetup

@@ -18,7 +18,7 @@ package views.agent
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc.MessagesControllerComponents
@@ -31,7 +31,7 @@ import uk.gov.hmrc.play.views.html.layouts.{Footer, GTMSnippet, Head, Optimizely
 trait ViewTestHelper {
   self: MockitoSugar =>
 
-  private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
+  val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
   implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mockOptConfig: OptimizelyConfig = mock[OptimizelyConfig]
