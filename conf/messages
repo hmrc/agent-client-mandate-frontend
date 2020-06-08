@@ -478,3 +478,10 @@ agent.search-previous-mandate.error.mandateRef.already-used-by-mandate-service =
 
 urbanner.message.text = Help improve digital services by joining the HMRC user panel (opens in new window)
 urbanner.message.reject = No thanks
+
+##### GENERIC ERROR
+
+agent.client.mandate.generic.error.header = Sorry, there is a problem with the service
+agent.client.mandate.generic.error.title = Sorry, there is a problem with the service
+agent.client.mandate.generic.error.message = You will be able to use the service later.
+agent.client.mandate.generic.error.message2 = Your client details and saved returns and drafts are not affected by this problem.

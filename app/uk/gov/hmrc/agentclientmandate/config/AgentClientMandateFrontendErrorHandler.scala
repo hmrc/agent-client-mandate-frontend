@@ -18,9 +18,9 @@ package uk.gov.hmrc.agentclientmandate.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Request
-import play.twirl.api.HtmlFormat
+import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
 
 import scala.collection.JavaConverters._
@@ -39,7 +39,16 @@ class AgentClientMandateFrontendErrorHandler @Inject()(
 
     val service: Array[String] = bitsFromPath.filter(servicesUsed.contains(_))
 
-    uk.gov.hmrc.agentclientmandate.views.html.error_template(pageTitle, heading, message, service.headOption)
+    uk.gov.hmrc.agentclientmandate.views.html.error_template(pageTitle, heading, message, None, service.headOption, appConfig)
   }
 
+  override def internalServerErrorTemplate(implicit request: Request[_]): Html = {
+    uk.gov.hmrc.agentclientmandate.views.html.error_template(
+      Messages("agent.client.mandate.generic.error.title"),
+      Messages("agent.client.mandate.generic.error.header"),
+      Messages("agent.client.mandate.generic.error.message"),
+      Some(Messages("agent.client.mandate.generic.error.message2")),
+      None,
+      appConfig)
+  }
 }

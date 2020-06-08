@@ -18,7 +18,7 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.auth
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.{AnyContentAsEmpty, Headers, Result, Results}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.config.AppConfig

@@ -18,7 +18,7 @@ package unit.uk.gov.hmrc.agentclientmandate.builders
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.MessagesControllerComponents
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
