@@ -22,14 +22,14 @@ private object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"       %% "bootstrap-play-26"             % "1.8.0",
+    "uk.gov.hmrc"       %% "bootstrap-play-26"             % "1.14.0",
     "uk.gov.hmrc"       %% "auth-client"                   % "3.0.0-play-26",
     "uk.gov.hmrc"       %% "play-partials"                 % "6.11.0-play-26",
     "uk.gov.hmrc"       %% "domain"                        % "5.9.0-play-26",
-    "uk.gov.hmrc"       %% "http-caching-client"           % "9.0.0-play-26",
-    "uk.gov.hmrc"       %% "emailaddress"                  % "3.4.0",
-    "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.2.0-play-26",
-    "uk.gov.hmrc"       %% "play-ui"                       % "8.10.0-play-26",
+    "uk.gov.hmrc"       %% "http-caching-client"           % "9.1.0-play-26",
+    "uk.gov.hmrc"       %% "emailaddress"                  % "3.5.0",
+    "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.3.0-play-26",
+    "uk.gov.hmrc"       %% "play-ui"                       % "8.11.0-play-26",
     "com.typesafe.play" %% "play-json-joda"                % "2.7.4",
     "uk.gov.hmrc"       %% "govuk-template"                % "5.55.0-play-26"
   )
@@ -50,7 +50,7 @@ private object AppDependencies {
         "org.mockito"            %  "mockito-core"       % "3.3.3"             % scope,
         "com.typesafe.play"      %% "play-test"          % PlayVersion.current % scope,
         "com.github.tomakehurst" %  "wiremock-jre8"      % "2.26.3"            % scope,
-        "uk.gov.hmrc"            %% "bootstrap-play-26"  % "1.7.0"             % scope classifier "tests"
+        "uk.gov.hmrc"            %% "bootstrap-play-26"  % "1.14.0"             % scope classifier "tests"
       )
     }.test
   }
