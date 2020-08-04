@@ -73,9 +73,10 @@ class UniqueAgentReferenceControllerISpec extends IntegrationSpec {
         )
 
         val result: WSResponse = await(hitApplicationEndpoint("/agent/unique-reference")
-          .withHeaders(HN.SET_COOKIE -> getSessionCookie())
-          .withHeaders(HeaderNames.xSessionId -> s"$SessionId")
-          .withHeaders("Authorization" -> "value")
+          .withHttpHeaders(
+            HN.SET_COOKIE -> getSessionCookie(),
+            HeaderNames.xSessionId -> s"$SessionId",
+            "Authorization" -> "value")
           .get())
 
         result.status mustBe 200

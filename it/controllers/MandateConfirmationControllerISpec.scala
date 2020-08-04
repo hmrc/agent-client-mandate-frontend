@@ -79,8 +79,8 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
         )
 
         val result: WSResponse = await(hitApplicationEndpoint("/client/confirmation")
-          .withHeaders(HN.SET_COOKIE -> getSessionCookie())
-          .withHeaders(HeaderNames.xSessionId -> s"$SessionId")
+          .withHttpHeaders(HN.SET_COOKIE -> getSessionCookie())
+          .withHttpHeaders(HeaderNames.xSessionId -> s"$SessionId")
           .get())
 
         result.status mustBe 200
