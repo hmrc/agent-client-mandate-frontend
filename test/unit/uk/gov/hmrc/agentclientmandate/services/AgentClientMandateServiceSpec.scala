@@ -96,7 +96,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
           .thenReturn (Future.successful(Some(cachedEmail)))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.eq(service.clientDisplayNameFormId))(any(), any()))
           .thenReturn (Future.successful(Some(displayName)))
-        when(mockAgentClientMandateConnector.createMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(SERVICE_UNAVAILABLE, None))
+        when(mockAgentClientMandateConnector.createMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(SERVICE_UNAVAILABLE, ""))
 
         val response = service.createMandate(serviceName, testAgentAuthRetrievals)
         val thrown = the[RuntimeException] thrownBy await(response)
@@ -116,8 +116,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
           .thenReturn (Future.successful(Some(cachedEmail)))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.eq(service.clientDisplayNameFormId))(any(), any()))
           .thenReturn (Future.successful(Some(displayName)))
-        when(mockAgentClientMandateConnector.createMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(CREATED, Some(respJson)))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockAgentClientMandateConnector.createMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(CREATED, respJson, Map.empty[String, Seq[String]]))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         when(mockDataCacheService.cacheFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(service.agentRefCacheId), any())(any(), any()))
           .thenReturn(Future.successful(ClientMandateDisplayDetails("test name", "AS12345678", agentLastUsedEmail)))
 
@@ -131,7 +131,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "not fetch any mandate" when {
 
       "incorrect mandate id is passed" in new Setup {
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(SERVICE_UNAVAILABLE, None))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(SERVICE_UNAVAILABLE, ""))
 
         val response = service.fetchClientMandate(mandateId, testAgentAuthRetrievals)
         await(response) must be(None)
@@ -143,7 +143,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "correct mandate id is passed" in new Setup {
         val respJson = Json.toJson(mandateNew)
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandate(mandateId, testClientAuthRetrievals)
         await(response) must be(Some(mandateNew))
@@ -163,7 +163,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
             |}
           |""".stripMargin)
 
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandate(mandateId, testClientAuthRetrievals)
         await(response) must be(None)
@@ -175,7 +175,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "correct mandate id is passed" in new Setup {
         val respJson = Json.toJson(mandateNew)
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandateClientName(mandateId, testAgentAuthRetrievals)
         await(response) must be(mandateNew)
@@ -183,7 +183,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "throws an exception when no Mandate found" in new Setup {
         val respJson = Json.parse("{}")
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandateClientName(mandateId, testClientAuthRetrievals)
         val thrown = the[RuntimeException] thrownBy await(response)
@@ -195,14 +195,14 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "correct mandate id is passed" in new Setup {
         val respJson = Json.toJson(mandateNew)
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandateAgentName(mandateId, testClientAuthRetrievals)
         await(response) must be(mandateNew.agentParty.name)
       }
       "throws an exception when no Mandate found" in new Setup {
         val respJson = Json.parse("{}")
-        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchMandate(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchClientMandateAgentName(mandateId, testAgentAuthRetrievals)
         val thrown = the[RuntimeException] thrownBy await(response)
@@ -214,7 +214,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "filter mandates when status is checked" in new Setup {
         val respJson = Json.toJson(Seq(mandateNew, mandateActive, mandatePendingCancellation, mandateApproved))
-        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchAllClientMandates(testAgentAuthRetrievals, serviceName)
         await(response) must be(Some(Mandates(
@@ -226,7 +226,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
       "return none when json wont map to case class" in new Setup {
 
         val respJson = Json.obj("Wrong" -> "format")
-        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
 
         val response = service.fetchAllClientMandates(testAgentAuthRetrievals, serviceName)
         await(response) must be(None)
@@ -234,7 +234,7 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
       "return none when no mandates found" in new Setup {
         //        val respJson = Json.obj("Wrong" -> "format")
-        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(NOT_FOUND, None))
+        when(mockAgentClientMandateConnector.fetchAllMandates(any(), any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(NOT_FOUND, "", Map.empty[String, Seq[String]]))
 
         val response = service.fetchAllClientMandates(testAgentAuthRetrievals, serviceName)
         await(response) must be(None)
@@ -246,13 +246,13 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
       "client approves it and response status is OK" in new Setup {
         val responseJson = Json.toJson(mandateNew)
 
-        when(mockAgentClientMandateConnector.approveMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK, Some(responseJson))))
+        when(mockAgentClientMandateConnector.approveMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, responseJson, Map.empty[String, Seq[String]])))
 
         when(mockDataCacheService.cacheFormData[Mandate](ArgumentMatchers.eq(service.clientApprovedMandateId), any())(any(), any()))
           .thenReturn(Future.successful(mandateNew))
 
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.approveMandate(mandateNew, testClientAuthRetrievals)
         await(response) must be(Some(mandateNew))
       }
@@ -260,8 +260,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "return none" when {
       "backend call failed with status other than OK" in new Setup {
-        when(mockAgentClientMandateConnector.approveMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(BAD_REQUEST)))
+        when(mockAgentClientMandateConnector.approveMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, "")))
         val response = service.approveMandate(mandateNew, testClientAuthRetrievals)
         await(response) must be(None)
       }
@@ -269,22 +269,22 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "reject client" when {
       "agent rejects client status returned ok" in new Setup {
-        when(mockAgentClientMandateConnector.rejectClient(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockAgentClientMandateConnector.rejectClient(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.rejectClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(true)
       }
 
       "agent rejects client status returned not ok" in new Setup {
-        when(mockAgentClientMandateConnector.rejectClient(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
+        when(mockAgentClientMandateConnector.rejectClient(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
         val response = service.rejectClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(false)
       }
     }
 
     "fetch agent details" in new Setup {
-      when(mockAgentClientMandateConnector.fetchAgentDetails(any())(any()))
+      when(mockAgentClientMandateConnector.fetchAgentDetails(any())(any(), any()))
         .thenReturn(Future.successful(agentDetails))
       val response = service.fetchAgentDetails(testAgentAuthRetrievals)
       await(response) must be(agentDetails)
@@ -293,8 +293,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "accept a client" when {
 
       "backend connector call succeeds with status OK" in new Setup {
-        when(mockAgentClientMandateConnector.activateMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockAgentClientMandateConnector.activateMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.acceptClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(true)
       }
@@ -303,8 +303,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "not accept a client" when {
 
       "backend connector call fails with status not OK" in new Setup {
-        when(mockAgentClientMandateConnector.activateMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
+        when(mockAgentClientMandateConnector.activateMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
         val response = service.acceptClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(false)
       }
@@ -312,15 +312,15 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "remove client" when {
       "agent removes client status returned ok" in new Setup {
-        when(mockAgentClientMandateConnector.remove(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockAgentClientMandateConnector.remove(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.removeClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(true)
       }
 
       "agent removes client status returned not ok" in new Setup {
-        when(mockAgentClientMandateConnector.remove(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
+        when(mockAgentClientMandateConnector.remove(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
         val response = service.removeClient(mandateId, testAgentAuthRetrievals)
         await(response) must be(false)
       }
@@ -328,15 +328,15 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "remove agent" when {
       "client removes agent status returned ok" in new Setup {
-        when(mockAgentClientMandateConnector.remove(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockAgentClientMandateConnector.remove(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.removeAgent(mandateId, testClientAuthRetrievals)
         await(response) must be(true)
       }
 
       "client removes agent status returned not ok" in new Setup {
-        when(mockAgentClientMandateConnector.remove(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
+        when(mockAgentClientMandateConnector.remove(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
         val response = service.removeAgent(mandateId, testClientAuthRetrievals)
         await(response) must be(false)
       }
@@ -345,8 +345,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "edit client details" when {
       "edit mandate status returned OK" in new Setup {
         val respJson = Json.toJson(mandateNew)
-        when(mockAgentClientMandateConnector.editMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK, Some(respJson))))
+        when(mockAgentClientMandateConnector.editMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]])))
         val response = service.editMandate(mandateNew, testAgentAuthRetrievals)
         await(response) must be(Some(mandateNew))
       }
@@ -355,8 +355,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "not edit client details" when {
       "edit mandate status does not return OK" in new Setup {
-        when(mockAgentClientMandateConnector.editMandate(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, None)))
+        when(mockAgentClientMandateConnector.editMandate(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "", Map.empty[String, Seq[String]])))
         val response = service.editMandate(mandateNew, testAgentAuthRetrievals)
         await(response) must be(None)
       }
@@ -365,16 +365,16 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "fetch mandate for client" when {
       "returns a mandate when client party exists, is active, and for correct service" in new Setup {
         val respJson = Json.toJson(mandateActive)
-        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK, Some(respJson))))
+        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]])))
         val response = service.fetchClientMandateByClient("clientId", "service", testClientAuthRetrievals)
         await(response) must be(Some(mandateActive))
       }
 
       "returns None for all other" in new Setup {
 //        val respJson = Json.toJson(mandateActive)
-        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
+        when(mockAgentClientMandateConnector.fetchMandateByClient(any(), any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(NOT_FOUND, "")))
         val response = service.fetchClientMandateByClient("clientId", "service", testClientAuthRetrievals)
         await(response) must be(None)
       }
@@ -383,15 +383,15 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
     "fetch mandate for client id" when {
       "returns a mandate when client party exists, is active, and for correct service" in new Setup {
         val respJson = Json.toJson(mandateActive)
-        when(mockAgentClientMandateConnector.fetchMandateByClientId(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(OK, Some(respJson))))
+        when(mockAgentClientMandateConnector.fetchMandateByClientId(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]])))
         val response = service.fetchClientMandateByClientId("clientId", "service")
         await(response) must be(Some(mandateActive))
       }
 
       "returns None for all other" in new Setup {
-        when(mockAgentClientMandateConnector.fetchMandateByClientId(any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
+        when(mockAgentClientMandateConnector.fetchMandateByClientId(any(), any())(any(), any()))
+          .thenReturn(Future.successful(HttpResponse(NOT_FOUND, "")))
         val response = service.fetchClientMandateByClientId("clientId", "service")
         await(response) must be(None)
       }
@@ -399,15 +399,15 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "check for agent missing email" must {
       "return false if agent is missing email" in new Setup {
-        when(mockAgentClientMandateConnector.doesAgentHaveMissingEmail(any(), any())(any())) thenReturn Future.successful(HttpResponse(NO_CONTENT))
-        when(mockAgentClientMandateConnector.updateAgentCredId(any())(any())) thenReturn Future.successful(HttpResponse(OK))
+        when(mockAgentClientMandateConnector.doesAgentHaveMissingEmail(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(NO_CONTENT, ""))
+        when(mockAgentClientMandateConnector.updateAgentCredId(any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
         val response = service.doesAgentHaveMissingEmail("ated", testAgentAuthRetrievals)
         await(response) must be(false)
       }
 
       "return true if agent is missing email" in new Setup {
-        when(mockAgentClientMandateConnector.doesAgentHaveMissingEmail(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK))
-        when(mockAgentClientMandateConnector.updateAgentCredId(any())(any())) thenReturn Future.successful(HttpResponse(OK))
+        when(mockAgentClientMandateConnector.doesAgentHaveMissingEmail(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
+        when(mockAgentClientMandateConnector.updateAgentCredId(any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
         val response = service.doesAgentHaveMissingEmail("ated", testAgentAuthRetrievals)
         await(response) must be(true)
       }
@@ -434,8 +434,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(cachedData))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,  editAgentDetails = Some(editAgentAddress))
         await(response) must be(updateRegDetails)
       }
@@ -448,8 +448,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, Some(Identification("idnumber", "FR", "issuingInstitution"))))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(cachedData))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges))
         await(response) must be(updateRegDetails)
       }
@@ -463,8 +463,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(cachedData))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals)
         await(response) must be(updateRegDetails)
       }
@@ -477,8 +477,8 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 //          EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, Some(Identification("idnumber", "FR", "issuingInstitution"))))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(None))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any())) thenReturn Future.successful(HttpResponse(OK))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges))
         await(response) must be(None)
       }
@@ -488,9 +488,9 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
         val cachedData = Some(AgentBuilder.buildAgentDetails)
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(cachedData))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any()))
-          .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any()))
+          .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editAgentDetails = Some(editAgentAddress))
         await(response) must be(None)
       }
@@ -499,9 +499,9 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
         val nonUkiOcrChanges = Identification("idnumber", "FR", "issuingInstitution")
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any()))
           .thenReturn (Future.successful(None))
-        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any()))
-          .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR)))
-        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any()))
+          .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
+        when(mockDataCacheService.clearCache()(any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,
           editNonUKIdDetails = Some(nonUkiOcrChanges), editAgentDetails = None)
         await(response) must be(None)
@@ -510,13 +510,13 @@ class AgentClientMandateServiceSpec extends PlaySpec  with MockitoSugar with Bef
 
     "get clients that have cancelled" when {
       "call is unsuccessful" in new Setup {
-        when(mockAgentClientMandateConnector.fetchClientsCancelled(any(), any())(any())) thenReturn Future.successful(HttpResponse(NOT_FOUND))
+        when(mockAgentClientMandateConnector.fetchClientsCancelled(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(NOT_FOUND, ""))
         val response = service.fetchClientsCancelled(testAgentAuthRetrievals, serviceName)
         await(response) must be(None)
       }
       "call is successful" in new Setup {
         val respJson = Json.toJson(List("AAA", "BBB"))
-        when(mockAgentClientMandateConnector.fetchClientsCancelled(any(), any())(any())) thenReturn Future.successful(HttpResponse(OK, Some(respJson)))
+        when(mockAgentClientMandateConnector.fetchClientsCancelled(any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, respJson, Map.empty[String, Seq[String]]))
         val response = service.fetchClientsCancelled(testAgentAuthRetrievals, serviceName)
         await(response) must be(Some(Seq("AAA", "BBB")))
       }

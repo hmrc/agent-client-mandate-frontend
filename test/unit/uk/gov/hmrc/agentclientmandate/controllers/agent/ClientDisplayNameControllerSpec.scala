@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientDisplayNameControl
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -197,7 +196,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
     )
 
     def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -205,7 +204,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def viewClientDisplayNameUnAuthorisedAgent()(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -213,7 +212,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def viewClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
@@ -223,7 +222,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def editClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
@@ -236,7 +235,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
     def submitClientDisplayNameAuthorisedAgent
     (request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[ClientDisplayName]
         (ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -248,7 +247,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def retrieveClientDisplayNameFromSessionAuthorisedAgent(cachedData: Option[ClientDisplayName] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))

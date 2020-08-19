@@ -94,7 +94,8 @@ class AgencyDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befor
     when(mockDataCacheService.cacheFormData[AgentDetails]
       (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(agentDetails))
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(agentDetails))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }

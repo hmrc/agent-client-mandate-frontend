@@ -70,7 +70,7 @@ class PreviousMandateRefController @Inject()(
                   x.subscription.referenceNumber.getOrElse(throw new RuntimeException("No Client Ref no. found!"))))
                 dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(Some(ClientEmail(x.clientParty
                   .map(_.contactDetails.email).getOrElse(""))), Some(x))) flatMap { cacheResp =>
-                    Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(service, routes.PreviousMandateRefController.view(callingPage).url)))
+                    Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(routes.PreviousMandateRefController.view(callingPage).url)))
                 }
               case None =>
                 val errorMsg = "client.search-mandate.error.clientAuthNum"

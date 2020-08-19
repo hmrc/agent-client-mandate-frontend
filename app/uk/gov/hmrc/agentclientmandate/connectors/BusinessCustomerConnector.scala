@@ -18,37 +18,37 @@ package uk.gov.hmrc.agentclientmandate.connectors
 
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, UpdateRegistrationDetailsRequest}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class BusinessCustomerConnector @Inject()(
                                          val http: DefaultHttpClient,
                                          val servicesConfig: ServicesConfig
-                                         ) extends RawResponseReads {
+                                         ) extends Logging {
 
   val serviceUrl: String = servicesConfig.baseUrl("business-customer")
   val baseUri: String = "business-customer"
   val updateRegistrationDetailsURI: String = "update"
 
   def updateRegistrationDetails(safeId: String, updateRegistrationDetails: UpdateRegistrationDetailsRequest, authRetrievals: AgentAuthRetrievals)
-                               (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = authRetrievals.mandateConnectorUri
     val postUrl = s"""$serviceUrl$authLink/$baseUri/$updateRegistrationDetailsURI/$safeId"""
     val jsonData = Json.toJson(updateRegistrationDetails)
-    http.POST(postUrl, jsonData) map { response =>
+    http.POST[JsValue, HttpResponse](postUrl, jsonData)(implicitly, implicitly, implicitly, implicitly) map { response =>
       response.status match {
         case OK => response
         case status =>
-          Logger.warn(s"[BusinessCustomerConnector][updateRegistrationDetails] - STATUS - $status ")
+          logger.warn(s"[BusinessCustomerConnector][updateRegistrationDetails] - STATUS - $status ")
           response
       }
     }

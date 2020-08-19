@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.SelectServiceController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
@@ -157,7 +156,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -165,7 +164,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
@@ -174,7 +173,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
@@ -183,7 +182,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit().apply(SessionBuilder.updateRequestFormWithSession(request, userId))

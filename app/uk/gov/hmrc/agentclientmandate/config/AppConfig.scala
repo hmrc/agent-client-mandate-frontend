@@ -78,7 +78,7 @@ class AppConfig @Inject()(
     forwardUrl + "?backLinkUrl=" + mandateFrontendHost + backLinkUrl
   }
 
-  def addNonUkClientCorrespondenceUri(service: String, backLinkUrl: String): String = {
+  def addNonUkClientCorrespondenceUri(backLinkUrl: String): String = {
     val forwardUrl =
       s"""${
         servicesConfig.getString(s"microservice.services.ated-subscription-frontend.subscriptionUrl")

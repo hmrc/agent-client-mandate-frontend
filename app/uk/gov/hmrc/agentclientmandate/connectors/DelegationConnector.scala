@@ -17,36 +17,37 @@
 package uk.gov.hmrc.agentclientmandate.connectors
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DelegationConnector @Inject()(val http: DefaultHttpClient,
-                                    val servicesConfig: ServicesConfig) {
+                                    val servicesConfig: ServicesConfig) extends Logging {
   protected def serviceUrl: String = servicesConfig.baseUrl("delegation")
 
   private def delegationUrl(oid: String): String = s"$serviceUrl/oid/$oid"
 
-  def startDelegation(oid: String, delegationContext: StartDelegationContext)(implicit hc: HeaderCarrier): Future[Boolean] = {
+  def startDelegation(oid: String, delegationContext: StartDelegationContext)
+                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     http.PUT[StartDelegationContext, HttpResponse](delegationUrl(oid), delegationContext) map { response =>
       response.status match {
         case CREATED =>
-          Logger.info("[Delegation] Successfully created delegation")
+          logger.info("[Delegation] Successfully created delegation")
           true
         case unexpectedStatus =>
-          Logger.info(s"[Delegation] Unexpected response code $unexpectedStatus")
+          logger.info(s"[Delegation] Unexpected response code $unexpectedStatus")
           throw new RuntimeException(s"Unexpected response code '$unexpectedStatus' PUT ${delegationUrl(oid)}")
       }
     } recover {
       case e: Exception =>
-        Logger.info(s"[Delegation] Unexpected exception ${e.getClass}")
+        logger.info(s"[Delegation] Unexpected exception ${e.getClass}")
         throw new RuntimeException(s"Unexpected exception ${e.getClass} PUT ${delegationUrl(oid)}")
     }
   }

@@ -34,7 +34,6 @@ import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Su
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService, Mandates}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -165,11 +164,11 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         }
 
         val userId = s"user-${UUID.randomUUID}"
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
         val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
@@ -185,11 +184,11 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         }
 
         val userId = s"user-${UUID.randomUUID}"
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
         val result = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
@@ -206,11 +205,11 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         }
 
         val userId = s"user-${UUID.randomUUID}"
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
 
         val thrown = the[RuntimeException] thrownBy await(controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId)))
@@ -229,7 +228,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "could not accept client" in new Setup {
         val userId = s"user-${UUID.randomUUID}"
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
@@ -244,7 +243,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "could not fetch mandate when accepting client" in new Setup {
         val userId = s"user-${UUID.randomUUID}"
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
@@ -362,14 +361,14 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   def viewAuthorisedAgent(controller: AgentSummaryController)(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(),
       ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
     when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
 
@@ -385,7 +384,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   def activateClientByAuthorisedAgent(controller: AgentSummaryController)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
@@ -403,7 +402,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
         Future.successful(Some(Mandates(activeMandates = Seq(mandateActive),
           pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
 
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn Future.successful("text")
@@ -415,7 +414,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
   def updateAuthorisedAgent(controller: AgentSummaryController)(
     request: FakeRequest[AnyContentAsFormUrlEncoded], mockMandates: Option[Mandates])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.fetchAllClientMandates(
@@ -423,7 +422,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       ArgumentMatchers.any())) thenReturn {
         Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
     when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(

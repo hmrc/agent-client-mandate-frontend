@@ -18,12 +18,12 @@ package unit.uk.gov.hmrc.agentclientmandate.controllers.mappings
 
 
 
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.validation.{Invalid, Valid}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 
-class ConstraintsSpec extends WordSpec with MustMatchers with PropertyChecks with Constraints {
+class ConstraintsSpec extends WordSpec with MustMatchers with ScalaCheckPropertyChecks with Constraints {
 
   val maxVal: Int = 10
 

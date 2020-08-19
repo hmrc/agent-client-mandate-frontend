@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.service
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agentclientmandate.connectors.{AgentClientMandateConnector, BusinessCustomerConnector}
 import uk.gov.hmrc.agentclientmandate.models._
@@ -32,7 +32,7 @@ case class Mandates(activeMandates: Seq[Mandate], pendingMandates: Seq[Mandate])
 @Singleton
 class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService,
                                           val agentClientMandateConnector: AgentClientMandateConnector,
-                                          val businessCustomerConnector: BusinessCustomerConnector) extends MandateConstants {
+                                          val businessCustomerConnector: BusinessCustomerConnector) extends MandateConstants with Logging {
 
   def createMandate(service: String, authRetrievals: AgentAuthRetrievals)
                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
@@ -161,7 +161,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
       response.status match {
         case OK => true
         case _  =>
-          Logger.warn("Status for activation not OK: " + response.status)
+          logger.warn("Status for activation not OK: " + response.status)
           false
       }
     }
@@ -177,7 +177,8 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     }
   }
 
-  def fetchAgentDetails(agentAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[AgentDetails] = {
+  def fetchAgentDetails(agentAuthRetrievals: AgentAuthRetrievals)
+                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentDetails] = {
     agentClientMandateConnector.fetchAgentDetails(agentAuthRetrievals.agentCode)
   }
 
@@ -206,7 +207,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     agentClientMandateConnector.editMandate(mandate, agentAuthRetrievals).map { response =>
       response.status match {
         case OK =>
-          Logger.warn(response.json.toString())
+          logger.warn(response.json.toString())
           response.json.asOpt[Mandate]
         case _ => None
       }
@@ -226,11 +227,13 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     }
   }
 
-  def updateAgentMissingEmail(emailAddress: String, agentAuthRetrievals: AgentAuthRetrievals, service: String)(implicit hc: HeaderCarrier): Unit = {
+  def updateAgentMissingEmail(emailAddress: String, agentAuthRetrievals: AgentAuthRetrievals, service: String)
+                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Unit = {
     agentClientMandateConnector.updateAgentMissingEmail(emailAddress, agentAuthRetrievals, service)
   }
 
-  def updateClientEmail(emailAddress: String, mandateId: String, clientAuthRetrievals: ClientAuthRetrievals)(implicit hc: HeaderCarrier): Unit = {
+  def updateClientEmail(emailAddress: String, mandateId: String, clientAuthRetrievals: ClientAuthRetrievals)
+                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Unit = {
     agentClientMandateConnector.updateClientEmail(emailAddress, mandateId, clientAuthRetrievals)
   }
 
@@ -279,7 +282,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
         response.status match {
           case OK => Some(updateData)
           case status =>
-            Logger.warn(s"[AgentClientMandateService] [updateBusinessDetails] [status] = $status && [response.body] = ${response.body}")
+            logger.warn(s"[AgentClientMandateService] [updateBusinessDetails] [status] = $status && [response.body] = ${response.body}")
             None
         }
     }

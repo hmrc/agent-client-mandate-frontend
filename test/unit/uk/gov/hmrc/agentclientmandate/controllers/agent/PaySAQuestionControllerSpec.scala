@@ -28,7 +28,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -118,7 +117,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -126,7 +125,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -135,7 +134,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -144,7 +143,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))

@@ -49,7 +49,7 @@ trait MockControllerSetup {
     .thenReturn(true)
   when(mockAppConfig.getIsoCodeTupleList)
     .thenReturn(List())
-  when(mockAppConfig.addNonUkClientCorrespondenceUri(ArgumentMatchers.any(), ArgumentMatchers.any()))
+  when(mockAppConfig.addNonUkClientCorrespondenceUri(ArgumentMatchers.any()))
     .thenReturn(
       "http://localhost:9933/ated-subscription/registered-business-address" +
         "?backLinkUrl=" +

@@ -31,7 +31,6 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.ChangeAgentController
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -128,7 +127,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     )
 
     def viewUnAuthenticatedClient(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, mandateId).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -137,7 +136,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
     def viewUnAuthorisedClient(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
 
       val result = controller.view(service, mandateId).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -146,7 +145,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
     def viewAuthorisedClient(request: FakeRequest[AnyContentAsJson], test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       val result = controller.view(service, mandateId).apply(SessionBuilder.updateRequestWithSession(request, userId))
@@ -155,7 +154,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
     def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
 

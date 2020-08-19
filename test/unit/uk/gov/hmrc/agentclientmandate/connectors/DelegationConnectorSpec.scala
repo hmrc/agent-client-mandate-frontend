@@ -25,10 +25,11 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.models.{Link, PrincipalTaxIdentifiers, StartDelegationContext}
 import uk.gov.hmrc.domain.AtedUtr
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
@@ -64,7 +65,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       "supplied with a delegation context" in new Setup {
         when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(CREATED)))
+            .thenReturn(Future.successful(HttpResponse(CREATED, "")))
 
         await(connector.startDelegation("oid", startDelegationContext)) mustBe true
       }
@@ -74,7 +75,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       "a 400 response is returned" in new Setup {
         when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.failed(Upstream4xxResponse("failed", BAD_REQUEST, BAD_REQUEST)))
+          .thenReturn(Future.failed(UpstreamErrorResponse("failed", BAD_REQUEST, BAD_REQUEST)))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
@@ -82,7 +83,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       "a 200 response is returned" in new Setup {
         when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
@@ -90,7 +91,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       "a 500 response is returned" in new Setup {
         when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.failed(Upstream5xxResponse("failed", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+          .thenReturn(Future.failed(UpstreamErrorResponse("failed", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }

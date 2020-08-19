@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
@@ -41,7 +41,7 @@ class UpdateOcrDetailsController @Inject()(
                                             val authConnector: AuthConnector,
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig
-                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
+                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -56,7 +56,7 @@ class UpdateOcrDetailsController @Inject()(
               issuingCountryCode = agentDetail.identification.map(_.issuingCountryCode))
             Ok(views.html.agent.editDetails.update_ocr_details(nonUkIdentificationForm.fill(nonUkId), service, displayDetails(service), getBackLink(service)))
           case None =>
-            Logger.warn(s"[UpdateOcrDetailsController][view] - No business details found to edit")
+            logger.warn(s"[UpdateOcrDetailsController][view] - No business details found to edit")
             throw new RuntimeException("No Registration Details found")
         }
       }

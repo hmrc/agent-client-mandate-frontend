@@ -28,9 +28,10 @@ import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnect
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.filters.frontend.crypto.SessionCookieCrypto
+import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
@@ -49,7 +50,6 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
     reset(mockDefaultHttpClient)
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: Request[_] = FakeRequest(GET, "")
 
   class Setup {
@@ -64,7 +64,7 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
     "clear cache" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = connector.clearCache("")
       await(response).status must be(OK)

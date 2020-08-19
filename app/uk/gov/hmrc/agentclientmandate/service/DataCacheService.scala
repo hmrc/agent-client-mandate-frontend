@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.service
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logging
 import play.api.libs.json.Format
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.http.cache.client.SessionCache
@@ -28,7 +29,7 @@ import scala.concurrent.Future
 
 @Singleton
 class DataCacheService @Inject()(val http: DefaultHttpClient,
-                                 val config: AppConfig) extends SessionCache {
+                                 val config: AppConfig) extends SessionCache with Logging {
 
   val baseUri: String = config.baseDataCacheUri
   val defaultSource: String = config.dataCacheDefaultSource

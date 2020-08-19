@@ -17,19 +17,19 @@
 package uk.gov.hmrc.agentclientmandate.connectors
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
-                                            val http: DefaultHttpClient) extends RawResponseReads {
+                                            val http: DefaultHttpClient) extends Logging {
   def serviceUrl: String = servicesConfig.baseUrl("agent-client-mandate")
 
   val mandateUri = "mandate"
@@ -40,20 +40,21 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
   val editMandate = "edit"
   val deleteMandate = "delete"
 
-  def createMandate(mandateDto: CreateMandateDto, agentAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def createMandate(mandateDto: CreateMandateDto, agentAuthRetrievals: AgentAuthRetrievals)
+                   (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val agentLink = agentAuthRetrievals.mandateConnectorUri
     val postUrl = s"$serviceUrl$agentLink/$mandateUri"
     val jsonData = Json.toJson(mandateDto)
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def fetchMandate(mandateId: String, authRetrievals: MandateAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def fetchMandate(mandateId: String, authRetrievals: MandateAuthRetrievals)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = authRetrievals.mandateConnectorUri
     val getUrl = s"$serviceUrl$authLink/$mandateUri/$mandateId"
     http.GET[HttpResponse](getUrl)
   }
 
-  def approveMandate(mandate: Mandate, authRetrievals: ClientAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def approveMandate(mandate: Mandate, authRetrievals: ClientAuthRetrievals)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = authRetrievals.mandateConnectorUri
     val jsonData = Json.toJson(mandate)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/approve"
@@ -61,7 +62,7 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
   }
 
   def fetchAllMandates(agentAuthRetrievals: AgentAuthRetrievals, serviceName: String, allClients: Boolean, displayName: Option[String])
-                      (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
 
     val AgentAuthRetrievals(arn, agentCode, _, _, _) = agentAuthRetrievals
     val authLink = s"/agent/$agentCode"
@@ -76,49 +77,52 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     http.GET[HttpResponse](getUrl)
   }
 
-  def rejectClient(mandateId: String, agentCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def rejectClient(mandateId: String, agentCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = s"/agent/$agentCode"
     val postUrl = s"$serviceUrl$authLink/$mandateUri/$rejectClientUri/$mandateId"
     http.POST[JsValue, HttpResponse](postUrl, Json.parse("{}"))
   }
 
-  def fetchAgentDetails(agentCode: String)(implicit hc: HeaderCarrier): Future[AgentDetails] = {
+  def fetchAgentDetails(agentCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentDetails] = {
     val authLink = s"/agent/$agentCode"
     val getUrl = s"$serviceUrl$authLink/$mandateUri/agentDetails"
     http.GET[AgentDetails](getUrl)
   }
 
-  def activateMandate(mandateId: String, agentCode: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def activateMandate(mandateId: String, agentCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = s"/agent/$agentCode"
     val postUrl = s"$serviceUrl$authLink/$mandateUri/$activateUri/$mandateId"
     http.POST[JsValue, HttpResponse](postUrl, Json.parse("{}"))
   }
 
-  def remove(mandateId: String, authRetrievals: MandateAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def remove(mandateId: String, authRetrievals: MandateAuthRetrievals)
+            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink: String = authRetrievals.mandateConnectorUri
     val postUrl = s"$serviceUrl$authLink/$mandateUri/$removeUri/$mandateId"
     http.POST[JsValue, HttpResponse](postUrl, Json.parse("{}"))
   }
 
-  def editMandate(mandate: Mandate, agentAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def editMandate(mandate: Mandate, agentAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = s"/agent/${agentAuthRetrievals.agentCode}"
     val jsonData = Json.toJson(mandate)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/$editMandate"
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def fetchMandateByClient(clientId: String, service: String, clientAuthRetrievals: ClientAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def fetchMandateByClient(clientId: String, service: String, clientAuthRetrievals: ClientAuthRetrievals)
+                          (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = clientAuthRetrievals.mandateConnectorUri
     val getUrl = s"$serviceUrl$authLink/$mandateUri/$clientId/$service"
     http.GET[HttpResponse](getUrl)
   }
 
-  def fetchMandateByClientId(clientId: String, service: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def fetchMandateByClientId(clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val getUrl = s"$serviceUrl/org/${java.util.UUID.randomUUID.toString}/$mandateUri/$clientId/$service"
     http.GET[HttpResponse](getUrl)
   }
 
-  def doesAgentHaveMissingEmail(service: String, authRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def doesAgentHaveMissingEmail(service: String, authRetrievals: AgentAuthRetrievals)
+                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val AgentAuthRetrievals(arn, agentCode, _, _, _) = authRetrievals
     val authLink = s"/agent/$agentCode"
     val getUrl = s"$serviceUrl$authLink/$mandateUri/isAgentMissingEmail/$arn/$service"
@@ -126,7 +130,7 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
   }
 
   def updateAgentMissingEmail(emailAddress: String, agentAuthRetrievals: AgentAuthRetrievals, service: String)
-                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = agentAuthRetrievals.mandateConnectorUri
     val arn = agentAuthRetrievals.agentRef
 
@@ -136,21 +140,22 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
   }
 
   def updateClientEmail(emailAddress: String, mandateId: String, clientAuthRetrievals: ClientAuthRetrievals)
-                       (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = clientAuthRetrievals.mandateConnectorUri
     val jsonData = Json.toJson(emailAddress)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/updateClientEmail/$mandateId"
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def updateAgentCredId(mandateAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateAgentCredId(mandateAuthRetrievals: AgentAuthRetrievals)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = mandateAuthRetrievals.mandateConnectorUri
     val jsonData = Json.toJson(mandateAuthRetrievals.providerId)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/updateAgentCredId"
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def fetchClientsCancelled(agentAuthRetrievals: AgentAuthRetrievals, serviceName: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def fetchClientsCancelled(agentAuthRetrievals: AgentAuthRetrievals, serviceName: String)
+                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val AgentAuthRetrievals(arn, agentCode, _, _, _) = agentAuthRetrievals
     val authLink = s"/agent/$agentCode"
     val getUrl = s"$serviceUrl$authLink/$mandateUri/clientCancelledNames/$arn/$serviceName"
@@ -159,16 +164,16 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
 
 
   // $COVERAGE-OFF$
-  def testOnlyCreateMandate(mandate: Mandate)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def testOnlyCreateMandate(mandate: Mandate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val jsonData = Json.toJson(mandate)
     val postUrl = s"$serviceUrl/$mandateUri/test-only/create"
-    Logger.debug("postUrl: " + postUrl)
+    logger.debug("postUrl: " + postUrl)
     http.POST[JsValue, HttpResponse](postUrl, jsonData)
   }
 
-  def testOnlyDeleteMandate(mandateId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def testOnlyDeleteMandate(mandateId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val deleteUrl = s"$serviceUrl/$mandateUri/test-only/$deleteMandate/$mandateId"
-    Logger.debug("deleteUrl: " + deleteUrl)
+    logger.debug("deleteUrl: " + deleteUrl)
     http.DELETE[HttpResponse](deleteUrl)
   }
 

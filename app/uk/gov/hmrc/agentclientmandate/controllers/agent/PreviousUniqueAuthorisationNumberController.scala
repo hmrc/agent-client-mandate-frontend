@@ -50,7 +50,7 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
         _ <- businessCustomerConnector.clearCache(service)
         _ <- {
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
-          else Future.successful(HttpResponse(OK))
+          else Future.successful(HttpResponse(OK, ""))
         }
       } yield Ok(views.html.agent.previousUniqueAuthorisationNumber(prevUniqueAuthNumForm
         .fill(prevUniqueAuthNum.getOrElse(PrevUniqueAuthNum())), callingPage, service, getBackLink(service, callingPage)))

@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.RemoveClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,14 +64,14 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -80,7 +79,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -88,7 +87,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def showConfirmationWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.showConfirmation(service, "Acme Ltd").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -96,7 +95,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.confirm(service, "1").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
@@ -193,7 +192,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 

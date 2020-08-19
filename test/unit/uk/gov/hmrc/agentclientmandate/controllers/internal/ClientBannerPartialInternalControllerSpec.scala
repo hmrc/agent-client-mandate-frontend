@@ -110,7 +110,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with MockitoSug
     )
 
     def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.getClientBannerPartial("clientId", "service", "/api/anywhere")
         .apply(SessionBuilder.buildRequestWithSessionNoUser)
@@ -119,7 +119,7 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with MockitoSug
 
     def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, continueUrl: String = "/api/anywhere")(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       val result = controller.getClientBannerPartial("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))

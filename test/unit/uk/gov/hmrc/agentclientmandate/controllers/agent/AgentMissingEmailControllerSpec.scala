@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailControl
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -125,7 +124,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
           verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(ArgumentMatchers.any(),
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -153,7 +152,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
     )
 
     def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -161,7 +160,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
     def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -169,7 +168,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
     def viewEmailAuthorisedAgent()(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -177,7 +176,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
     def submitEmailAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
