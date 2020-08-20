@@ -110,7 +110,7 @@ class AgentSummaryController @Inject()(
                        agentDetails: AgentDetails,
                        clientsCancelled: Option[Seq[String]],
                        screenReaderText: String,
-                       tabName: Option[String] = None)(implicit request: Request[_]): Result = {
+                       tabName: Option[String])(implicit request: Request[_]): Result = {
 
     mandates match {
       case Some(x) if x.pendingMandates.nonEmpty && tabName.contains("pending-clients") =>

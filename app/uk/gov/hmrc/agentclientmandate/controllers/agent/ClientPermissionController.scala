@@ -51,10 +51,10 @@ class ClientPermissionController @Inject()(
           _ <- businessCustomerConnector.clearCache(service)
           _ <- {
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
-            else Future.successful(HttpResponse(OK))
+            else Future.successful(HttpResponse(OK, ""))
           }
         } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(
-          clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(service, callingPage)))
+          clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
       }
   }
 
@@ -64,7 +64,7 @@ class ClientPermissionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         clientPermissionForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.clientPermission(formWithErrors, service, callingPage, getBackLink(service, callingPage)))
+            val result = BadRequest(views.html.agent.clientPermission(formWithErrors, service, callingPage, getBackLink(callingPage)))
             Future.successful(result)
           },
           data => {
@@ -81,7 +81,7 @@ class ClientPermissionController @Inject()(
       }
   }
 
-  private def getBackLink(service: String, callingPage: String) = {
+  private def getBackLink(callingPage: String) = {
     val pageId: String = ControllerPageIdConstants.paySAQuestionControllerId
 
     callingPage match {

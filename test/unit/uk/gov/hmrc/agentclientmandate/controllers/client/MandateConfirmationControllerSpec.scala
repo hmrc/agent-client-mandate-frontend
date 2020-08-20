@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.MandateConfirmationCont
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -119,7 +118,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
   }
 
   def viewUnAuthenticatedClient(controller: MandateConfirmationController)(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
@@ -128,7 +127,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
 
   def viewUnAuthorisedClient(controller: MandateConfirmationController)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -136,7 +135,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
 
   def viewAuthorisedClient(controller: MandateConfirmationController)(cachedData: Option[Mandate] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[Mandate]

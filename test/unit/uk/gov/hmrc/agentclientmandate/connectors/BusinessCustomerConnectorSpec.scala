@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
@@ -48,12 +49,13 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
     val connector = new BusinessCustomerConnector(mockDefaultHttpClient, mockServicesConfig)
   }
 
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "BusinessCustomerConnector" must {
 
     "return status OK" when {
       "business customer service responds with a HttpResponse OK" in new Setup {
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
         val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
@@ -61,7 +63,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(responseJson))))
+          .thenReturn(Future.successful(HttpResponse(OK, responseJson, Map.empty[String, Seq[String]])))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(OK)
       }
@@ -70,7 +72,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
 
     "return response" when {
       "business customer service responds with a HttpResponse INTERNAL_SERVER_ERROR" in new Setup {
-        implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
         val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true),Some("org_type"))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
@@ -78,7 +80,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
           ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson = Some(responseJson))))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson, Map.empty[String, Seq[String]])))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(INTERNAL_SERVER_ERROR)
       }

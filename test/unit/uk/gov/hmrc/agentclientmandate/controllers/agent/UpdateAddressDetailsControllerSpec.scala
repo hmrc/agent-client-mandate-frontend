@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetails
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -132,7 +131,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
 
     def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -140,12 +139,12 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
 
     def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[AgentDetails]
         (ArgumentMatchers.eq(controller.agentDetailsFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(cachedData))
-      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(agentDetails))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -153,7 +152,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
 
     def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -162,7 +161,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
     def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
                               (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))

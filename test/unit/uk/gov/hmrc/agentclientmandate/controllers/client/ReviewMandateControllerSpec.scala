@@ -33,7 +33,6 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -136,7 +135,7 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
   val service: String = "ATED"
 
   def viewWithUnAuthenticatedClient(controller: ReviewMandateController)(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
@@ -144,7 +143,7 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   def viewWithAuthorisedClient(controller: ReviewMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -158,7 +157,7 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   def submitWithAuthorisedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(FakeRequest().withFormUrlEncodedBody(), userId))

@@ -50,7 +50,7 @@ class HasClientRegisteredBeforeController @Inject()(
         _ <- businessCustomerConnector.clearCache(service)
         _ <- {
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
-          else Future.successful(HttpResponse(OK))
+          else Future.successful(HttpResponse(OK, ""))
         }
       } yield Ok(views.html.agent.hasClientRegisteredBefore(prevRegisteredForm.fill(prevRegistered.getOrElse(PrevRegistered())),
         callingPage, service, getBackLink(service, callingPage)))

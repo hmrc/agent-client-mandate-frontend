@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailControl
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -263,7 +262,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(agentRefCacheId))(
         ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -273,7 +272,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
     }
 
     def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -281,7 +280,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -289,7 +288,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
@@ -299,7 +298,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
@@ -312,7 +311,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
     def submitEmailAuthorisedAgent
     (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[AgentEmail](ArgumentMatchers.eq(formId1), ArgumentMatchers.eq(agentEmail))(
         ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -323,7 +322,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))

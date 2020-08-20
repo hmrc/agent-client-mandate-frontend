@@ -32,6 +32,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AgentBusinessUtrGenerator}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
@@ -91,7 +92,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        .thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.createMandate(mandateDto, testAgentAuthRetrievals)
       await(response).status must be(OK)
@@ -103,7 +104,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandate(mandateId, testAgentAuthRetrievals)
       await(response).status must be(OK)
@@ -116,7 +117,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        .thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = await(agentClientMandateConnector.approveMandate(mandate, testClientAuthRetrievals))
       response.status must be(OK)
@@ -127,7 +128,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchAllMandates(testAgentAuthRetrievals, serviceName, allClients = true, None)
       await(response).status must be(OK)
@@ -138,7 +139,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchAllMandates(testAgentAuthRetrievals, serviceName, allClients = false, None)
       await(response).status must be(OK)
@@ -147,7 +148,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "reject a client" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.rejectClient(mandateId, testAgentAuthRetrievals.agentCode))
       response.status must be(OK)
@@ -188,7 +189,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "activate a client" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.activateMandate(mandateId, testAgentAuthRetrievals.agentCode))
       response.status must be(OK)
@@ -197,7 +198,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "remove an agent" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.remove(mandateId, testClientAuthRetrievals))
       response.status must be(OK)
@@ -206,7 +207,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "remove a client" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.remove(mandateId, testAgentAuthRetrievals))
       response.status must be(OK)
@@ -215,7 +216,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "edit client mandate" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.editMandate(mandate, testAgentAuthRetrievals))
       response.status must be(OK)
@@ -226,7 +227,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service", testClientAuthRetrievals)
       await(response).status must be(OK)
@@ -237,7 +238,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
 
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, Some(successResponse))))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandateByClientId("clientId", "service")
       await(response).status must be(OK)
@@ -246,7 +247,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "does an agent have a missing email" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = agentClientMandateConnector.doesAgentHaveMissingEmail("ated", testAgentAuthRetrievals)
       await(response).status must be(OK)
@@ -255,7 +256,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "update an agents email address" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateAgentMissingEmail("test@mail.com", testAgentAuthRetrievals, "ated"))
       response.status must be(OK)
@@ -264,7 +265,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "update a client email address" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateClientEmail("test@mail.com", "mandateId", testClientAuthRetrievals))
       response.status must be(OK)
@@ -273,7 +274,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "update an agent cred id" in new Setup {
       when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, None)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateAgentCredId(testAgentAuthRetrievals))
       response.status must be(OK)
@@ -282,7 +283,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "get clients that have cancelled" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
         (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = agentClientMandateConnector.fetchClientsCancelled(testAgentAuthRetrievals, "ated")
       await(response).status must be(OK)

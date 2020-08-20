@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevUniqueAuthNum
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -134,7 +134,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
     )
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -143,11 +143,11 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
     def viewWithAuthorisedAgent
     (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK)))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK)))
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
@@ -158,7 +158,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
     def submitWithAuthorisedAgent
     (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))

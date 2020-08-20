@@ -101,11 +101,11 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
     "clear cache" when {
       "asked to do so" in new Setup {
-        when(mockSessionCache.remove()(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+        when(mockSessionCache.remove()(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         when(mockDefaultHttpClient.DELETE[HttpResponse]
           (ArgumentMatchers.any(), ArgumentMatchers.any())
           (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-        ).thenReturn(Future.successful(HttpResponse(OK)))
+        ).thenReturn(Future.successful(HttpResponse(OK, "")))
 
         await(testDataCacheService.clearCache()).status must be(OK)
       }

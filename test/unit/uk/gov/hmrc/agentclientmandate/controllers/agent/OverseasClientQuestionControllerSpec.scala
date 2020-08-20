@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.OverseasClientQuestionCo
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestion
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -140,7 +139,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -148,7 +147,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -157,7 +156,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
@@ -168,7 +167,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[OverseasClientQuestion](ArgumentMatchers.any())
@@ -179,7 +178,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))

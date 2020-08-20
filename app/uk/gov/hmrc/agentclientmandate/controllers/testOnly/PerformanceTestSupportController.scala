@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
 import uk.gov.hmrc.agentclientmandate.models.Mandate
@@ -30,21 +30,21 @@ class PerformanceTestSupportController @Inject()(
                                                   mcc: MessagesControllerComponents,
                                                   agentClientMandateConnector: AgentClientMandateConnector,
                                                   implicit val ec: ExecutionContext
-                                                ) extends FrontendController(mcc) {
+                                                ) extends FrontendController(mcc) with Logging {
 
 
   def createMandate(): Action[AnyContent] = Action.async { implicit request =>
-    Logger.debug("inserting test mandate")
+    logger.debug("inserting test mandate")
      agentClientMandateConnector.testOnlyCreateMandate(request.body.asJson.get.as[Mandate]).map { x =>
-       Logger.debug("inserted test mandate")
+       logger.debug("inserted test mandate")
        Ok
      }
   }
 
   def deleteMandate(mandateId: String): Action[AnyContent] = Action.async { implicit request =>
-    Logger.debug(s"deleting mandate: $mandateId")
+    logger.debug(s"deleting mandate: $mandateId")
     agentClientMandateConnector.testOnlyDeleteMandate(mandateId).map { x =>
-      Logger.debug("deleted mandate")
+      logger.debug("deleted mandate")
       Ok
     }
   }

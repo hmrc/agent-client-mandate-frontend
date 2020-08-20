@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.controllers.testOnly
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
@@ -35,7 +35,7 @@ class GGBreakingRelationshipController @Inject()(
                                                   val authConnector: AuthConnector,
                                                   implicit val appConfig: AppConfig,
                                                   implicit val ec: ExecutionContext
-                                                ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                                ) extends FrontendController(mcc) with AuthorisedWrappers with Logging {
 
   def view(): Action[AnyContent] = Action.async {implicit request =>
     withAgentRefNumber(None) { _ =>
@@ -51,7 +51,7 @@ class GGBreakingRelationshipController @Inject()(
           request.body.asFormUrlEncoded.get.apply("mandateId").head,
           agentAuthRetrievals
         ).map { x =>
-          Logger.info("********" + x.body + "*************")
+          logger.info("********" + x.body + "*************")
           Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view())
         }
       }

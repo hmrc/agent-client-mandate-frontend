@@ -31,7 +31,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.CollectEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -245,7 +244,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
     )
 
     def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -253,7 +252,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some("/api/anywhere")))
@@ -265,7 +264,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[String])(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(backLink.get))
@@ -279,7 +278,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/test/test"))
@@ -301,7 +300,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
                                    returnCache: ClientCache = ClientCache(),
                                    mode: Option[String] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String]
         (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))

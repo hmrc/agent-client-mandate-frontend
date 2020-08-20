@@ -32,7 +32,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -102,7 +102,7 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
     )
 
     def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -111,9 +111,9 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
     def viewWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
       val prevReg: Option[PrevRegistered] = None
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK)))
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
@@ -123,7 +123,7 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
 
     def continueWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAppConfig.nonUkUri(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(

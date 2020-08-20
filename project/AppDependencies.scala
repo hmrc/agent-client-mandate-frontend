@@ -31,7 +31,7 @@ private object AppDependencies {
     "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.3.0-play-26",
     "uk.gov.hmrc"       %% "play-ui"                       % "8.11.0-play-27",
     "com.typesafe.play" %% "play-json-joda"                % "2.7.4",
-    "uk.gov.hmrc"       %% "govuk-template"                % "5.55.0-play-27"
+    "uk.gov.hmrc"       %% "govuk-template"                % "5.56.0-play-27"
   )
 
   trait TestDependencies {

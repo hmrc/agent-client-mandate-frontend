@@ -43,8 +43,6 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
   trait Setup {
     protected val authorisedWrappers: AuthorisedWrappers = new AuthorisedWrappers {
       override def authConnector: AuthConnector = mockAuthConnector
-      def loginUrl: String = "loginUrl"
-      def continueUrl(isAnAgent: Boolean): String => String = (_: String) => "continueUrl"
     }
   }
 

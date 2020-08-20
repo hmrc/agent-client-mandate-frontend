@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.EditMandateDetailsContro
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -188,7 +187,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
 
     def viewWithAuthorisedAgent(mandate: Option[Mandate] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
@@ -201,7 +200,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
                                  getMandate: Option[Mandate] = None,
                                  editMandate: Option[Mandate] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(getMandate))

@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCa
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -167,7 +166,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
     def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -176,7 +175,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
     def viewWithAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -185,7 +184,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
     def submitWithAuthorisedAgent(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockMandateService.createMandate(ArgumentMatchers.eq(service), ArgumentMatchers.any())(ArgumentMatchers.any(),

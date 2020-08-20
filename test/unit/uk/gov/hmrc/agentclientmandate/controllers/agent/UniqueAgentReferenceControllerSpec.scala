@@ -30,7 +30,6 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.UniqueAgentReferenceCont
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -107,7 +106,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
   }
 
   def viewWithUnAuthenticatedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
@@ -115,7 +114,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
 
   def viewWithUnAuthorisedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -125,7 +124,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
   def viewWithAuthorisedAgent(controller: UniqueAgentReferenceController)(
     clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+
 
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 

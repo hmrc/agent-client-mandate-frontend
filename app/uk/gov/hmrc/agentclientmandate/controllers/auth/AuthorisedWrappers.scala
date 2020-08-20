@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthorisedWrappers extends AuthorisedFunctions {
+trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
   private val agentRefEnrolment = "HMRC-AGENT-AGENT"
   private val agentRefIdentifier = "AgentRefNumber"
 
@@ -51,10 +51,10 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
     case _: NoActiveSession =>
       Redirect(loginUrl, loginParams(isAnAgent))
     case InternalError(e)   =>
-      Logger.warn(s"[authErrorHandling] Call to auth failed - $e")
+      logger.warn(s"[authErrorHandling] Call to auth failed - $e")
       InternalServerError
     case e: AuthorisationException =>
-      Logger.info(s"[authErrorHandling] Authorisation exception of type: - ${e.getClass.toString}")
+      logger.info(s"[authErrorHandling] Authorisation exception of type: - ${e.getClass.toString}")
       Redirect(loginUrl, loginParams(isAnAgent))
   }
 
@@ -99,16 +99,16 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
 
           body(agentAuthRetrievals)
         case (None, _, _, _) =>
-          Logger.warn("[withAgentRefNumber] No agent reference number found for agent")
+          logger.warn("[withAgentRefNumber] No agent reference number found for agent")
           Future.successful(InternalServerError)
         case (_, None, _, _) =>
-          Logger.warn("[withAgentRefNumber] No agent code found for agent")
+          logger.warn("[withAgentRefNumber] No agent code found for agent")
           Future.successful(InternalServerError)
         case (_, _, None, _) =>
-          Logger.warn("[withAgentRefNumber] No provider ID found for agent")
+          logger.warn("[withAgentRefNumber] No provider ID found for agent")
           Future.successful(InternalServerError)
         case (_, _, _, None) =>
-          Logger.warn("[withAgentRefNumber] No internal ID found for agent")
+          logger.warn("[withAgentRefNumber] No internal ID found for agent")
           Future.successful(InternalServerError)
       }
     }
@@ -119,7 +119,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions {
     clientAuthenticated(service, Retrievals.credentials) {
       case Some(credentials) => body(ClientAuthRetrievals(OrgAuthUtil.hash(credentials.providerId)))
       case _                 =>
-        Logger.warn("[withOrgCredId] No credential ID found for organisation user")
+        logger.warn("[withOrgCredId] No credential ID found for organisation user")
         Future.successful(InternalServerError)
     }
   }

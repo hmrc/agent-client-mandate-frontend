@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -144,7 +144,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
     )
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
@@ -152,7 +152,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
 
     def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -161,11 +161,11 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
     def viewWithAuthorisedAgent
     (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK)))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK)))
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
@@ -176,7 +176,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
     def submitWithAuthorisedAgent
     (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))

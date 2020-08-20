@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
+import java.util
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
+import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 
 import scala.collection.JavaConverters._
 
@@ -32,12 +34,11 @@ class AgentClientMandateFrontendErrorHandler @Inject()(
                                                         implicit val appConfig: AppConfig
                                                       ) extends FrontendErrorHandler {
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit rh: Request[_]): HtmlFormat.Appendable = {
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)
+                                    (implicit rh: Request[_]): HtmlFormat.Appendable = {
     val bitsFromPath: Array[String] = rh.path.split("/")
-    val servicesUsed: List[String] = configuration.getStringList("microservice.servicesUsed")
-      .map (_.asScala.toList) getOrElse (throw new Exception(s"Missing configuration for services used"))
-
-    val service: Array[String] = bitsFromPath.filter(servicesUsed.contains(_))
+    val config: util.List[String] = configuration.underlying.getStringList("microservice.servicesUsed")
+    val service: Array[String] = bitsFromPath.filter(config.asScala.contains(_))
 
     uk.gov.hmrc.agentclientmandate.views.html.error_template(pageTitle, heading, message, None, service.headOption, appConfig)
   }
