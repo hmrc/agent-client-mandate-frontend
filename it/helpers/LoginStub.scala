@@ -20,7 +20,6 @@ import java.util.UUID
 
 import play.api.Application
 import play.api.mvc.{DefaultCookieHeaderEncoding, DefaultSessionCookieBaker}
-import uk.gov.hmrc.http.SessionKeys
 
 trait LoginStub {
 
@@ -35,11 +34,11 @@ trait LoginStub {
     val rollbackTimestamp = (timeStamp - timeStampRollback).toString
 
     Map(
-      SessionKeys.sessionId -> SessionId,
-      SessionKeys.userId -> "/auth/oid/1234567890",
-      SessionKeys.token -> "token",
-      SessionKeys.authProvider -> "GGW",
-      SessionKeys.lastRequestTimestamp -> rollbackTimestamp
+      "sessionId" -> SessionId,
+      "userId" -> "/auth/oid/1234567890",
+      "token" -> "token",
+      "ap" -> "GGW",
+      "ts" -> rollbackTimestamp
     ) ++ additionalData
   }
 
