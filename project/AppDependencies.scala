@@ -22,10 +22,10 @@ private object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-27"    % "2.24.0",
-    "uk.gov.hmrc"       %% "auth-client"                   % "3.0.0-play-27",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-27"    % "2.25.0",
+    "uk.gov.hmrc"       %% "auth-client"                   % "3.1.0-play-27",
     "uk.gov.hmrc"       %% "play-partials"                 % "6.11.0-play-27",
-    "uk.gov.hmrc"       %% "domain"                        % "5.9.0-play-27",
+    "uk.gov.hmrc"       %% "domain"                        % "5.10.0-play-27",
     "uk.gov.hmrc"       %% "http-caching-client"           % "9.1.0-play-27",
     "uk.gov.hmrc"       %% "emailaddress"                  % "3.5.0",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.3.0-play-26",
@@ -49,8 +49,8 @@ private object AppDependencies {
         "org.scalacheck"         %% "scalacheck"         % "1.14.3"            % scope,
         "org.mockito"            %  "mockito-core"       % "3.3.3"             % scope,
         "com.typesafe.play"      %% "play-test"          % PlayVersion.current % scope,
-        "com.github.tomakehurst" %  "wiremock-jre8"      % "2.26.3"            % scope,
-        "uk.gov.hmrc"            %% "bootstrap-test-play-27"  % "2.24.0"       % scope
+        "com.github.tomakehurst" %  "wiremock-jre8"      % "2.27.2"            % scope,
+        "uk.gov.hmrc"            %% "bootstrap-test-play-27"  % "2.25.0"       % scope
       )
     }.test
   }

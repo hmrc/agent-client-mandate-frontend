@@ -19,7 +19,7 @@ package helpers.wiremock
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
-import play.api.{Logger, Logging}
+import play.api.Logging
 
 trait WireMockSetup extends Logging {
   self: WireMockConfig =>
