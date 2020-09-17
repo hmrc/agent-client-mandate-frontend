@@ -17,14 +17,14 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import helpers.{AgentBusinessUtrGenerator, IntegrationSpec}
+import helpers.IntegrationSpec
 import org.joda.time.DateTime
+import play.api.http.Status.OK
 import play.api.http.{HeaderNames => HN}
 import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.http.HeaderNames
-import play.api.http.Status.OK
 
 class MandateConfirmationControllerISpec extends IntegrationSpec {
 
@@ -43,8 +43,6 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
   "/agent/unique-reference" should {
     "retrieve the unique agent reference" when {
       "a unique reference is available" in {
-        val agentRefNo = new AgentBusinessUtrGenerator().nextAgentBusinessUtr
-        val userId = "/foo/bar"
 
         stubFor(post(urlMatching("/auth/authorise"))
           .willReturn(
