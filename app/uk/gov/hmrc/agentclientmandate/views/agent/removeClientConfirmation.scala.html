@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentclientmandate.utils.DateUtils
 @import org.joda.time.DateTime
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@this(main_template: main_template)
 
 @(service: String, mandateId: String, clientName: String, isNonUkClient: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 

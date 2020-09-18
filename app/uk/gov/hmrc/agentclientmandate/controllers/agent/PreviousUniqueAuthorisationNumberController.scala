@@ -40,7 +40,8 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
                                                              atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
                                                              implicit val ec: ExecutionContext,
                                                              implicit val appConfig: AppConfig,
-                                                             val authConnector: AuthConnector
+                                                             val authConnector: AuthConnector,
+                                                             templatePreviousUniqueAuthorisationNumber: views.html.agent.previousUniqueAuthorisationNumber
                                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
@@ -52,7 +53,7 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
           else Future.successful(HttpResponse(OK, ""))
         }
-      } yield Ok(views.html.agent.previousUniqueAuthorisationNumber(prevUniqueAuthNumForm
+      } yield Ok(templatePreviousUniqueAuthorisationNumber(prevUniqueAuthNumForm
         .fill(prevUniqueAuthNum.getOrElse(PrevUniqueAuthNum())), callingPage, service, getBackLink(service, callingPage)))
     }
   }
@@ -63,7 +64,7 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         prevUniqueAuthNumForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.previousUniqueAuthorisationNumber(formWithErrors, callingPage, service, getBackLink(service, callingPage)))
+            val result = BadRequest(templatePreviousUniqueAuthorisationNumber(formWithErrors, callingPage, service, getBackLink(service, callingPage)))
             Future.successful(result)
           },
           data => {

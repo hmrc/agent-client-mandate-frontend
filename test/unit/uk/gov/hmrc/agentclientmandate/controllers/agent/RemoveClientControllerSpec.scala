@@ -25,25 +25,29 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.RemoveClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mandateId: String = "1"
   val agentName: String = "Acme"
+  val injectedViewInstanceRemoveClient = app.injector.instanceOf[views.html.agent.removeClient]
+  val injectedViewInstanceRemoveClientConfirmation = app.injector.instanceOf[views.html.agent.removeClientConfirmation]
 
   val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
@@ -59,7 +63,9 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceRemoveClient,
+      injectedViewInstanceRemoveClientConfirmation
     )
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {

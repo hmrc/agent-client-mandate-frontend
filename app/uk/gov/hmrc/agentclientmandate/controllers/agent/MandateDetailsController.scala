@@ -36,7 +36,8 @@ class MandateDetailsController @Inject()(
                                           mandateService: AgentClientMandateService,
                                           implicit val ec: ExecutionContext,
                                           implicit val appConfig: AppConfig,
-                                          val authConnector: AuthConnector
+                                          val authConnector: AuthConnector,
+                                          templateMandateDetails: views.html.agent.mandateDetails
                                         ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
@@ -49,7 +50,7 @@ class MandateDetailsController @Inject()(
         agentEmail match {
           case Some(email) =>
             clientDisplayName match {
-              case Some(x) => Ok(views.html.agent.mandateDetails(email.email, service, x.name, getBackLink(service, callingPage)))
+              case Some(x) => Ok(templateMandateDetails(email.email, service, x.name, getBackLink(service, callingPage)))
               case _ => Redirect(routes.ClientDisplayNameController.view())
             }
           case _ => Redirect(routes.CollectAgentEmailController.addClient())

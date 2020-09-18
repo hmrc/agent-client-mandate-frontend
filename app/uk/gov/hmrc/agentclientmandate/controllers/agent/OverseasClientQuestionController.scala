@@ -36,7 +36,8 @@ class OverseasClientQuestionController @Inject()(
                                                   mcc: MessagesControllerComponents,
                                                   val authConnector: AuthConnector,
                                                   implicit val ec: ExecutionContext,
-                                                  implicit val appConfig: AppConfig
+                                                  implicit val appConfig: AppConfig,
+                                                  templateClientQuestion: views.html.agent.overseasClientQuestion
                                                 ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.overseasClientQuestionControllerId
@@ -45,8 +46,8 @@ class OverseasClientQuestionController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[OverseasClientQuestion](overseasTaxRefFormId) map {
-          case Some(data) => Ok(views.html.agent.overseasClientQuestion(overseasClientQuestionForm.fill(data), service, getBackLink(service)))
-          case _ => Ok(views.html.agent.overseasClientQuestion(overseasClientQuestionForm, service, getBackLink(service)))
+          case Some(data) => Ok(templateClientQuestion(overseasClientQuestionForm.fill(data), service, getBackLink(service)))
+          case _ => Ok(templateClientQuestion(overseasClientQuestionForm, service, getBackLink(service)))
         }
       }
   }
@@ -56,7 +57,7 @@ class OverseasClientQuestionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         overseasClientQuestionForm.bindFromRequest.fold(
           formWithError => {
-            val result = BadRequest(views.html.agent.overseasClientQuestion(formWithError, service, getBackLink(service)))
+            val result = BadRequest(templateClientQuestion(formWithError, service, getBackLink(service)))
             Future.successful(result)
           },
           data => {

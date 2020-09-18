@@ -35,13 +35,14 @@ class UniqueAgentReferenceController @Inject()(
                                                 val dataCacheService: DataCacheService,
                                                 val mcc: MessagesControllerComponents,
                                                 implicit val ec: ExecutionContext,
-                                                implicit val appConfig: AppConfig
+                                                implicit val appConfig: AppConfig,
+                                                templateUniqueAgentReference: views.html.agent.uniqueAgentReference
                                               ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
-        case Some(x) => Ok(views.html.agent.uniqueAgentReference(x, service))
+        case Some(x) => Ok(templateUniqueAgentReference(x, service))
         case None => Redirect(routes.SelectServiceController.view())
       }
     }

@@ -22,10 +22,12 @@ import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   implicit val request = FakeRequest()
+  val injectedViewInstanceRejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
 
   feature("The user can view the reject client page") {
 
@@ -36,7 +38,7 @@ class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       Given("A user visits the page")
       When("The user views the page")
 
-      val html = views.html.agent.rejectClient("ATED", new YesNoQuestionForm("agent.reject-client.error")
+      val html = injectedViewInstanceRejectClient("ATED", new YesNoQuestionForm("agent.reject-client.error")
         .yesNoQuestionForm, "ACME Limited", "", Some("http://"))
 
       val document = Jsoup.parse(html.toString())

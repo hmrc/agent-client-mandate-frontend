@@ -25,8 +25,9 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
@@ -37,6 +38,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   implicit val request = FakeRequest()
+  val injectedViewInstanceNoClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
 
   feature("The agent can view the agent summary page but they have no clients and no pending clients") {
 
@@ -47,7 +49,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
       Given("An agent visits the page and has no mandates")
       When("The agent views the empty page")
 
-      val html = views.html.agent.agentSummary.noClientsNoPending("ATED", agentDetails, None)
+      val html = injectedViewInstanceNoClientsNoPending("ATED", agentDetails, None)
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - client.summary.title - GOV.UK")
@@ -73,7 +75,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
       Given("agent visits page and client has cancelled mandate")
       When("agent views the mandates")
 
-      val html = views.html.agent.agentSummary.noClientsNoPending("ATED", agentDetails, Some(List("AAA")))
+      val html = injectedViewInstanceNoClientsNoPending("ATED", agentDetails, Some(List("AAA")))
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")

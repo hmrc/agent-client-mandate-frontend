@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.PreviousUniqueAuthorisat
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevUniqueAuthNum
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -39,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
   "PreviousUniqueAuthorisationNumberController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
@@ -95,7 +97,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("authNum" -> "false")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevUniqueAuthNum(Some(true)))) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/inform-HMRC/callPage"))
+          redirectLocation(result) must be(Some("/mandate/agent/inform-HMRC/callPage"))
         }
       }
     }
@@ -119,6 +121,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstancePreviousUniqueAuthorisationNumber = app.injector.instanceOf[views.html.agent.previousUniqueAuthorisationNumber]
 
 
 
@@ -130,7 +133,8 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
       mockAtedSubscriptionConnector,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstancePreviousUniqueAuthorisationNumber
     )
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {

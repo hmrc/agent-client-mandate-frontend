@@ -35,14 +35,16 @@ class RemoveClientController @Inject()(
                                         acmService: AgentClientMandateService,
                                         implicit val ec: ExecutionContext,
                                         implicit val appConfig: AppConfig,
-                                        val authConnector: AuthConnector
+                                        val authConnector: AuthConnector,
+                                        templateRemoveClient: views.html.agent.removeClient,
+                                        templateRemoveClientConfirmation: views.html.agent.removeClientConfirmation
                                       ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
         acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-          mandate => Ok(views.html.agent.removeClient(new YesNoQuestionForm("yes-no.error.mandatory.removeClient").yesNoQuestionForm,
+          mandate => Ok(templateRemoveClient(new YesNoQuestionForm("yes-no.error.mandatory.removeClient").yesNoQuestionForm,
             service, mandate.clientDisplayName, mandateId, getBackLink(service)))
         )
       }
@@ -55,7 +57,7 @@ class RemoveClientController @Inject()(
         form.yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
             acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-              mandate => BadRequest(views.html.agent.removeClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
+              mandate => BadRequest(templateRemoveClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
             ),
           data => {
             if (data.yesNo) {
@@ -80,7 +82,7 @@ class RemoveClientController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
         acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-          mandate => Ok(views.html.agent.removeClientConfirmation(service, mandate.id, mandate.clientDisplayName, isNonUkClient(mandate)))
+          mandate => Ok(templateRemoveClientConfirmation(service, mandate.id, mandate.clientDisplayName, isNonUkClient(mandate)))
         )
       }
     }

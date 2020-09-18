@@ -39,7 +39,8 @@ class PreviousMandateRefController @Inject()(
                                             dataCacheService: DataCacheService,
                                             mandateService: AgentClientMandateService,
                                             implicit val ec: ExecutionContext,
-                                            implicit val appConfig: AppConfig
+                                            implicit val appConfig: AppConfig,
+                                            templateSearchPreviousMandate: views.html.agent.searchPreviousMandate
                                             ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
@@ -47,9 +48,9 @@ class PreviousMandateRefController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) map { a =>
           a.flatMap(_.mandate) match {
-            case Some(x) => Ok(views.html.agent.searchPreviousMandate(service, clientAuthNumForm.fill(MandateReference(x.id)),
+            case Some(x) => Ok(templateSearchPreviousMandate(service, clientAuthNumForm.fill(MandateReference(x.id)),
               callingPage, getBackLink(service, callingPage)))
-            case None => Ok(views.html.agent.searchPreviousMandate(service, clientAuthNumForm, callingPage, getBackLink(service, callingPage)))
+            case None => Ok(templateSearchPreviousMandate(service, clientAuthNumForm, callingPage, getBackLink(service, callingPage)))
           }
         }
       }
@@ -60,7 +61,7 @@ class PreviousMandateRefController @Inject()(
       withAgentRefNumber(Some(service)) { authRetrievals =>
         clientAuthNumForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.searchPreviousMandate(service, formWithErrors, callingPage, getBackLink(service, callingPage)))
+            val result = BadRequest(templateSearchPreviousMandate(service, formWithErrors, callingPage, getBackLink(service, callingPage)))
             Future.successful(result)
           },
           data => {
@@ -75,7 +76,7 @@ class PreviousMandateRefController @Inject()(
               case None =>
                 val errorMsg = "client.search-mandate.error.clientAuthNum"
                 val errorForm = clientAuthNumForm.withError(key = "mandateRef", message = errorMsg).fill(data)
-                Future.successful(BadRequest(views.html.agent.searchPreviousMandate(service, errorForm, callingPage, getBackLink(service, callingPage))))
+                Future.successful(BadRequest(templateSearchPreviousMandate(service, errorForm, callingPage, getBackLink(service, callingPage))))
             }
           }
         )

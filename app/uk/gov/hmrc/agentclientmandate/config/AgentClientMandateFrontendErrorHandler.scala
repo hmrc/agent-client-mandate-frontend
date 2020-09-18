@@ -31,6 +31,7 @@ import scala.collection.JavaConverters._
 class AgentClientMandateFrontendErrorHandler @Inject()(
                                                         val messagesApi: MessagesApi,
                                                         val configuration: Configuration,
+                                                        val templateError: uk.gov.hmrc.agentclientmandate.views.html.error_template,
                                                         implicit val appConfig: AppConfig
                                                       ) extends FrontendErrorHandler {
 
@@ -40,11 +41,11 @@ class AgentClientMandateFrontendErrorHandler @Inject()(
     val config: util.List[String] = configuration.underlying.getStringList("microservice.servicesUsed")
     val service: Array[String] = bitsFromPath.filter(config.asScala.contains(_))
 
-    uk.gov.hmrc.agentclientmandate.views.html.error_template(pageTitle, heading, message, None, service.headOption, appConfig)
+    templateError(pageTitle, heading, message, None, service.headOption, appConfig)
   }
 
   override def internalServerErrorTemplate(implicit request: Request[_]): Html = {
-    uk.gov.hmrc.agentclientmandate.views.html.error_template(
+    templateError(
       Messages("agent.client.mandate.generic.error.title"),
       Messages("agent.client.mandate.generic.error.header"),
       Messages("agent.client.mandate.generic.error.message"),

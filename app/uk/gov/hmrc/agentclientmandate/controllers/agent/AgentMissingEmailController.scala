@@ -34,19 +34,20 @@ class AgentMissingEmailController @Inject()(
                                              mcc: MessagesControllerComponents,
                                              val authConnector: AuthConnector,
                                              implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig
+                                             implicit val appConfig: AppConfig,
+                                             templateAgentMissingEmail: views.html.agent.agentMissingEmail
                                            ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
-      Future.successful(Ok(views.html.agent.agentMissingEmail(agentMissingEmailForm, service)))
+      Future.successful(Ok(templateAgentMissingEmail(agentMissingEmailForm, service)))
     }
   }
 
   def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
       agentMissingEmailForm.bindFromRequest.fold(
-        formWithError => Future.successful(BadRequest(views.html.agent.agentMissingEmail(formWithError, service))),
+        formWithError => Future.successful(BadRequest(templateAgentMissingEmail(formWithError, service))),
         data => {
           agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
           Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))

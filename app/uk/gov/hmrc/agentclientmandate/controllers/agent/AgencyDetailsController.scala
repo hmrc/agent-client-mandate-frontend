@@ -36,7 +36,8 @@ class AgencyDetailsController @Inject()(
                                           mcc: MessagesControllerComponents,
                                           val authConnector: AuthConnector,
                                           implicit val ec: ExecutionContext,
-                                          implicit val appConfig: AppConfig
+                                          implicit val appConfig: AppConfig,
+                                          templateAgentDetails: views.html.agent.agentDetails
                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
@@ -45,7 +46,7 @@ class AgencyDetailsController @Inject()(
         agentDetails <- agentClientMandateService.fetchAgentDetails(authRetrievals)
         _            <- dataCacheService.cacheFormData[AgentDetails](agentDetailsFormId, agentDetails)
       } yield {
-        Ok(views.html.agent.agentDetails(agentDetails, service,
+        Ok(templateAgentDetails(agentDetails, service,
           Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view(Some(service)).url)))
       }
     }

@@ -40,7 +40,8 @@ class HasClientRegisteredBeforeController @Inject()(
                                                      atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
                                                      implicit val ec: ExecutionContext,
                                                      implicit val appConfig: AppConfig,
-                                                     val authConnector: AuthConnector
+                                                     val authConnector: AuthConnector,
+                                                     templateHasClientRegisteredBefore: views.html.agent.hasClientRegisteredBefore
                                                    ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
@@ -52,7 +53,7 @@ class HasClientRegisteredBeforeController @Inject()(
           if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
           else Future.successful(HttpResponse(OK, ""))
         }
-      } yield Ok(views.html.agent.hasClientRegisteredBefore(prevRegisteredForm.fill(prevRegistered.getOrElse(PrevRegistered())),
+      } yield Ok(templateHasClientRegisteredBefore(prevRegisteredForm.fill(prevRegistered.getOrElse(PrevRegistered())),
         callingPage, service, getBackLink(service, callingPage)))
     }
   }
@@ -63,7 +64,7 @@ class HasClientRegisteredBeforeController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         prevRegisteredForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.hasClientRegisteredBefore(
+            val result = BadRequest(templateHasClientRegisteredBefore(
               formWithErrors, callingPage, service, getBackLink(service, callingPage))
             )
             Future.successful(result)

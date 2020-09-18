@@ -41,7 +41,10 @@ class AgentSummaryController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         val authConnector: AuthConnector,
                                         implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig
+                                        implicit val appConfig: AppConfig,
+                                        templatePending:views.html.agent.agentSummary.pending,
+                                        templateClients: views.html.agent.agentSummary.clients,
+                                        templateNoClientsNoPending: views.html.agent.agentSummary.noClientsNoPending,
                                       ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   val screenReaderTextId = "screenReaderTextId"
@@ -114,15 +117,15 @@ class AgentSummaryController @Inject()(
 
     mandates match {
       case Some(x) if x.pendingMandates.nonEmpty && tabName.contains("pending-clients") =>
-        Ok(views.html.agent.agentSummary.pending(service, x, agentDetails, clientsCancelled, screenReaderText))
+        Ok(templatePending(service, x, agentDetails, clientsCancelled, screenReaderText))
       case Some(x) if x.activeMandates.nonEmpty =>
-        Ok(views.html.agent.agentSummary.clients(
+        Ok(templateClients(
           service, x, agentDetails, clientsCancelled, screenReaderText, filterClientsForm.fill(FilterClients(None, "allClients")))
         )
       case Some(x) if x.pendingMandates.nonEmpty =>
-        Ok(views.html.agent.agentSummary.pending(service, x, agentDetails, clientsCancelled, screenReaderText))
+        Ok(templatePending(service, x, agentDetails, clientsCancelled, screenReaderText))
       case _ =>
-        Ok(views.html.agent.agentSummary.noClientsNoPending(service, agentDetails, clientsCancelled))
+        Ok(templateNoClientsNoPending(service, agentDetails, clientsCancelled))
     }
   }
 
@@ -135,7 +138,7 @@ class AgentSummaryController @Inject()(
             clientsCancelled  <- agentClientMandateService.fetchClientsCancelled(agentAuthRetrievals, service)
             _                 <- dataCacheService.cacheFormData[String](screenReaderTextId, "")
           } yield {
-            BadRequest(views.html.agent.agentSummary.noClientsNoPending(service, agentDetails, clientsCancelled))
+            BadRequest(templateNoClientsNoPending(service, agentDetails, clientsCancelled))
           }
         },
         data => {
@@ -146,7 +149,7 @@ class AgentSummaryController @Inject()(
             clientsCancelled <- agentClientMandateService.fetchClientsCancelled(agentAuthRetrievals, service)
             _ <- dataCacheService.cacheFormData[String](screenReaderTextId, "")
           } yield {
-            Ok(views.html.agent.agentSummary.clients(
+            Ok(templateClients(
               service, mandates.getOrElse(Mandates(Seq(), Seq())), agentDetails,
               clientsCancelled, "", filterClientsForm.fill(data), isUpdate = true)
             )

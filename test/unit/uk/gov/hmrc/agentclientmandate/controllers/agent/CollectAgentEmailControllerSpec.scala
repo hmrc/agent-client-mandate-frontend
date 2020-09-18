@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "CollectAgentEmailController" must {
 
@@ -151,7 +153,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/client-display-name"))
+          redirectLocation(result) must be(Some("/mandate/agent/client-display-name"))
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
@@ -243,6 +245,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
   val formId1: String = "agent-email"
   val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
   val agentRefCacheId: String = "agent-ref-id"
+  val injectedViewInstanceAgentEnterEmail = app.injector.instanceOf[views.html.agent.agentEnterEmail]
 
   override def beforeEach(): Unit = {
     reset(mockDataCacheService)
@@ -257,7 +260,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       mockAuthConnector,
       mockDataCacheService,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceAgentEnterEmail
     )
 
     def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {

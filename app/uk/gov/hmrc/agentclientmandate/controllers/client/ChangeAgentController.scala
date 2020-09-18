@@ -36,13 +36,14 @@ class ChangeAgentController @Inject()(
                                        val mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
                                        implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig
+                                       implicit val appConfig: AppConfig,
+                                       templateChangeAgent: views.html.client.changeAgent
                                      ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-        val result = Ok(views.html.client.changeAgent(service, new YesNoQuestionForm("yes-no.error.mandatory.changeAgent").yesNoQuestionForm,
+        val result = Ok(templateChangeAgent(service, new YesNoQuestionForm("yes-no.error.mandatory.changeAgent").yesNoQuestionForm,
           mandateId,
           Some(DelegationUtils.getDelegatedServiceRedirectUrl(service))))
         Future.successful(result)
@@ -55,7 +56,7 @@ class ChangeAgentController @Inject()(
         val form = new YesNoQuestionForm("yes-no.error.mandatory.changeAgent")
         form.yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
-            Future.successful(BadRequest(views.html.client.changeAgent(service, formWithError,
+            Future.successful(BadRequest(templateChangeAgent(service, formWithError,
               mandateId,
               Some(DelegationUtils.getDelegatedServiceRedirectUrl(service))))
             ),

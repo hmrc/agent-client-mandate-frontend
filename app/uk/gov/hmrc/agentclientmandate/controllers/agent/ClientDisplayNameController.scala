@@ -37,7 +37,8 @@ class ClientDisplayNameController @Inject()(
                                              mcc: MessagesControllerComponents,
                                              val authConnector: AuthConnector,
                                              implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig
+                                             implicit val appConfig: AppConfig,
+                                             templateClientDisplayName:views.html.agent.clientDisplayName
                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
@@ -46,9 +47,9 @@ class ClientDisplayNameController @Inject()(
         case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
         case _ =>
           dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId) map {
-            case Some(clientDisplayname) => Ok(views.html.agent.clientDisplayName(
+            case Some(clientDisplayname) => Ok(templateClientDisplayName(
               clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service, redirectUrl)))
-            case None => Ok(views.html.agent.clientDisplayName(
+            case None => Ok(templateClientDisplayName(
               clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl)))
           }
       }
@@ -66,10 +67,10 @@ class ClientDisplayNameController @Inject()(
           case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => BadRequest("The return url is not correctly formatted")
           case _ =>
             clientDisplayName match {
-              case Some(clientDisplayname) => Ok(views.html.agent.clientDisplayName(
+              case Some(clientDisplayname) => Ok(templateClientDisplayName(
                 clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service,
                 Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
-              case None => Ok(views.html.agent.clientDisplayName(clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl)))
+              case None => Ok(templateClientDisplayName(clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl)))
             }
         }
       }
@@ -83,7 +84,7 @@ class ClientDisplayNameController @Inject()(
         case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
         case _ =>
           clientDisplayNameForm.bindFromRequest.fold(
-            formWithError => Future.successful(BadRequest(views.html.agent.clientDisplayName(
+            formWithError => Future.successful(BadRequest(templateClientDisplayName(
               formWithError, service, redirectUrl, getBackLink(service, redirectUrl)))),
             data =>
               dataCacheService.cacheFormData[ClientDisplayName](clientDisplayNameFormId, data) map { _ =>

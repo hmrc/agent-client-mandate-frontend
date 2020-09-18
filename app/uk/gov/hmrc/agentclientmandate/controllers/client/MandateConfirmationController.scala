@@ -35,14 +35,15 @@ class MandateConfirmationController @Inject()(
                                                implicit val ec: ExecutionContext,
                                                implicit val appConfig: AppConfig,
                                                val dataCacheService: DataCacheService,
-                                               val authConnector: AuthConnector
+                                               val authConnector: AuthConnector,
+                                               templateMandateConfirmation: views.html.client.mandateConfirmation
                                              ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[Mandate](clientApprovedMandateId) map {
-          case Some(x) => Ok(views.html.client.mandateConfirmation(x.agentParty.name, x.subscription.service.name))
+          case Some(x) => Ok(templateMandateConfirmation(x.agentParty.name, x.subscription.service.name))
           case None => Redirect(routes.ReviewMandateController.view())
         }
       }

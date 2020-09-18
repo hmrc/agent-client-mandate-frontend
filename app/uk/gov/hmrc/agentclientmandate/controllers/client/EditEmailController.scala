@@ -40,7 +40,8 @@ class EditEmailController @Inject()(
                                      mcc: MessagesControllerComponents,
                                      val authConnector: AuthConnector,
                                      implicit val ec: ExecutionContext,
-                                     implicit val appConfig: AppConfig
+                                     implicit val appConfig: AppConfig,
+                                     templateEditEmail: views.html.client.editEmail
                                    ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def getClientMandateDetails(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
@@ -82,7 +83,7 @@ class EditEmailController @Inject()(
               mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
             } yield {
               val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
-              Ok(views.html.client.editEmail(service, clientEmailForm.fill(clientForm), Some(returnUrl)))
+              Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some(returnUrl)))
             }
           }
         }
@@ -94,7 +95,7 @@ class EditEmailController @Inject()(
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
         clientEmailForm.bindFromRequest.fold(
           formWithError =>
-            getBackLink.map(backLink => BadRequest(views.html.client.editEmail(service, formWithError, backLink))),
+            getBackLink.map(backLink => BadRequest(templateEditEmail(service, formWithError, backLink))),
           data => {
             for {
               cachedMandateId <- dataCacheService.fetchAndGetFormData[String]("MANDATE_ID")

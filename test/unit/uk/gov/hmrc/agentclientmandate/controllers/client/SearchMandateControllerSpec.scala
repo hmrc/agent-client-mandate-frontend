@@ -25,6 +25,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,13 +33,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.SearchMandateController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup {
+class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup with GuiceOneServerPerSuite {
 
   "SearchMandateController" must {
 
@@ -103,7 +105,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/review"))
+          redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
 
@@ -118,7 +120,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/review"))
+          redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
 
@@ -144,7 +146,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None,
           mandate = Some(mandate), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/email"))
+          redirectLocation(result) must be(Some("/mandate/client/email"))
         }
       }
     }
@@ -244,6 +246,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceSearchMandate = app.injector.instanceOf[views.html.client.searchMandate]
 
   class Setup {
     val searchMandateController = new SearchMandateController(
@@ -252,7 +255,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       mockDataCacheService,
       mockMandateService,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceSearchMandate
     )
   }
 

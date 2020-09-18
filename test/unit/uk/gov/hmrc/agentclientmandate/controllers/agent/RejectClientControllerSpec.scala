@@ -25,12 +25,14 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.RejectClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -38,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "RejectClientController" must {
 
@@ -157,6 +159,8 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
   val mandateId: String = "1"
   val agentName: String = "Acme"
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val injectedViewInstanceRejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
+  val injectedViewInstanceRejectClientConfirmation = app.injector.instanceOf[views.html.agent.rejectClientConfirmation]
 
   val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
@@ -172,7 +176,9 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceRejectClient,
+      injectedViewInstanceRejectClientConfirmation
     )
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any) {

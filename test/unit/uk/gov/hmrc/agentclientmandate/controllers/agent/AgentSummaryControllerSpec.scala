@@ -25,6 +25,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService, Mandates}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -39,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, Authenticated
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
 
   "AgentClientSummaryController" must {
@@ -89,7 +91,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("filter-clients") must be(null)
           document.getElementById("displayName_field") must be(null)
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/agent/summary?tabName=pending-clients")
+          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
           document.getElementById("view-clients") must be(null)
         }
       }
@@ -110,7 +112,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("filter-clients").text() must be("client.summary.filter-clients")
           document.getElementById("displayName_field").text() must be("client.summary.filter-display_name")
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/agent/summary?tabName=pending-clients")
+          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
           document.getElementById("view-clients") must be(null)
         }
       }
@@ -130,7 +132,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("view-pending-clients") must be(null)
-          document.getElementById("view-clients").attr("href") must be("/agent/summary")
+          document.getElementById("view-clients").attr("href") must be("/mandate/agent/summary")
         }
       }
     }
@@ -294,6 +296,9 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstancePending = app.injector.instanceOf[views.html.agent.agentSummary.pending]
+  val injectedViewInstanceClients = app.injector.instanceOf[views.html.agent.agentSummary.clients]
+  val injectedViewInstanceNoClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
 
   class Setup {
     val controller = new AgentSummaryController(
@@ -303,7 +308,10 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstancePending,
+      injectedViewInstanceClients,
+      injectedViewInstanceNoClientsNoPending
     )
   }
 

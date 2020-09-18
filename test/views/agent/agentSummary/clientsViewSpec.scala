@@ -27,8 +27,9 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.FilterClientsForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
@@ -68,6 +69,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
     statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
+  val injectedViewInstanceClients = app.injector.instanceOf[views.html.agent.agentSummary.clients]
 
   feature("The agent can view the agent summary page when they have both clients and pending clients") {
 
@@ -82,7 +84,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       val activeMandates = Seq(mandateActive)
       val pendingMandates = Seq(mandateNew)
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, pendingMandates), agentDetails, None, "", filterClientsForm)
+      val html = injectedViewInstanceClients("ATED", Mandates(activeMandates, pendingMandates), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - client.summary.title - GOV.UK")
@@ -107,7 +109,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
 
       val activeMandates = Seq(mandateActive)
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
+      val html = injectedViewInstanceClients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - client.summary.title - GOV.UK")
@@ -141,7 +143,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
         mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
         mandateActive, mandateActive)
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
+      val html = injectedViewInstanceClients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
 
@@ -167,7 +169,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       When("The agent views the mandates")
       implicit val request = FakeRequest()
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, None, "", filterClientsForm, isUpdate = true)
+      val html = injectedViewInstanceClients("ATED", Mandates(Nil, Nil), agentDetails, None, "", filterClientsForm, isUpdate = true)
 
       val document = Jsoup.parse(html.toString())
 
@@ -193,7 +195,7 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       Given("agent visits page and client has cancelled mandate")
       When("agent views the mandates")
 
-      val html = views.html.agent.agentSummary.clients("ATED", Mandates(Nil, Nil), agentDetails, Some(List("AAA")), "", filterClientsForm, isUpdate = true)
+      val html = injectedViewInstanceClients("ATED", Mandates(Nil, Nil), agentDetails, Some(List("AAA")), "", filterClientsForm, isUpdate = true)
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")

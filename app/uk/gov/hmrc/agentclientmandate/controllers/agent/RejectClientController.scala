@@ -34,13 +34,15 @@ class RejectClientController @Inject()(
                                         acmService: AgentClientMandateService,
                                         implicit val ec: ExecutionContext,
                                         implicit val appConfig: AppConfig,
-                                        val authConnector: AuthConnector
+                                        val authConnector: AuthConnector,
+                                        templateRejectClient: views.html.agent.rejectClient,
+                                        templateRejectClientConfirmation: views.html.agent.rejectClientConfirmation
                                       ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-        mandate => Ok(views.html.agent.rejectClient(service,
+        mandate => Ok(templateRejectClient(service,
           new YesNoQuestionForm("yes-no.error.mandatory.clientReject").yesNoQuestionForm,
           mandate.clientDisplayName, mandateId, getBackLink(service)))
       )
@@ -53,7 +55,7 @@ class RejectClientController @Inject()(
       form.yesNoQuestionForm.bindFromRequest.fold(
         formWithError =>
           acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-            mandate => BadRequest(views.html.agent.rejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))
+            mandate => BadRequest(templateRejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))
           ),
         data => {
           if (data.yesNo) {
@@ -78,7 +80,7 @@ class RejectClientController @Inject()(
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
         mandate =>
-          Ok(views.html.agent.rejectClientConfirmation(service, mandate.clientDisplayName))
+          Ok(templateRejectClientConfirmation(service, mandate.clientDisplayName))
       )
     }
   }

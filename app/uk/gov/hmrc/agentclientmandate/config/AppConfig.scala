@@ -33,7 +33,7 @@ class AppConfig @Inject()(
                            val assetsConfig: AssetsConfig,
                            val gtmSnippet: GTMSnippet,
                            val configuration: Configuration,
-                           @Named("appName") val appName: String
+                           @Named("appName") val appName: String,
                          ) extends ExternalUrls with CountryCodes {
 
   private def loadConfig(key: String) = servicesConfig.getString(key)

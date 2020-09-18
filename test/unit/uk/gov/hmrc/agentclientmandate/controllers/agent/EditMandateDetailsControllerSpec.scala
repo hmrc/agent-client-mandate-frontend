@@ -25,19 +25,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.EditMandateDetailsController
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "EditMandateControllerSpec" must {
 
@@ -126,7 +128,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/summary"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
         }
       }
     }
@@ -136,7 +138,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/edit-client/AS123456"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/edit-client/AS123456"))
         }
       }
     }
@@ -157,6 +159,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
   val service: String = "ATED"
   val mandateId: String = "AS123456"
   val clientDisplayName: String = "ACME Limited"
+  val injectedViewInstanceEditClient = app.injector.instanceOf[views.html.agent.editClient]
 
 
 
@@ -182,7 +185,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
       mockAcmService,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceEditClient
     )
 
     def viewWithAuthorisedAgent(mandate: Option[Mandate] = None)(test: Future[Result] => Any) {

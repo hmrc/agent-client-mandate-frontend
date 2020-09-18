@@ -18,19 +18,22 @@ package unit.uk.gov.hmrc.agentclientmandate.config
 
 import org.jsoup.Jsoup
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import org.scalatestplus.play.PlaySpec
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Injecting}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.config.AgentClientMandateFrontendErrorHandler
+import uk.gov.hmrc.agentclientmandate.views.html.error_template
 import views.agent.ViewTestHelper
 
-class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with ViewTestHelper with MockitoSugar {
+class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with GuiceOneAppPerSuite with ViewTestHelper with MockitoSugar with Injecting {
 
   "internalServerErrorTemplate" must {
 
     "retrieve the correct messages" in {
       implicit val request = FakeRequest()
-      val errorHandler = new AgentClientMandateFrontendErrorHandler(mcc.messagesApi, mockConfig, mockAppConfig)
+      val errorTemplate: error_template = inject[error_template]
+      val errorHandler = new AgentClientMandateFrontendErrorHandler(mcc.messagesApi, mockConfig, errorTemplate, mockAppConfig)
       val result = errorHandler.internalServerErrorTemplate
       val document = Jsoup.parse(contentAsString(result))
 

@@ -22,11 +22,13 @@ import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
 
-class UniqueAgentReferenceFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class UniqueAgentReferenceFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   implicit val request = FakeRequest()
+  val injectedViewInstanceUniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
 
   feature("The user can view the reject client page") {
 
@@ -40,7 +42,7 @@ class UniqueAgentReferenceFeatureSpec extends FeatureSpec  with MockitoSugar wit
       val mandateId = "ABC123"
       val agentLastUsedEmail = "a.b@mail.com"
       val clientDisplayDetails = ClientMandateDisplayDetails("test name", mandateId,agentLastUsedEmail)
-      val html = views.html.agent.uniqueAgentReference(clientDisplayDetails,  "ated")
+      val html = injectedViewInstanceUniqueAgentReference(clientDisplayDetails,  "ated")
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Your unique agent reference is ABC123 - GOV.UK")
