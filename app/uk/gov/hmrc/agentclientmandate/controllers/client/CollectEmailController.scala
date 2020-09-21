@@ -37,7 +37,8 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
                                        val mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
                                        implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig
+                                       implicit val appConfig: AppConfig,
+                                       templateCollectEmail: views.html.client.collectEmail
                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
 
   def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async {
@@ -81,7 +82,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
         case Some(x) => clientEmailForm.fill(x)
         case None => clientEmailForm
       }
-      Ok(views.html.client.collectEmail(service, filledForm, mode, backLink))
+      Ok(templateCollectEmail(service, filledForm, mode, backLink))
     }
   }
 
@@ -92,7 +93,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
           formWithError =>
             getBackLink(service, mode).map {
               backLink =>
-                BadRequest(views.html.client.collectEmail(service, formWithError, mode, backLink))
+                BadRequest(templateCollectEmail(service, formWithError, mode, backLink))
             },
           data => {
             dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {

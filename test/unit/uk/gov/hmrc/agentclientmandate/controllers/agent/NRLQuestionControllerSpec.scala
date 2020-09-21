@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.NRLQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "NRLQuestionController" must {
 
@@ -123,6 +125,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceNrlQuestion = app.injector.instanceOf[views.html.agent.nrl_question]
 
 
 
@@ -132,7 +135,8 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceNrlQuestion
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {

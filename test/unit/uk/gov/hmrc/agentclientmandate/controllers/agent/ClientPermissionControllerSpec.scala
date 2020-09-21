@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionControll
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -39,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ClientPermissionController" must {
 
@@ -75,7 +77,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -93,7 +95,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -108,7 +110,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/agent/nrl-question")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/nrl-question")
         }
       }
       "agent requests(GET) for 'client permission' view for other service - it doesn't clear session cache for ated-subscription" in new Setup {
@@ -135,7 +137,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/summary?tabName=ATED"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/summary?tabName=ATED"))
         }
       }
     }
@@ -159,6 +161,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceClientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
 
   class Setup {
     val controller = new ClientPermissionController(
@@ -168,7 +171,8 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceClientPermission
     )
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {

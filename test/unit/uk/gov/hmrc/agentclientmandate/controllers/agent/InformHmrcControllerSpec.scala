@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
@@ -31,6 +32,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.InformHmrcController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -38,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants  {
+class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants with GuiceOneServerPerSuite {
 
   "InformHmrcController" must {
 
@@ -88,6 +90,7 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
   val service: String = "ATED"
   val serviceAWRS: String = "AWRS"
   val callingPage: String = "callPage"
+  val injectedViewInstanceInformHMRC = app.injector.instanceOf[views.html.agent.informHmrc]
 
 
   class Setup {
@@ -98,7 +101,8 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
       mockAtedSubscriptionConnector,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceInformHMRC
     )
 
     def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {

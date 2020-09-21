@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBefor
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -39,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "HasClientRegisteredBeforeController" must {
 
@@ -129,6 +131,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceHasClientRegisteredBefore = app.injector.instanceOf[views.html.agent.hasClientRegisteredBefore]
 
 
 
@@ -140,7 +143,8 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
       mockAtedSubscriptionConnector,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceHasClientRegisteredBefore
     )
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {

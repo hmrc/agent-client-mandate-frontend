@@ -23,17 +23,19 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup {
+class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "PaySAQuestionController" must {
 
@@ -105,6 +107,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
+  val injectedViewInstancePaySAQuestion = app.injector.instanceOf[views.html.agent.paySAQuestion]
 
 
 
@@ -113,7 +116,8 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      stubbedMessagesControllerComponents
+      stubbedMessagesControllerComponents,
+      injectedViewInstancePaySAQuestion
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {

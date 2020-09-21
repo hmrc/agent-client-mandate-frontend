@@ -24,12 +24,14 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.SelectServiceController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -37,7 +39,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   implicit val mockConfiguration: ServicesConfig = mock[ServicesConfig]
 
@@ -88,7 +90,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
           .thenReturn (Future.successful(false))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/summary"))
+          redirectLocation(result) must be(Some("/mandate/agent/summary"))
         }
       }
 
@@ -98,7 +100,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
           .thenReturn (Future.successful(true))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/missing-email"))
+          redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
         }
       }
     }
@@ -111,7 +113,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/summary"))
+          redirectLocation(result) must be(Some("/mandate/agent/summary"))
         }
       }
 
@@ -122,7 +124,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/missing-email"))
+          redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
         }
       }
     }
@@ -143,6 +145,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceSelectServices = app.injector.instanceOf[views.html.agent.selectService]
 
 
   class Setup {
@@ -151,7 +154,8 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
       mockAgentClientMandateService,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceSelectServices
     )
 
 

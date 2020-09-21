@@ -25,6 +25,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsFormUrlEncoded, AnyContentAsJson, Result}
 import play.api.test.FakeRequest
@@ -33,6 +34,7 @@ import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.client.RemoveAgentController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -40,7 +42,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "RemoveAgentController" must {
 
@@ -208,6 +210,8 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
   val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
 
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceRemoveAgent = app.injector.instanceOf[views.html.client.removeAgent]
+  val injectedViewInstanceRemoveAgentConfirmation = app.injector.instanceOf[views.html.client.removeAgentConfirmation]
 
   class Setup {
     val controller = new RemoveAgentController(
@@ -217,7 +221,9 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceRemoveAgent,
+      injectedViewInstanceRemoveAgentConfirmation
     )
   }
 

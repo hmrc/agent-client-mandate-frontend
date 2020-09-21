@@ -33,7 +33,8 @@ class PaySAQuestionController @Inject()(
                                          val authConnector: AuthConnector,
                                          implicit val ec: ExecutionContext,
                                          implicit val appConfig: AppConfig,
-                                         val mcc: MessagesControllerComponents
+                                         val mcc: MessagesControllerComponents,
+                                         templatePaySAQuestion: views.html.agent.paySAQuestion
                                        ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   val controllerId: String = ControllerPageIdConstants.paySAQuestionControllerId
@@ -41,7 +42,7 @@ class PaySAQuestionController @Inject()(
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        val result = Ok(views.html.agent.paySAQuestion(paySAQuestionForm, service, getBackLink(service)))
+        val result = Ok(templatePaySAQuestion(paySAQuestionForm, service, getBackLink(service)))
         Future.successful(result)
       }
   }
@@ -51,7 +52,7 @@ class PaySAQuestionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         paySAQuestionForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.paySAQuestion(formWithErrors, service, getBackLink(service)))
+            val result = BadRequest(templatePaySAQuestion(formWithErrors, service, getBackLink(service)))
             Future.successful(result)
           },
           data => {

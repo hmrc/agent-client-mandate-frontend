@@ -37,12 +37,13 @@ class InformHmrcController @Inject()(
                                       atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
                                       implicit val ec: ExecutionContext,
                                       implicit val appConfig: AppConfig,
-                                      val authConnector: AuthConnector
+                                      val authConnector: AuthConnector,
+                                      templateInformHMRC: views.html.agent.informHmrc
                                     ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants  {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
-      Future.successful(Ok(views.html.agent.informHmrc(callingPage, service, getBackLink(callingPage))))
+      Future.successful(Ok(templateInformHMRC(callingPage, service, getBackLink(callingPage))))
     }
   }
 

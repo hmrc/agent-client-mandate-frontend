@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "AgentMissingEmailControllerSpec" must {
 
@@ -136,6 +138,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
   val service: String = "ated".toUpperCase
   val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
+  val injectedViewInstanceAgentMissingEmail = app.injector.instanceOf[views.html.agent.agentMissingEmail]
 
   override def beforeEach(): Unit = {
     reset(mockAgentClientMandateService)
@@ -148,7 +151,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceAgentMissingEmail
     )
 
     def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {

@@ -37,16 +37,17 @@ class CollectAgentEmailController @Inject()(
                                            val authConnector: AuthConnector,
                                            dataCacheService: DataCacheService,
                                            implicit val ec: ExecutionContext,
-                                           implicit val appConfig: AppConfig
+                                           implicit val appConfig: AppConfig,
+                                           templateAgentEnterEmail: views.html.agent.agentEnterEmail
                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def addClient(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
-          case Some(clientMandateDisplayDetails) => Ok(views.html.agent.agentEnterEmail(
+          case Some(clientMandateDisplayDetails) => Ok(templateAgentEnterEmail(
             agentEmailForm.fill(AgentEmail(clientMandateDisplayDetails.agentLastUsedEmail)), service, None, getBackLink(service, None)))
-          case None => Ok(views.html.agent.agentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
+          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
         }
       }
   }
@@ -61,8 +62,8 @@ class CollectAgentEmailController @Inject()(
             case Some(url) if !AgentClientMandateUtils.isRelativeOrDev(url) => BadRequest("The return url is not correctly formatted")
             case _ =>
               agentEmailCached match {
-                case Some(email) => Ok(views.html.agent.agentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(service, redirectUrl)))
-                case None => Ok(views.html.agent.agentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(service, redirectUrl)))
+                case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(service, redirectUrl)))
+                case None => Ok(templateAgentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(service, redirectUrl)))
               }
           }
         }
@@ -76,9 +77,9 @@ class CollectAgentEmailController @Inject()(
         callingPage <- dataCacheService.fetchAndGetFormData[String](callingPageCacheId)
       } yield {
         agentEmail match {
-          case Some(agentEmail) => Ok(views.html.agent.agentEnterEmail(agentEmailForm.fill(AgentEmail(agentEmail.email)), service, None, getBackLink(service,
+          case Some(agentEmail) => Ok(templateAgentEnterEmail(agentEmailForm.fill(AgentEmail(agentEmail.email)), service, None, getBackLink(service,
             Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
-          case None => Ok(views.html.agent.agentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
+          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
         }
       }
     }
@@ -92,7 +93,7 @@ class CollectAgentEmailController @Inject()(
           case _ =>
             agentEmailForm.bindFromRequest.fold(
               formWithError => {
-                Future.successful(BadRequest(views.html.agent.agentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
+                Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
               },
               data => {
                 dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { _ =>

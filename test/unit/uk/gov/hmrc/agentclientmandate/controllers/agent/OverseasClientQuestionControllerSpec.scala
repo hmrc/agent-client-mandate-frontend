@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.OverseasClientQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestion
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "OverseasClientQuestionController" must {
 
@@ -128,6 +130,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceClientQuestion = app.injector.instanceOf[views.html.agent.overseasClientQuestion]
 
   class Setup {
     val controller = new OverseasClientQuestionController(
@@ -135,7 +138,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceClientQuestion
     )
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {

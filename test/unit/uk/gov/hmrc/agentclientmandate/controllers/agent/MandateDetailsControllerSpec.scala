@@ -24,6 +24,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -31,13 +32,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.MandateDetailsController
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "MandateDetailsController" must {
 
@@ -62,7 +64,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/agent/paySA-question")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -86,7 +88,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/agent/overseas-client-question")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/overseas-client-question")
         }
       }
     }
@@ -104,7 +106,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/add-client"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/add-client"))
         }
       }
     }
@@ -122,7 +124,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/client-display-name"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/client-display-name"))
         }
       }
     }
@@ -141,7 +143,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
       "form is submitted" in new Setup {
         submitWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/agent/unique-reference"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/unique-reference"))
         }
       }
     }
@@ -151,6 +153,7 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceMandateDetails = app.injector.instanceOf[views.html.agent.mandateDetails]
 
 
 
@@ -161,7 +164,8 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
       mockMandateService,
       implicitly,
       mockAppConfig,
-      mockAuthConnector
+      mockAuthConnector,
+      injectedViewInstanceMandateDetails
     )
 
     def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {

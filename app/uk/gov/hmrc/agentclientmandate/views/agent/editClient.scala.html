@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentclientmandate.models._
 @import uk.gov.hmrc.agentclientmandate.service._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@this(main_template: main_template)
 
 @(editMandateDetailsForm: Form[EditMandateDetails], service: String, mandateId: String, clientDisplayName: String, clientParty: Option[String], backLink: Option[String], showRemoveClient: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 

@@ -35,7 +35,8 @@ class SelectServiceController @Inject()(
                                          agentClientMandateService: AgentClientMandateService,
                                          implicit val ec: ExecutionContext,
                                          implicit val appConfig: AppConfig,
-                                         val authConnector: AuthConnector
+                                         val authConnector: AuthConnector,
+                                         templateSelectServices: views.html.agent.selectService
                                        ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view: Action[AnyContent] = Action.async { implicit request =>
@@ -50,14 +51,14 @@ class SelectServiceController @Inject()(
           }
         }
       }
-      else Future.successful(Ok(views.html.agent.selectService(selectServiceForm)))
+      else Future.successful(Ok(templateSelectServices(selectServiceForm)))
     }
   }
 
   def submit: Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { authRetrievals =>
       selectServiceForm.bindFromRequest.fold(
-        formWithError => Future.successful(BadRequest(views.html.agent.selectService(formWithError))),
+        formWithError => Future.successful(BadRequest(templateSelectServices(formWithError))),
         selectedService => {
           val service = selectedService.service.get
           agentClientMandateService.doesAgentHaveMissingEmail(service, authRetrievals).map { agentHasMissingEmail =>

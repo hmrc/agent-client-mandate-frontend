@@ -36,7 +36,8 @@ class ReviewMandateController @Inject()(
                                          mcc: MessagesControllerComponents,
                                          val authConnector: AuthConnector,
                                          implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig
+                                         implicit val appConfig: AppConfig,
+                                         templateReviewMandate: views.html.client.reviewMandate
                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
@@ -56,7 +57,7 @@ class ReviewMandateController @Inject()(
 
               val updatedMandate = x.copy(clientParty = updatedClientParty)
               dataCacheService.cacheFormData[ClientCache](clientFormId, cache.copy(mandate = Some(updatedMandate))) flatMap { _ =>
-                Future.successful(Ok(views.html.client.reviewMandate(service, updatedMandate, getBackLink(service))))
+                Future.successful(Ok(templateReviewMandate(service, updatedMandate, getBackLink(service))))
               }
             case None => Future.successful(Redirect(routes.SearchMandateController.view()))
           }

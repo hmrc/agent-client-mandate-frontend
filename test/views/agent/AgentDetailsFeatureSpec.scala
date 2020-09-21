@@ -22,10 +22,12 @@ import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.views
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class AgentDetailsFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class AgentDetailsFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   implicit val request = FakeRequest()
+  val injectedViewInstanceAgentDetails = app.injector.instanceOf[views.html.agent.agentDetails]
 
   feature("The user can view the agent details page") {
 
@@ -36,7 +38,7 @@ class AgentDetailsFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       Given("A user visits the page")
       When("The user views the page")
 
-      val html = views.html.agent.agentDetails(AgentBuilder.buildAgentDetails, "service", Some("http://"))
+      val html = injectedViewInstanceAgentDetails(AgentBuilder.buildAgentDetails, "service", Some("http://"))
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Your details - GOV.UK")

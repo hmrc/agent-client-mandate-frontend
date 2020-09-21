@@ -36,7 +36,8 @@ class EditMandateDetailsController @Inject()(
                                               acmService: AgentClientMandateService,
                                               implicit val ec: ExecutionContext,
                                               implicit val appConfig: AppConfig,
-                                              val authConnector: AuthConnector
+                                              val authConnector: AuthConnector,
+                                              templateEditClient: views.html.agent.editClient
                                             ) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
@@ -46,7 +47,7 @@ class EditMandateDetailsController @Inject()(
           case Some(mandate) =>
             val editMandateDetails = EditMandateDetails(displayName = mandate.clientDisplayName,
               email = mandate.agentParty.contactDetails.email)
-            Ok(views.html.agent.editClient(editMandateDetailsForm.fill(editMandateDetails), service, mandateId,
+            Ok(templateEditClient(editMandateDetailsForm.fill(editMandateDetails), service, mandateId,
               mandate.clientDisplayName, mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
           case _ => throw new RuntimeException(s"No Mandate returned with id $mandateId for service $service")
         }
@@ -60,7 +61,7 @@ class EditMandateDetailsController @Inject()(
           formWithError => {
             acmService.fetchClientMandate(mandateId, authRetrievals) map {
               case Some(mandate) =>
-                BadRequest(views.html.agent.editClient(formWithError, service, mandateId, mandate.clientDisplayName,
+                BadRequest(templateEditClient(formWithError, service, mandateId, mandate.clientDisplayName,
                   mandate.clientParty.map(_.name), getBackLink(service), showRemoveLink(mandate)))
               case _ => throw new RuntimeException(s"No Mandate returned with id $mandateId for service $service")
             }

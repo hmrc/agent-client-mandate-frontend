@@ -40,7 +40,8 @@ class UpdateOcrDetailsController @Inject()(
                                             mcc: MessagesControllerComponents,
                                             val authConnector: AuthConnector,
                                             implicit val ec: ExecutionContext,
-                                            implicit val appConfig: AppConfig
+                                            implicit val appConfig: AppConfig,
+                                            templateUpdateOcrDetails: views.html.agent.editDetails.update_ocr_details
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
@@ -54,7 +55,7 @@ class UpdateOcrDetailsController @Inject()(
               idNumber = agentDetail.identification.map(_.idNumber),
               issuingInstitution = agentDetail.identification.map(_.issuingInstitution),
               issuingCountryCode = agentDetail.identification.map(_.issuingCountryCode))
-            Ok(views.html.agent.editDetails.update_ocr_details(nonUkIdentificationForm.fill(nonUkId), service, displayDetails(service), getBackLink(service)))
+            Ok(templateUpdateOcrDetails(nonUkIdentificationForm.fill(nonUkId), service, displayDetails(service), getBackLink(service)))
           case None =>
             logger.warn(s"[UpdateOcrDetailsController][view] - No business details found to edit")
             throw new RuntimeException("No Registration Details found")
@@ -68,7 +69,7 @@ class UpdateOcrDetailsController @Inject()(
       withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
         NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest).fold(
           formWithErrors => Future.successful(
-            BadRequest(views.html.agent.editDetails.update_ocr_details(
+            BadRequest(templateUpdateOcrDetails(
               formWithErrors, service, displayDetails(service), getBackLink(service)
             ))
           ),
@@ -88,7 +89,7 @@ class UpdateOcrDetailsController @Inject()(
                 case None =>
                   val errorMsg = "agent.edit-mandate-detail.save.error"
                   val errorForm = nonUkIdentificationForm.withError(key = "addressType", message = errorMsg).fill(updateDetails)
-                  BadRequest(views.html.agent.editDetails.update_ocr_details(errorForm, service, displayDetails(service), getBackLink(service)))
+                  BadRequest(templateUpdateOcrDetails(errorForm, service, displayDetails(service), getBackLink(service)))
               }
             }
           }

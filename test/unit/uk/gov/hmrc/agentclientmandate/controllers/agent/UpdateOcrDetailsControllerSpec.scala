@@ -23,6 +23,7 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsJson, Result}
 import play.api.test.FakeRequest
@@ -31,13 +32,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsControll
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasCompany
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "UpdateOcrDetailsController" should {
 
@@ -120,6 +122,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with Be
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceUpdateOcrDetails = app.injector.instanceOf[views.html.agent.editDetails.update_ocr_details]
 
 
 
@@ -130,7 +133,8 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec  with MockitoSugar with Be
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceUpdateOcrDetails
     )
 
     def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {

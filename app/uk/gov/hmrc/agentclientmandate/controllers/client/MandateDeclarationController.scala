@@ -36,7 +36,8 @@ class MandateDeclarationController @Inject()(
                                              val authConnector: AuthConnector,
                                              mcc: MessagesControllerComponents,
                                              implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig
+                                             implicit val appConfig: AppConfig,
+                                             templateMandateDeclaration: views.html.client.mandateDeclaration
                                             ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
@@ -44,7 +45,7 @@ class MandateDeclarationController @Inject()(
       withOrgCredId(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) map {
           _.flatMap(_.mandate) match {
-            case Some(x) => Ok(views.html.client.mandateDeclaration(x, getBackLink(service)))
+            case Some(x) => Ok(templateMandateDeclaration(x, getBackLink(service)))
             case None => Redirect(routes.ReviewMandateController.view())
           }
         }

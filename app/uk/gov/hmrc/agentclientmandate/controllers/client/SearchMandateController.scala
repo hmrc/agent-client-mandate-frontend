@@ -38,7 +38,8 @@ class SearchMandateController @Inject()(
                                          dataCacheService: DataCacheService,
                                          mandateService: AgentClientMandateService,
                                          implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig
+                                         implicit val appConfig: AppConfig,
+                                         templateSearchMandate: views.html.client.searchMandate
                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
@@ -46,8 +47,8 @@ class SearchMandateController @Inject()(
       withOrgCredId(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) map { a =>
           a.flatMap(_.mandate) match {
-            case Some(x) => Ok(views.html.client.searchMandate(service, mandateRefForm.fill(MandateReference(x.id)), getBackLink(service)))
-            case None => Ok(views.html.client.searchMandate(service, mandateRefForm, getBackLink(service)))
+            case Some(x) => Ok(templateSearchMandate(service, mandateRefForm.fill(MandateReference(x.id)), getBackLink(service)))
+            case None => Ok(templateSearchMandate(service, mandateRefForm, getBackLink(service)))
           }
         }
       }
@@ -57,13 +58,13 @@ class SearchMandateController @Inject()(
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
         mandateRefForm.bindFromRequest.fold(
-          formWithErrors => Future.successful(BadRequest(views.html.client.searchMandate(service, formWithErrors, getBackLink(service)))),
+          formWithErrors => Future.successful(BadRequest(templateSearchMandate(service, formWithErrors, getBackLink(service)))),
           data => mandateService.fetchClientMandate(data.mandateRef.toUpperCase, authRetrievals) flatMap {
             case Some(x) =>
               if (x.currentStatus.status != uk.gov.hmrc.agentclientmandate.models.Status.New) {
                 val errorMsg = "client.search-mandate.error.mandateRef.already-used-by-mandate-service"
                 val errorForm = mandateRefForm.withError(key = "mandateRef", message = errorMsg).fill(data)
-                Future.successful(BadRequest(views.html.client.searchMandate(service, errorForm, getBackLink(service))))
+                Future.successful(BadRequest(templateSearchMandate(service, errorForm, getBackLink(service))))
               } else {
                 dataCacheService.fetchAndGetFormData[ClientCache](clientFormId) flatMap {
                   case Some(y) =>
@@ -88,7 +89,7 @@ class SearchMandateController @Inject()(
             case None =>
               val errorMsg = "client.search-mandate.error.mandateRef.not-found-by-mandate-service"
               val errorForm = mandateRefForm.withError(key = "mandateRef", message = errorMsg).fill(data)
-              Future.successful(BadRequest(views.html.client.searchMandate(service, errorForm, getBackLink(service))))
+              Future.successful(BadRequest(templateSearchMandate(service, errorForm, getBackLink(service))))
           }
         )
       }

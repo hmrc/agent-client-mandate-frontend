@@ -40,7 +40,8 @@ class ClientPermissionController @Inject()(
                                             mcc: MessagesControllerComponents,
                                             val authConnector: AuthConnector,
                                             implicit val ec: ExecutionContext,
-                                            implicit val appConfig: AppConfig
+                                            implicit val appConfig: AppConfig,
+                                            templateClientPermission: views.html.agent.clientPermission
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
@@ -53,7 +54,7 @@ class ClientPermissionController @Inject()(
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK, ""))
           }
-        } yield Ok(views.html.agent.clientPermission(clientPermissionForm.fill(
+        } yield Ok(templateClientPermission(clientPermissionForm.fill(
           clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
       }
   }
@@ -64,7 +65,7 @@ class ClientPermissionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         clientPermissionForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.clientPermission(formWithErrors, service, callingPage, getBackLink(callingPage)))
+            val result = BadRequest(templateClientPermission(formWithErrors, service, callingPage, getBackLink(callingPage)))
             Future.successful(result)
           },
           data => {

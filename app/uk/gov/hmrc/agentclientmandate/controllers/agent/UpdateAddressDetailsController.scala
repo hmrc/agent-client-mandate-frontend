@@ -40,7 +40,8 @@ class UpdateAddressDetailsController @Inject()(
                                                 dataCacheService: DataCacheService,
                                                 implicit val ec: ExecutionContext,
                                                 implicit val appConfig: AppConfig,
-                                                val authConnector: AuthConnector
+                                                val authConnector: AuthConnector,
+                                                templateUpdateAddressDetails: views.html.agent.editDetails.update_address_details
                                               ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
@@ -51,7 +52,7 @@ class UpdateAddressDetailsController @Inject()(
         agentDetails match {
           case Some(agentDetail) =>
             val agentAddress = EditAgentAddressDetails(agentDetail.agentName, agentDetail.addressDetails)
-            Ok(views.html.agent.editDetails.update_address_details(editAgentAddressDetailsForm
+            Ok(templateUpdateAddressDetails(editAgentAddressDetailsForm
               .fill(agentAddress), service, displayDetails(service), getBackLink(service)))
           case None =>
             logger.warn(s"[UpdateAddressDetailsController][view] - No business details found to edit")
@@ -65,7 +66,7 @@ class UpdateAddressDetailsController @Inject()(
     withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
       editAgentAddressDetailsForm.bindFromRequest.fold(
         formWithErrors =>
-          Future.successful(BadRequest(views.html.agent.editDetails.update_address_details(formWithErrors,
+          Future.successful(BadRequest(templateUpdateAddressDetails(formWithErrors,
             service, displayDetails(service), getBackLink(service)))),
         updateDetails => {
           for {
@@ -79,7 +80,7 @@ class UpdateAddressDetailsController @Inject()(
               case None =>
                 val errorMsg = "agent.edit-mandate-detail.save.error"
                 val errorForm = editAgentAddressDetailsForm.withError(key = "addressType", message = errorMsg).fill(updateDetails)
-                BadRequest(views.html.agent.editDetails.update_address_details(errorForm, service, displayDetails(service), getBackLink(service)))
+                BadRequest(templateUpdateAddressDetails(errorForm, service, displayDetails(service), getBackLink(service)))
             }
           }
         }

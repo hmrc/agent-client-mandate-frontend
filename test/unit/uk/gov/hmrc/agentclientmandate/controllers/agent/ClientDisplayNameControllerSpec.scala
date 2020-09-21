@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientDisplayNameController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ClientDisplayNameController" must {
 
@@ -117,7 +119,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/agent/overseas-client-question"))
+          redirectLocation(result) must be(Some("/mandate/agent/overseas-client-question"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
@@ -178,6 +180,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
   val service: String = "ated".toUpperCase
   val clientDisplayName: ClientDisplayName = ClientDisplayName("client display name")
+  val injectedViewInstanceClientDisplayName = app.injector.instanceOf[views.html.agent.clientDisplayName]
 
 
 
@@ -192,7 +195,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceClientDisplayName
     )
 
     def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any) {

@@ -36,7 +36,8 @@ class NRLQuestionController @Inject()(
                                        mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
                                        implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig
+                                       implicit val appConfig: AppConfig,
+                                       templateNrlQuestion: views.html.agent.nrl_question
                                      ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.nrlQuestionControllerId
@@ -45,8 +46,8 @@ class NRLQuestionController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[NRLQuestion](nrlFormId) map {
-          case Some(data) => Ok(views.html.agent.nrl_question(nrlQuestionForm.fill(data), service, getBackLink(service)))
-          case _ => Ok(views.html.agent.nrl_question(nrlQuestionForm, service, getBackLink(service)))
+          case Some(data) => Ok(templateNrlQuestion(nrlQuestionForm.fill(data), service, getBackLink(service)))
+          case _ => Ok(templateNrlQuestion(nrlQuestionForm, service, getBackLink(service)))
         }
       }
   }
@@ -57,7 +58,7 @@ class NRLQuestionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         nrlQuestionForm.bindFromRequest.fold(
           formWithErrors => {
-            val result = BadRequest(views.html.agent.nrl_question(formWithErrors, service, getBackLink(service)))
+            val result = BadRequest(templateNrlQuestion(formWithErrors, service, getBackLink(service)))
             Future.successful(result)
           },
           data => {

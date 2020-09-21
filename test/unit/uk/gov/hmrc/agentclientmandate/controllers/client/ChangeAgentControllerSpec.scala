@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsFormUrlEncoded, AnyContentAsJson, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.ChangeAgentController
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ChangeAgentController" must {
 
@@ -115,6 +117,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceChangeAgent = app.injector.instanceOf[views.html.client.changeAgent]
 
   class Setup {
     val controller = new ChangeAgentController(
@@ -123,7 +126,8 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceChangeAgent
     )
 
     def viewUnAuthenticatedClient(test: Future[Result] => Any) {

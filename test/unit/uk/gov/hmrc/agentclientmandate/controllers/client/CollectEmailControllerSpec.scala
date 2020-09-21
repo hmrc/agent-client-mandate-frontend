@@ -24,19 +24,21 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.CollectEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
+class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "CollectEmailController" must {
 
@@ -97,7 +99,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("submit").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/client/review")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/client/review")
         }
 
       }
@@ -154,7 +156,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = Some(cachedData), returnCache = returnData, mode = Some("edit")) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/review"))
+          redirectLocation(result) must be(Some("/mandate/client/review"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
             ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -166,7 +168,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
         val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = None, returnCache = returnData) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/search"))
+          redirectLocation(result) must be(Some("/mandate/client/search"))
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
             ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -232,6 +234,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceCollectEmail = app.injector.instanceOf[views.html.client.collectEmail]
 
 
   class Setup {
@@ -240,7 +243,8 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceCollectEmail
     )
 
     def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any) {

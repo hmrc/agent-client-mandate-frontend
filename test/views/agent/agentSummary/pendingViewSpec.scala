@@ -26,8 +26,9 @@ import uk.gov.hmrc.agentclientmandate.service.Mandates
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper {
+class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
@@ -69,6 +70,7 @@ class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
     clientDisplayName = "client display name 5")
 
   implicit val request = FakeRequest()
+  val injectedViewInstancePending = app.injector.instanceOf[views.html.agent.agentSummary.pending]
 
   feature("The agent can view the agent summary page when they only have pending clients") {
 
@@ -82,7 +84,7 @@ class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
 
       val pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)
 
-      val html = views.html.agent.agentSummary.pending("ATED", Mandates(Nil, pendingMandates), agentDetails, None, "")
+      val html = injectedViewInstancePending("ATED", Mandates(Nil, pendingMandates), agentDetails, None, "")
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - client.summary.title - GOV.UK")
@@ -108,7 +110,7 @@ class pendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       When("agent views the mandates")
 
       val pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation)
-      val html = views.html.agent.agentSummary.pending("ATED", Mandates(Nil, pendingMandates), agentDetails, Some(List("AAA")), "")
+      val html = injectedViewInstancePending("ATED", Mandates(Nil, pendingMandates), agentDetails, Some(List("AAA")), "")
       val document = Jsoup.parse(html.toString())
 
       Then("I should see the clients cancelled panel")

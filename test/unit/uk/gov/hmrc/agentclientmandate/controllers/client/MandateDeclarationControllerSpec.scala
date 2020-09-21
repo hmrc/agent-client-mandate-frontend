@@ -24,6 +24,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -31,13 +32,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.MandateDeclarationContr
 import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Subscription, _}
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
+import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup {
+class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "MandateDeclarationController" must {
 
@@ -87,7 +89,7 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
         val mandateReturned = Some(mandate)
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn, mandateReturned) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/confirmation"))
+          redirectLocation(result) must be(Some("/mandate/client/confirmation"))
         }
       }
     }
@@ -99,7 +101,7 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
         val cacheReturn = Some(ClientCache(mandate = Some(mandate)))
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/review"))
+          redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
     }
@@ -109,7 +111,7 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
         val fakeRequest = FakeRequest().withFormUrlEncodedBody()
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/client/review"))
+          redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
     }
@@ -132,6 +134,7 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceMandateDeclaration = app.injector.instanceOf[views.html.client.mandateDeclaration]
 
   class Setup {
     val controller = new MandateDeclarationController(
@@ -140,7 +143,8 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
       mockAuthConnector,
       stubbedMessagesControllerComponents,
       implicitly,
-      mockAppConfig
+      mockAppConfig,
+      injectedViewInstanceMandateDeclaration
     )
   }
 
