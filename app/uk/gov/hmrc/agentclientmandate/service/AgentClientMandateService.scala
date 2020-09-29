@@ -207,8 +207,9 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     agentClientMandateConnector.editMandate(mandate, agentAuthRetrievals).map { response =>
       response.status match {
         case OK =>
-          logger.warn(response.json.toString())
-          response.json.asOpt[Mandate]
+          val mandate = response.json.asOpt[Mandate]
+          logger.info(s"[AgentClientMandateService][editMandate] - Mandate ${mandate.map(_.id)} successfully updated")
+          mandate
         case _ => None
       }
     }
