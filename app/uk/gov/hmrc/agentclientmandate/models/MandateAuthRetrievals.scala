@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.agentclientmandate.models
-
 sealed trait MandateAuthRetrievals {
   def mandateConnectorUri: String
 }
@@ -25,7 +24,8 @@ case class AgentAuthRetrievals(agentRef: String,
                                providerId: String,
                                internalId: String) extends MandateAuthRetrievals {
   def mandateConnectorUri: String = s"/agent/$agentCode"
+  def mandateConnectorUriNoAuthId: String = s"/agent"
 }
 case class ClientAuthRetrievals(hashedCredId: String) extends MandateAuthRetrievals {
-  def mandateConnectorUri: String = s"/org/$hashedCredId"
+  def mandateConnectorUri: String = s"/org"
 }

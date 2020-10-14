@@ -79,7 +79,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
 
   def fetchClientMandate(mandateId: String, authRetrievals: MandateAuthRetrievals)
                         (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
-    agentClientMandateConnector.fetchMandate(mandateId, authRetrievals) map {
+    agentClientMandateConnector.fetchMandate(mandateId) map {
       response => response.status match {
         case OK => response.json.asOpt[Mandate]
         case _ => None
@@ -87,20 +87,9 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     }
   }
 
-  def fetchClientMandateByClient(clientId: String, serviceName: String, clientAuthRetrievals: ClientAuthRetrievals)
+  def fetchClientMandateByClient(clientId: String, serviceName: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
-    agentClientMandateConnector.fetchMandateByClient(clientId, serviceName, clientAuthRetrievals) map {
-      response => response.status match {
-        case OK => response.json.asOpt[Mandate]
-        case _ => None
-      }
-    }
-  }
-
-
-  def fetchClientMandateByClientId(clientId: String, serviceName: String)
-                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
-    agentClientMandateConnector.fetchMandateByClientId(clientId, serviceName) map {
+    agentClientMandateConnector.fetchMandateByClient(clientId, serviceName) map {
       response => response.status match {
         case OK => response.json.asOpt[Mandate]
         case _ => None
@@ -179,7 +168,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
 
   def fetchAgentDetails(agentAuthRetrievals: AgentAuthRetrievals)
                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentDetails] = {
-    agentClientMandateConnector.fetchAgentDetails(agentAuthRetrievals.agentCode)
+    agentClientMandateConnector.fetchAgentDetails()
   }
 
   def removeAgent(mandateId: String, authRetrievals: ClientAuthRetrievals)
@@ -194,7 +183,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
 
   private def removeAgentClient(mandateId: String, authRetrievals: MandateAuthRetrievals)
                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    agentClientMandateConnector.remove(mandateId, authRetrievals).map { response =>
+    agentClientMandateConnector.remove(mandateId).map { response =>
       response.status match {
         case OK => true
         case _ => false

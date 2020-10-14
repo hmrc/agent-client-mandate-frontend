@@ -234,8 +234,8 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
+    when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+    (ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
     val result = controller.getClientMandateDetails("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
