@@ -37,7 +37,7 @@ class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerCom
   def getClientBannerPartial(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async { implicit request =>
     val mandateHost = appConfig.mandateFrontendHost
 
-    mandateService.fetchClientMandateByClientId(clientId, service).map {
+    mandateService.fetchClientMandateByClient(clientId, service).map {
       case Some(mandate) => mandate.currentStatus.status match {
         case Active => Ok(client_banner(service, mandate.agentParty.name,
           mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(

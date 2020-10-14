@@ -106,7 +106,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
-      val response = agentClientMandateConnector.fetchMandate(mandateId, testAgentAuthRetrievals)
+      val response = agentClientMandateConnector.fetchMandate(mandateId)
       await(response).status must be(OK)
 
     }
@@ -159,7 +159,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(agentDetails))
 
-      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails(testAgentAuthRetrievals.agentCode))
+      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails())
       response.agentName must be("Org Name")
     }
 
@@ -171,7 +171,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
           individual = Some(Individual("name", Some("middle"), "last", LocalDate.now()))
       )))
 
-      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails(testAgentAuthRetrievals.agentCode))
+      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails())
       response.agentName must be("name last")
     }
 
@@ -182,7 +182,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
           isAnIndividual = true
       )))
 
-      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails(testAgentAuthRetrievals.agentCode))
+      val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails())
       response.agentName must be(" ")
     }
 
@@ -200,7 +200,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val response = await(agentClientMandateConnector.remove(mandateId, testClientAuthRetrievals))
+      val response = await(agentClientMandateConnector.remove(mandateId))
       response.status must be(OK)
     }
 
@@ -209,7 +209,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val response = await(agentClientMandateConnector.remove(mandateId, testAgentAuthRetrievals))
+      val response = await(agentClientMandateConnector.remove(mandateId))
       response.status must be(OK)
     }
 
@@ -229,7 +229,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
-      val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service", testClientAuthRetrievals)
+      val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service")
       await(response).status must be(OK)
     }
 
@@ -240,7 +240,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
         (ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
-      val response = agentClientMandateConnector.fetchMandateByClientId("clientId", "service")
+      val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service")
       await(response).status must be(OK)
     }
 

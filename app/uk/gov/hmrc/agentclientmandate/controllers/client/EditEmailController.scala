@@ -51,7 +51,7 @@ class EditEmailController @Inject()(
           Future.successful(BadRequest("The return url is not correctly formatted"))
         }
         else {
-          mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
+          mandateService.fetchClientMandateByClient(clientId, service).map {
             case Some(mandate) => mandate.currentStatus.status match {
               case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
                 val clientDetails = ClientDetails(

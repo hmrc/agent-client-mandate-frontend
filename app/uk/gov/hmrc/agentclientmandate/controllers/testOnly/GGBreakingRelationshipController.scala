@@ -49,8 +49,7 @@ class GGBreakingRelationshipController @Inject()(
     implicit request =>
       withAgentRefNumber(None) { agentAuthRetrievals =>
         agentClientMandateConnector.remove(
-          request.body.asFormUrlEncoded.get.apply("mandateId").head,
-          agentAuthRetrievals
+          request.body.asFormUrlEncoded.get.apply("mandateId").head
         ).map { x =>
           logger.info("********" + x.body + "*************")
           Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view())

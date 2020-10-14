@@ -39,7 +39,7 @@ class ClientBannerPartialController @Inject()(mcc: MessagesControllerComponents,
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
         val mandateHost = appConfig.mandateFrontendHost
 
-        mandateService.fetchClientMandateByClient(clientId, service, clientAuthRetrievals).map {
+        mandateService.fetchClientMandateByClient(clientId, service).map {
           case Some(mandate) => mandate.currentStatus.status match {
             case Active => Ok(client_banner(service, mandate.agentParty.name, mandateHost
               + uk.gov.hmrc.agentclientmandate.controllers.client.routes.RemoveAgentController.view(

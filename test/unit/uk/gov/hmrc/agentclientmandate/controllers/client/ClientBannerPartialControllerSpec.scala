@@ -43,8 +43,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec  with MockitoSugar with
   "ClientBannerPartialController" must {
 
     "return NOT_FOUND if can't find mandate" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(None))
       viewWithAuthorisedClient() { result =>
         status(result) must be(NOT_FOUND)
@@ -52,8 +52,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec  with MockitoSugar with
     }
 
     "return partial if mandate is found and approved" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(approvedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -64,8 +64,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec  with MockitoSugar with
     }
 
     "return partial if mandate is found and active" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(activeMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -76,8 +76,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec  with MockitoSugar with
     }
 
     "return partial if mandate is found and cancelled" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(cancelledMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
@@ -88,8 +88,8 @@ class ClientBannerPartialControllerSpec extends PlaySpec  with MockitoSugar with
     }
 
     "return partial if mandate is found and rejected" in new Setup {
-      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(Some(rejectedMandate)))
       viewWithAuthorisedClient() { result =>
         status(result) must be(OK)
