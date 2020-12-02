@@ -16,34 +16,39 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PaySAQuestionController @Inject()(
+                                         dataCacheService: DataCacheService,
                                          val authConnector: AuthConnector,
                                          implicit val ec: ExecutionContext,
                                          implicit val appConfig: AppConfig,
                                          val mcc: MessagesControllerComponents,
                                          templatePaySAQuestion: views.html.agent.paySAQuestion
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.paySAQuestionControllerId
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        val result = Ok(templatePaySAQuestion(paySAQuestionForm, service, getBackLink(service)))
-        Future.successful(result)
+        dataCacheService.fetchAndGetFormData[PaySAQuestion](paySaFormId) map {
+          case Some(data) => Ok(templatePaySAQuestion(paySAQuestionForm.fill(data), service, getBackLink(service)))
+          case _ => Ok(templatePaySAQuestion(paySAQuestionForm, service, getBackLink(service)))
+        }
       }
   }
 
@@ -56,6 +61,7 @@ class PaySAQuestionController @Inject()(
             Future.successful(result)
           },
           data => {
+            dataCacheService.cacheFormData[PaySAQuestion](paySaFormId, data)
             val result = if (data.paySA.getOrElse(false)) {
               Redirect(routes.MandateDetailsController.view(controllerId))
             } else {

@@ -167,6 +167,7 @@ object NRLQuestionForm {
 case class PaySAQuestion(paySA: Option[Boolean] = None)
 
 object PaySAQuestion {
+  implicit val formats: OFormat[PaySAQuestion] = Json.format[PaySAQuestion]
 
   def paySAQuestionForm = Form(
     mapping(
