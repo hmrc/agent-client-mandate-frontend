@@ -17,8 +17,8 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -28,6 +28,8 @@ import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -58,7 +60,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
     }
 
     "return 'paySA question' view for AUTHORISED agent" when {
-      "agent requests(GET) for 'nrl question' view" in new Setup {
+      "agent requests(GET) for 'paySa question' view" in new Setup {
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -66,6 +68,19 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
           document.getElementById("header").text() must include("agent.paySA-question.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("paySA_legend").text() must be("agent.paySA-question.header")
+          document.getElementById("submit").text() must be("continue-button")
+        }
+      }
+
+      "agent requests(GET) for cached 'paySa question' view with some data saved" in new Setup {
+        viewWithAuthorisedAgentWithSomeData { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.title() must be("agent.paySA-question.title - GOV.UK")
+          document.getElementById("header").text() must include("agent.paySA-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("paySA_legend").text() must be("agent.paySA-question.header")
+          document.getElementById("paySA-true").attr("checked") must be("checked")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -107,12 +122,14 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val injectedViewInstancePaySAQuestion = app.injector.instanceOf[views.html.agent.paySAQuestion]
 
 
 
   class Setup {
     val controller = new PaySAQuestionController(
+      mockDataCacheService,
       mockAuthConnector,
       implicitly,
       mockAppConfig,
@@ -141,6 +158,19 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+      val userId = s"user-${UUID.randomUUID}"
+
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PaySAQuestion](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(PaySAQuestion(Some(true)))))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
