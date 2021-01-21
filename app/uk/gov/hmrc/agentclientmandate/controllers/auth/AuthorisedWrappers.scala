@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
     if (isAnAgent) appConfig.loginCallbackAgent else appConfig.loginCallbackClient
   }
 
-  protected def loginUrl(implicit appConfig: AppConfig): String = s"${appConfig.companyAuthHost}/${appConfig.loginPath}"
+  protected def loginUrl(implicit appConfig: AppConfig): String = s"${appConfig.basGatewayHost}/${appConfig.loginPath}"
 
   private def loginParams(isAnAgent: Boolean)(implicit appConfig: AppConfig): Map[String, Seq[String]] = Map(
     "continue" -> Seq(continueUrl(isAnAgent)),

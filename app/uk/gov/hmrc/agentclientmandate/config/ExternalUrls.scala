@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import scala.util.Try
 trait ExternalUrls {
   val servicesConfig: ServicesConfig
 
-  val companyAuthHost = s"${Try(servicesConfig.getString(s"microservice.services.auth.company-auth.host")).getOrElse("")}"
+  val basGatewayHost = s"${Try(servicesConfig.getString(s"microservice.services.auth.bas-gateway-frontend.host")).getOrElse("")}"
   val loginPath = s"${
-    Try(servicesConfig.getString(s"microservice.services.auth.login-path")).getOrElse("gg/sign-in")
+    Try(servicesConfig.getString(s"microservice.services.auth.login-path")).getOrElse("bas-gateway/sign-in")
   }"
   val loginCallbackAgent = s"${
     Try(servicesConfig.getString(s"microservice.services.auth.login-callback-agent.url")).

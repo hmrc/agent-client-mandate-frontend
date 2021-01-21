@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class AppConfig @Inject()(
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
-  lazy val logoutUrl = s"""${Try(servicesConfig.getString("microservice.logout.url")).getOrElse("/gg/sign-out")}"""
+  lazy val logoutUrl = s"""${Try(servicesConfig.getString("microservice.logout.url")).getOrElse("/bas-gateway/sign-out-without-state")}"""
   lazy val timeoutCountdown: Int = loadConfig("timeoutCountdown").toInt
   lazy val defaultTimeoutSeconds: Int = loadConfig("defaultTimeoutSeconds").toInt
 
