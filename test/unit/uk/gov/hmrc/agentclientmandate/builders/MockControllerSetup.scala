@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ trait MockControllerSetup {
 
   val stubbedMessagesControllerComponents: MessagesControllerComponents = stubMessagesControllerComponents()
 
-  when(mockAppConfig.companyAuthHost)
+  when(mockAppConfig.basGatewayHost)
     .thenReturn("")
   when(mockAppConfig.loginPath)
     .thenReturn("gg/sign-in")
