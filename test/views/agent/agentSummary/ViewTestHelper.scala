@@ -45,11 +45,6 @@ trait ViewTestHelper {
   when(mockAppConfig.servicesConfig)
     .thenReturn(mockServicesConfig)
 
-  when(mockAppConfig.analyticsHost)
-    .thenReturn("")
-  when(mockAppConfig.analyticsToken)
-    .thenReturn("")
-
   when(mockOptConfig.url)
     .thenReturn(None)
   when(mockGtmConfig.url)
