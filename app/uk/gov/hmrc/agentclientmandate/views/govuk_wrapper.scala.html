@@ -25,7 +25,7 @@
 @import uk.gov.hmrc.play.views.html.layouts.MainContent
 @import uk.gov.hmrc.play.views.html.layouts.MainContentHeader
 @import views.html.layouts.GovUkTemplate
-@import uk.gov.hmrc.play.views.html.layouts.Head
+@import uk.gov.hmrc.play.views.html.layouts.HeadWithTrackingConsent
 @import uk.gov.hmrc.play.views.html.helpers.ReportAProblemLink
 @import uk.gov.hmrc.play.views.html.layouts.ServiceInfo
 @import uk.gov.hmrc.play.views.html.layouts.BetaBanner
@@ -33,7 +33,7 @@
 @import uk.gov.hmrc.play.views.html.layouts.Footer
 
 @this(govuk_template: GovUkTemplate,
-layoutHead: Head,
+layoutHead: HeadWithTrackingConsent,
 betaBanner: BetaBanner,
 layoutServiceInfo: ServiceInfo,
 reportAProblemLink: ReportAProblemLink,
@@ -110,8 +110,8 @@ header_nav: HeaderNav)
 
 @bodyEnd = {
     @appConfig.customFooterTemplate(
-      analyticsToken = Some(appConfig.analyticsToken),
-      analyticsHost = appConfig.analyticsHost,
+      analyticsToken = None,
+      analyticsHost = "",
       ssoUrl = None,
       scriptElem = Some(scriptElement),
       gaCalls = None,

@@ -45,7 +45,7 @@ class AppConfig @Inject()(
 
   def betaFeedbackUrl(service: Option[String], returnUri: String): String = {
     val feedbackUrl = service match {
-      case Some(delegatedService) if !delegatedService.isEmpty =>
+      case Some(delegatedService) if delegatedService.nonEmpty =>
         Try(servicesConfig.getString(s"microservice.delegated-service.${delegatedService.toLowerCase}.beta-feedback-url")).getOrElse(defaultBetaFeedbackUrl)
       case _ => defaultBetaFeedbackUrl
     }
@@ -54,8 +54,6 @@ class AppConfig @Inject()(
 
   lazy val urBannerToggle: Boolean = loadConfig("urBanner.toggle").toBoolean
   lazy val urBannerLink: String = loadConfig("urBanner.link")
-  lazy val analyticsToken: String = loadConfig("google-analytics.token")
-  lazy val analyticsHost: String = loadConfig("google-analytics.host")
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
@@ -89,7 +87,7 @@ class AppConfig @Inject()(
 
   def serviceSignOutUrl(service: Option[String]): String = {
     service match {
-      case Some(delegatedService) if !delegatedService.isEmpty =>
+      case Some(delegatedService) if delegatedService.nonEmpty =>
         Try(servicesConfig.getString(s"microservice.delegated-service-sign-out-url.${delegatedService.toLowerCase}")).getOrElse(logoutUrl)
       case _ => logoutUrl
     }
