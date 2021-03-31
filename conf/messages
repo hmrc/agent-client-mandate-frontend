@@ -141,7 +141,7 @@ client.agent-confirmation.banner-text = Your request to appoint {0} has been suc
 client.agent-confirmation.banner-confirmation.submitted.date = on {0}
 client.agent-confirmation.notification = Your agent will receive an email notification.
 client.agent-confirmation.header = What happens next
-client.agent-confirmation.sign-in = This authority will remain in place until you change or cancel your agent. You can sign in at any point to view <a href="{0}" id="calling-service" data-journey-click="agent-client-mandate:click:sign-in-link">your online service</a>
+client.agent-confirmation.sign-in = This authority will remain in place until you change or cancel your agent. You can sign in at any point to view <a href="{0}" id="calling-service">your online service</a>
 
 client.agent-confirmation.finish-signout = Sign out
 client.declaration.error.general.agree = There is a problem with the checkbox
@@ -235,7 +235,7 @@ agent.client-permission.header = Do you have permission to register on behalf of
 agent.client-permission.error.general.hasPermission = There is a problem with the client permission question
 agent.client-permission.hasPermission.not-selected.error = You must answer the client permission question
 
-agent.client-permission.hasPermission.selected.ated.yes.notice = Your client must complete an <a href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1" data-journey-click="agent-client-mandate:click:ATED-1-link">ATED 1</a>. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records. If you already have an ATED&nbsp;1 for this client, they do not need to complete another. Form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
+agent.client-permission.hasPermission.selected.ated.yes.notice = Your client must complete an <a href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">ATED 1</a>. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records. If you already have an ATED&nbsp;1 for this client, they do not need to complete another. Form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
 agent.client-permission.hasPermission.selected.ated.no.notice = You must have permission from your client before you can continue.
 
 ##### AGENT HAS CLIENT SUBMITTED BEFORE PAGE

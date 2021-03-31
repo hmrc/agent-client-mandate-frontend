@@ -56,8 +56,7 @@ header_nav: HeaderNav)
   mainContent: Html = HtmlFormat.empty,
   serviceInfoContent: Html = HtmlFormat.empty,
   scriptElem: Option[Html] = None,
-  delegatedService: Option[String] = None,
-  analyticsJs: Option[Html] = None)(implicit request: Request[_], messages: Messages)
+  delegatedService: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @linkElement = {
 <link rel="stylesheet" type="text/css" href='@controllers.routes.Assets.at("stylesheets/palette.css")'>
@@ -114,8 +113,7 @@ header_nav: HeaderNav)
       analyticsHost = "",
       ssoUrl = None,
       scriptElem = Some(scriptElement),
-      gaCalls = None,
-      analyticsAdditionalJs = analyticsJs)
+      gaCalls = None)
 }
 
 @footerTop = {}
