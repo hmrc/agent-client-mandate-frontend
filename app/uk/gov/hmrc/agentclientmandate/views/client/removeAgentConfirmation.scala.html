@@ -23,14 +23,7 @@
 
 @(service: String, agentName: String, mandateId: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-
-@analyticsJs = {
-  var id = "@mandateId";
-  var page = document.location.pathname.replace('/' + id, '');
-  ga('set', 'page', page);
-}
-
-@main_template(title = Messages("client.remove-agent-confirmation.title"), delegatedService = Some(service), analyticsAdditionalJs = Some(analyticsJs)) {
+@main_template(title = Messages("client.remove-agent-confirmation.title"), delegatedService = Some(service)) {
 
     <div class="transaction-banner--complete" id="banner">
         <h1 id="banner-text"> @Messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now)) </h1>

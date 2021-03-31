@@ -44,7 +44,7 @@
   @clientsCancelledPartial(clientsCancelled, service)
 
   <div class="form-group">
-    <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="link" tabindex="0" data-journey-click="agent-client-mandate:click:add-client-link">@Messages("client.summary.add-client")</a>
+    <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="link" tabindex="0">@Messages("client.summary.add-client")</a>
   </div>
 
   <div class="form-group">
@@ -73,8 +73,7 @@
     @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
 
         <div class="grid grid-1-4 asp-action">
-          <a id="edit-pending-client-link-@index" href="@routes.EditMandateDetailsController.view(pending.id)"
-            data-journey-click="agent-client-mandate:click:edit-pending-client-link">
+          <a id="edit-pending-client-link-@index" href="@routes.EditMandateDetailsController.view(pending.id)">
             @Messages("Edit")
           <span class="visuallyhidden">@Messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
           </a>
@@ -83,7 +82,7 @@
         } else {
 
           <div class="grid grid-1-4 asp-action">
-            <a id="reject-client-link-@index" href="@routes.RejectClientController.view(pending.id)" data-journey-click="agent-client-mandate:click:reject-client-link">
+            <a id="reject-client-link-@index" href="@routes.RejectClientController.view(pending.id)">
               @Messages("client.summary.client-reject")
             <span class="visuallyhidden">@pending.clientDisplayName</span>
             </a>
@@ -103,8 +102,7 @@
           }
           case _ => {
             <div class="grid grid-1-4 asp-action" id="accept-client">
-              <a href="@routes.AgentSummaryController.activate(pending.id)" data-journey-click="agent-client-mandate:click:accept-client"
-              id="accept-@(index + 1)">
+              <a href="@routes.AgentSummaryController.activate(pending.id)" id="accept-@(index + 1)">
                 @Messages("client.summary.client-accept") <span class="visuallyhidden"> @pending.clientDisplayName</span>
               </a>
             </div>

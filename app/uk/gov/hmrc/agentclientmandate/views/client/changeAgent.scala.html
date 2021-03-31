@@ -24,13 +24,7 @@
 
 @(service: String, changeAgentForm: Form[YesNoQuestion], mandateId: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@analyticsJs = {
-  var id = "@mandateId";
-  var page = document.location.pathname.replace('/' + id, '');
-  ga('set', 'page', page);
-}
-
-@main_template(title = Messages("client.change-agent.title"), analyticsAdditionalJs = Some(analyticsJs)) {
+@main_template(title = Messages("client.change-agent.title")) {
     @pageHeadersAndError(backLink, "pre-heading", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("client.change-agent.header"),
         Some(mandateErrorSummary(changeAgentForm, "yes-no.error.general", Some("client.agent-change.error"))))
 
@@ -45,8 +39,7 @@
             '_legendClass -> "visuallyhidden",
             '_legend -> Messages("client.change-agent.header"),
             '_labelClass -> "block-label",
-            '_labelAfter -> true,
-            '_trackGA -> true
+            '_labelAfter -> true
         )
         </div>
 
