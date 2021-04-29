@@ -528,3 +528,7 @@ table td {
 p.margin-bottom-default {
   margin-bottom: 30px !important;
 }
+
+details .summary {
+    display: list-item;
+}
