@@ -44,7 +44,7 @@ class AgentSummaryController @Inject()(
                                         implicit val appConfig: AppConfig,
                                         templatePending:views.html.agent.agentSummary.pending,
                                         templateClients: views.html.agent.agentSummary.clients,
-                                        templateNoClientsNoPending: views.html.agent.agentSummary.noClientsNoPending,
+                                        templateNoClientsNoPending: views.html.agent.agentSummary.noClientsNoPending
                                       ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   val screenReaderTextId = "screenReaderTextId"

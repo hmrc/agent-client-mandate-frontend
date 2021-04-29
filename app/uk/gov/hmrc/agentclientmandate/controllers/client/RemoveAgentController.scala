@@ -41,7 +41,7 @@ class RemoveAgentController @Inject()(
                                        implicit val ec: ExecutionContext,
                                        implicit val appConfig: AppConfig,
                                        templateRemoveAgent: views.html.client.removeAgent,
-                                       templateRemoveAgentConfirmation: views.html.client.removeAgentConfirmation,
+                                       templateRemoveAgentConfirmation: views.html.client.removeAgentConfirmation
                                      ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   def view(service: String, mandateId: String, returnUrl: String): Action[AnyContent] = Action.async {
