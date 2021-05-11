@@ -25,13 +25,13 @@
 
 @main_template(title = Messages("client.remove-agent-confirmation.title"), delegatedService = Some(service)) {
 
-    <div class="transaction-banner--complete" id="banner">
-        <h1 id="banner-text"> @Messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now)) </h1>
+    <div class="govuk-panel govuk-panel--confirmation" id="banner">
+        <h1 id="banner-text" class="govuk-panel__title"> @Messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now)) </h1>
     </div>
 
-    <p id="notification" class="heading-small">@Messages("client.agent-confirmation.notification")</p>
+    <p id="notification" class="govuk-heading-s">@Messages("client.agent-confirmation.notification")</p>
 
-        <div class="form-group">
+        <div class="govuk-form-group">
 
         <h2 id="heading-1">@Messages("client.remove-agent-confirmation.header")</h2>
 
@@ -43,7 +43,7 @@
     </div>
 
     <form action="@routes.RemoveAgentController.returnToService">
-        <button class="button" id="return_to_service_button" type="submit">@Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)</button>
+        <button class="govuk-button" id="return_to_service_button" type="submit">@Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)</button>
     </form>
 
 }

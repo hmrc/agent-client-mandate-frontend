@@ -67,7 +67,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("header").text() must include("client.collect-email.header")
           document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.collect-email.preheader")
-          document.getElementById("email_field").text() must be("client.collect-email.email.label")
+          document.getElementsByClass("govuk-label").text() must be("client.collect-email.email.label")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
@@ -94,7 +94,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("header").text() must include("client.collect-email.header")
           document.getElementById("pre-heading").text() must include("ated.screen-reader.section client.collect-email.preheader")
-          document.getElementById("email_field").text() must be("client.collect-email.email.label")
+          document.getElementsByClass("govuk-label").text() must be("client.collect-email.email.label")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
 
@@ -184,7 +184,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
@@ -201,7 +201,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must
+          document.getElementsByClass("govuk-error-message").text() must
             include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -218,7 +218,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("client.collect-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))

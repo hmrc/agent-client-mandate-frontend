@@ -19,9 +19,9 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF)
 
 @(service: String, mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -30,70 +30,62 @@
 
 @pageHeadersAndError(backLink, "pre-heading", Messages("client.review-agent.preheader"), "header", Messages("client.review-agent.header"))
 
-   @form(action = routes.ReviewMandateController.submit()) {
-     <div class="form-group">
+   @formHelper(action = routes.ReviewMandateController.submit()) {
 
-       <div class="grid-wrapper row-border">
-         <div class="grid grid-2-6 cya-question">
-           <span id="service-name-label" class="heading-small">@Messages("client.review-agent.service-header")</span>
-         </div>
+       <dl class="govuk-summary-list">
+           <div class="govuk-summary-list__row">
+               <dt class="govuk-summary-list__key">
+                    @Messages("client.review-agent.service-header")
+               </dt>
+               <dd class="govuk-summary-list__value">
+                    @mandate.subscription.service.name.toUpperCase
+               </dd>
+               <dd class="govuk-summary-list__actions">
+               </dd>
+           </div>
+           <div class="govuk-summary-list__row">
+               <dt class="govuk-summary-list__key">
+                    @Messages("client.review-agent.agency-header")
+               </dt>
+               <dd class="govuk-summary-list__value">
+                    @mandate.agentParty.name
+               </dd>
+               <dd class="govuk-summary-list__actions">
+               </dd>
+           </div>
+           <div class="govuk-summary-list__row">
+               <dt class="govuk-summary-list__key" id="your-email-label">
+                   @Messages("client.review-agent.own.email")
+               </dt>
+               <dd class="govuk-summary-list__value">
+                   @mandate.clientParty.map { clientParty =>
+                       @clientParty.contactDetails.email
+                   }
+               </dd>
+               <dd class="govuk-summary-list__actions">
+                   <a class="govuk-link" href="@routes.CollectEmailController.edit()" id="edit-client-own-email">
+                       Change<span class="govuk-visually-hidden"> @Messages("client.review-agent.own.email")</span>
+                   </a>
+               </dd>
+           </div>
+           <div class="govuk-summary-list__row">
+               <dt class="govuk-summary-list__key" id="agent-ref-name-label">
+                    @Messages("client.review-agent.agent-reference")
+               </dt>
+               <dd class="govuk-summary-list__value">
+                    @mandate.id
+               </dd>
+               <dd class="govuk-summary-list__actions">
+                   <a class="govuk-link" href="@routes.SearchMandateController.view()" id="edit-agent-reference-number">
+                       Change<span class="govuk-visually-hidden"> @Messages("client.review-agent.agent-reference")</span>
+                   </a>
+               </dd>
+           </div>
+       </dl>
 
-         <div class="grid grid-1-2 cya-answer">
-           <span id="service-name">@mandate.subscription.service.name.toUpperCase</span>
-         </div>
-       </div>
+     <p class="govuk-body" id="agent-disclaimer">@Messages("client.review-agent.disclaimer", mandate.agentParty.name)</p>
 
-       <div class="grid-wrapper row-border">
-         <div class="grid grid-2-6 cya-question">
-           <span id="agency-name-label" class="heading-small">@Messages("client.review-agent.agency-header")</span>
-         </div>
-
-         <div class="grid grid-1-2 cya-answer">
-           <span id="agency-name">@mandate.agentParty.name</span>
-         </div>
-       </div>
-
-       <div class="grid-wrapper row-border">
-         <div class="grid grid-2-6 cya-question">
-           <span id="your-email-label" class="heading-small">@Messages("client.review-agent.own.email")</span>
-         </div>
-
-         <div class="grid grid-1-2 cya-answer">
-           <span id="your-email">  @mandate.clientParty.map { clientParty =>
-         @clientParty.contactDetails.email
-         }</span>
-         </div>
-
-         <div class="grid grid-1-6 cya-change">
-           <a href='@routes.CollectEmailController.edit()' id="edit-client-own-email">
-             @Messages("edit-link")
-             <span class="visuallyhidden">@Messages("client.review-agent.own.email")</span>
-           </a>
-         </div>
-       </div>
-
-       <div class="grid-wrapper row-border">
-         <div class="grid grid-2-6 cya-question">
-           <span id="agent-ref-name-label" class="heading-small">@Messages("client.review-agent.agent-reference")</span>
-         </div>
-
-         <div class="grid grid-1-2 cya-answer">
-           <span id="agent-ref-name">@mandate.id</span>
-         </div>
-
-         <div class="grid grid-1-6 cya-change">
-           <a href='@routes.SearchMandateController.view()' id="edit-agent-reference-number">
-             @Messages("edit-link")
-             <span class="visuallyhidden">@Messages("client.review-agent.agent-reference")</span>
-           </a>
-         </div>
-       </div>
-
-     </div>
-
-     <p id="agent-disclaimer">@Messages("client.review-agent.disclaimer", mandate.agentParty.name)</p>
-
-     <button class="button" id="submit" type="submit">
+     <button class="govuk-button" id="submit" type="submit">
        @Messages("client.review-agent.submit")
      </button>
 

@@ -5,18 +5,6 @@
   top:230px;
  }
 
-#banner h1 {
-  margin-top: 30px;
-  margin-bottom: 15px;
-  color: #fff;
-  font-family: "nta", Arial, sans-serif;
-  font-size: 36px;
-  line-height: 1.11111;
-  font-weight: 400;
-  text-transform: none;
-  font-weight: 700;
-}
-
 .custom-combobox {
     position: relative;
     display: inline-block;
@@ -98,7 +86,7 @@
   border: 2px solid #6f777b;
 }
 
-.heading-xlarge {
+.govuk-heading-l {
     margin-bottom: 0.8em;
     margin-top:0em;
 }
@@ -458,7 +446,7 @@ table td {
     margin-top:1.5em
 }
 
-.page-header .heading-xlarge {
+.page-header .govuk-heading-l {
   margin: .15em 0 0.8em;
 }
 
@@ -529,6 +517,12 @@ p.margin-bottom-default {
   margin-bottom: 30px !important;
 }
 
-details .summary {
-    display: list-item;
+.autocomplete__option {
+    font-family: "GDS Transport",arial,sans-serif;
+    font-weight: normal;
+}
+
+.autocomplete__input {
+    font-family: "GDS Transport",arial,sans-serif;
+    font-weight: normal;
 }

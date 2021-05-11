@@ -53,10 +53,11 @@ class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       assert(document.getElementById("reject-text").text() === "agent.reject-client.text")
 
       And("The yes no radio buttons - exist and are set to Yes and No")
-      assert(document.getElementById("yesNo-true").attr("value") === "true")
-      assert(document.getElementById("yesNo-true_field").text() === "radio-yes")
-      assert(document.getElementById("yesNo-false").attr("value") === "false")
-      assert(document.getElementById("yesNo-false_field").text() === "radio-no")
+      print(document.getElementById("yesNo"))
+      assert(document.getElementById("yesNo").attr("value") === "true")
+      assert(document.getElementsByAttributeValue("for", "yesNo").text() === "radio-yes")
+      assert(document.getElementById("yesNo-2").attr("value") === "false")
+      assert(document.getElementsByAttributeValue("for", "yesNo-2").text() === "radio-no")
 
       And("The submit button is - Confirm")
       assert(document.getElementById("submit").text() === "confirm-button")

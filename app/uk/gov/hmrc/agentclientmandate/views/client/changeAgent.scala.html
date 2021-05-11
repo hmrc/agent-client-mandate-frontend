@@ -17,10 +17,12 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(service: String, changeAgentForm: Form[YesNoQuestion], mandateId: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -28,22 +30,31 @@
     @pageHeadersAndError(backLink, "pre-heading", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("client.change-agent.header"),
         Some(mandateErrorSummary(changeAgentForm, "yes-no.error.general", Some("client.agent-change.error"))))
 
-    @form(action = routes.ChangeAgentController.submit(mandateId)) {
+    @formHelper(action = routes.ChangeAgentController.submit(mandateId)) {
 
-        <div class="form-group" id="yesNo">
-        @mandateInputRadioGroup(
-            changeAgentForm("yesNo"),
-            Seq("true" -> Messages("radio-yes"),
-                "false" -> Messages("radio-no")),
-            '_groupClass -> "inline",
-            '_legendClass -> "visuallyhidden",
-            '_legend -> Messages("client.change-agent.header"),
-            '_labelClass -> "block-label",
-            '_labelAfter -> true
+        @govukRadios(
+            Radios(
+                fieldset = Some(Fieldset(
+                    classes = "govuk-radios--inline",
+                    legend = Some(Legend(
+                        classes = "govuk-visually-hidden",
+                        content = Text(Messages("client.change-agent.header"))
+                    ))
+                )),
+                items = Seq(
+                    RadioItem(
+                        content = Text(Messages("radio-yes")),
+                        value = Some("true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("radio-no")),
+                        value = Some("false")
+                    )
+                )
+            ).withFormField(changeAgentForm("yesNo"))
         )
-        </div>
 
-        <button class="button" id="submit" type="submit">@Messages("confirm-button")</button>
+        <button class="govuk-button" id="submit" type="submit">@Messages("confirm-button")</button>
 
     }
 

@@ -14,27 +14,25 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.controllers.testOnly.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
-@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers.form
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF)
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = Messages("test-only"), delegatedService = None) {
 
-    @form(action = routes.GGBreakingRelationshipController.submit()) {
+    @formHelper(action = routes.GGBreakingRelationshipController.submit()) {
 
-        <div class="form-group">
+        <div class="govuk-form-group">
 
             <input name="mandateId" id="mandateId" />
 
         </div>
 
-        <div class="form-group">
-            <button class="button" id="submit" type="submit">@Messages("continue-button")</button>
+        <div class="govuk-form-group">
+            <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
         </div>
 
     }

@@ -18,16 +18,29 @@
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(clientPermissionForm: Form[ClientPermission], service: String, callingPage: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(clientPermissionForm) }
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/client-permission.js")'></script>
+@*<script src='@controllers.routes.Assets.versioned("javascript/client-permission.js")'></script>*@
+}
+
+@conditionalFalse = {
+    @if(service.toUpperCase == "ATED") {
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                @Messages("agent.client-permission.hasPermission.selected.ated.no.notice")
+            </strong>
+        </div>
+    }
 }
 
 @main_template(title = Messages("agent.client-permission.title"), scriptElem = Some(pageScripts), delegatedService = Some(service)) {
@@ -36,40 +49,47 @@
 
   Some(mandateErrorSummary(clientPermissionForm, "agent.client-permission.error.general")))
 
-  <p id="permission-text">
+  <p class="govuk-body" id="permission-text">
     @Html(Messages("agent.client-permission.hasPermission.selected.ated.yes.notice"))
   </p>
 
-  @form(action = routes.ClientPermissionController.submit(callingPage)) {
+  @formHelper(action = routes.ClientPermissionController.submit(callingPage)) {
 
-  <div class="form-group" id="hasPermission">
-    @mandateInputRadioGroup(
-    clientPermissionForm("hasPermission"),
-    Seq("true" -> Messages("radio-yes"),
-    "false" -> Messages("radio-no")),
-    '_groupClass -> "inline",
-    '_legend -> Messages("agent.client-permission.header"),
-    '_legendClass -> "visuallyhidden",
-    '_labelClass -> "block-label",
-    '_labelAfter -> true
-    )
+  <div class="govuk-form-group" id="hasPermission">
+      @govukRadios(
+          Radios(
+              fieldset = Some(Fieldset(
+                  classes = "govuk-radios--inline",
+                  legend = Some(Legend(
+                      classes = "govuk-visually-hidden",
+                      content = Text(Messages("agent.client-permission.header"))
+                  ))
+              )),
+              items = Seq(
+                  RadioItem(
+                      content = Text(Messages("radio-yes")),
+                      value = Some("true")
+                  ),
+                  RadioItem(
+                      content = Text(Messages("radio-no")),
+                      value = Some("false")
+                  )
+              )
+          ).withFormField(clientPermissionForm("hasPermission"))
+      )
   </div>
 
-  <div class="form-group">
-    @if(service.toUpperCase == "ATED") {
-    <div id="client-permission-false-hidden">
-      <div class="icon-important"></div>
-      <div class="ated-icon-important-text"><strong>@Html(Messages("agent.client-permission.hasPermission.selected.ated.no.notice"))</strong></div>
-    </div>
+  @conditionalFalse
+
+  <div class="govuk-button-group">
+      <button class="govuk-button" id="continue" type="submit">@Messages("continue-button")</button>
+
+      <div id="view-all-clients-div">
+          <a id="submit" class="govuk-link view-all-clients" href="@routes.AgentSummaryController.view()">@Messages("agent.all-my-clients.button")</a>
+      </div>
+  </div>
+
+
     }
-  </div>
-
-  <button class="button" id="continue" type="submit">@Messages("continue-button")</button>
-
-  <div id="view-all-clients-div">
-    <a id="submit" class="button view-all-clients" href="@routes.AgentSummaryController.view()">@Messages("agent.all-my-clients.button")</a>
-  </div>
-
-}
 
 }

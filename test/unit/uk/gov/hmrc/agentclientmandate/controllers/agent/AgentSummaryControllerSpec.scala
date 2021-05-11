@@ -46,20 +46,6 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   "AgentClientSummaryController" must {
 
-    "return page with UR banner" when {
-      "the UR banner toggle is activated" in new Setup {
-        val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))
-        viewAuthorisedAgent(controller)(mockMandates) { result =>
-
-          status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.summary.title - GOV.UK")
-          document.getElementById("ur-panel") must not be null
-          document.getElementsByClass("banner-panel__close").text must be("urbanner.message.reject")
-        }
-      }
-    }
-
     "return check client details view for agent" when {
       "they have no data" in new Setup {
         val mockMandates = Some(Mandates(activeMandates = Nil, pendingMandates = Nil))
@@ -110,7 +96,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("filter-clients").text() must be("client.summary.filter-clients")
-          document.getElementById("displayName_field").text() must be("client.summary.filter-display_name")
+          document.getElementsByClass("govuk-label").first().text() must be("client.summary.filter-display_name")
           document.getElementById("add-client-btn") must be(null)
           document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
           document.getElementById("view-clients") must be(null)

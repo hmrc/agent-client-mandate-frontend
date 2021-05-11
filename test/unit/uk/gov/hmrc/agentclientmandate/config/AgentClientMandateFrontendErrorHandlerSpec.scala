@@ -39,8 +39,8 @@ class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with GuiceOneA
 
       document.title() must be("agent.client.mandate.generic.error.title")
       document.getElementsByTag("h1").text() must include("agent.client.mandate.generic.error.header")
-      document.select("#content p").first().text() must be("agent.client.mandate.generic.error.message")
-      document.select("#content p").last().text() must be("agent.client.mandate.generic.error.message2")
+      document.select("#main-content p").first().text() must be("agent.client.mandate.generic.error.message")
+      document.select("#main-content p").last().text() must be("agent.client.mandate.generic.error.message2")
     }
   }
 }

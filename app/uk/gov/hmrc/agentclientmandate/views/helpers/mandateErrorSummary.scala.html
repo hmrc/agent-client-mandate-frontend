@@ -16,39 +16,41 @@
 
 @(form: Form[_], errorMessageFieldPrefix: String, formErrorMessageParam: Option[String] = None, maxErrorsToShow: Int = 999)(implicit messages: Messages)
 
-<script src='@controllers.routes.Assets.at("javascript/error-summary.js")'></script>
+<script src='@controllers.routes.Assets.versioned("javascript/error-summary.js")'></script>
 
 @if(form.hasGlobalErrors || form.hasErrors) {
-  <div id="errors" tabindex="-1" role="group" aria-labelledby="form-error-heading" class="validation-summary">
-    <h1 class="heading-medium error-summary-heading" id="form-error-heading">@Messages("agent-client-mandate.error.summaryHeader")</h1>
-    <ul class="error-summary-list">
-      @form.errors.zipWithIndex.map { case (error, i) =>
-        @defining(
-          error.args.nonEmpty match {
-            case true =>
-              if (error.key.nonEmpty) {
-                error.key + error.args.fold("") ( _ + "." + _ )
-              } else {
-                error.args.head.toString
-              }
-            case _ => error.key
-          }
-        ) { anchor :String =>
-            @if(i+1 <= maxErrorsToShow) {
-              <li class="validation-summary-message" data-journey="search-page:error:@error.key" id='@anchor.replaceAll("""[\.\[\]]""", "-")-error'>
-                <a href="#@anchor" class="error-list" data-focuses="@error.key">
-                  @{
-                     formErrorMessageParam match {
-                      case Some(x) => Messages(s"$errorMessageFieldPrefix.$anchor", Messages(formErrorMessageParam.get))
-                      case None => Messages(s"$errorMessageFieldPrefix.$anchor")
-                    }
+  <div id="errors" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary" class="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="form-error-heading">@Messages("agent-client-mandate.error.summaryHeader")</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list">
+          @form.errors.zipWithIndex.map { case (error, i) =>
+            @defining(
+              error.args.nonEmpty match {
+                case true =>
+                  if (error.key.nonEmpty) {
+                    error.key + error.args.fold("") ( _ + "." + _ )
+                  } else {
+                    error.args.head.toString
                   }
-                </a>
-              </li>
-            }
+                case _ => error.key
+              }
+            ) { anchor :String =>
+                @if(i+1 <= maxErrorsToShow) {
+                  <li data-journey="search-page:error:@error.key" id='@anchor.replaceAll("""[\.\[\]]""", "-")-error'>
+                    <a href="#@anchor" class="error-list" data-focuses="@error.key">
+                      @{
+                         formErrorMessageParam match {
+                          case Some(x) => Messages(s"$errorMessageFieldPrefix.$anchor", Messages(formErrorMessageParam.get))
+                          case None => Messages(s"$errorMessageFieldPrefix.$anchor")
+                        }
+                      }
+                    </a>
+                  </li>
+                }
+              }
           }
-      }
-    </ul>
+        </ul>
+      </div>
   </div>
 
 }

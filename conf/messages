@@ -7,6 +7,7 @@ radio-yes = Yes
 radio-no = No
 i-agree = I agree
 edit-link = Edit
+change-link = Change
 confirm-button = Confirm
 mandate.back = Back
 agent.all-my-clients.button = View all my clients
@@ -235,7 +236,7 @@ agent.client-permission.header = Do you have permission to register on behalf of
 agent.client-permission.error.general.hasPermission = There is a problem with the client permission question
 agent.client-permission.hasPermission.not-selected.error = You must answer the client permission question
 
-agent.client-permission.hasPermission.selected.ated.yes.notice = Your client must complete an <a href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">ATED 1</a>. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records. If you already have an ATED&nbsp;1 for this client, they do not need to complete another. Form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
+agent.client-permission.hasPermission.selected.ated.yes.notice = Your client must complete an <a class="govuk-link" href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">ATED 1</a>. Once you have registered, send their ATED 1 to HMRC and keep a copy for your records. If you already have an ATED&nbsp;1 for this client, they do not need to complete another. Form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
 agent.client-permission.hasPermission.selected.ated.no.notice = You must have permission from your client before you can continue.
 
 ##### AGENT HAS CLIENT SUBMITTED BEFORE PAGE
@@ -416,6 +417,7 @@ agent.edit-details.error.no-registration-details = No Registration Details found
 agent.edit-mandate-details.address.header = Edit business details
 agent.edit-mandate-details.agentName = Business Name
 agent.edit-mandate-details.address = Address
+agent.edit-mandate-details.line_1 = Address line 1
 agent.edit-mandate-details.line_2 = Address line 2
 agent.edit-mandate-details.line_3 = Address line 3
 agent.edit-mandate-details.line_4 = Address line 4
@@ -485,3 +487,9 @@ agent.client.mandate.generic.error.header = Sorry, there is a problem with the s
 agent.client.mandate.generic.error.title = Sorry, there is a problem with the service
 agent.client.mandate.generic.error.message = You will be able to use the service later.
 agent.client.mandate.generic.error.message2 = Your client details and saved returns and drafts are not affected by this problem.
+
+footer.links.accessibility.text   = Accessibility statement
+footer.links.cookies.text         = Cookies
+footer.links.privacy_policy.text         = Privacy policy
+footer.links.terms_and_conditions.text = Terms and conditions
+footer.links.help_page.text       = Help using GOV.UK

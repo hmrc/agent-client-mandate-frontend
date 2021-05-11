@@ -71,7 +71,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.title() must be("agent.client-permission.title - GOV.UK")
           document.getElementById("header").text() must include("agent.client-permission.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
           document.getElementById("continue").text() must be("continue-button")
@@ -88,10 +88,10 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.title() must be("agent.client-permission.title - GOV.UK")
           document.getElementById("header").text() must include("agent.client-permission.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
-          document.getElementById("hasPermission-true").attr("checked") must be("checked")
+          document.getElementById("hasPermission").attr("checked") must be("")
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
@@ -106,7 +106,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.title() must be("agent.client-permission.title - GOV.UK")
           document.getElementById("header").text() must include("agent.client-permission.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("hasPermission_legend").text() must be("agent.client-permission.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("continue").text() must be("continue-button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
@@ -149,7 +149,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.client-permission.error.general.hasPermission")
-          document.getElementsByClass("error-notification").text() must include("agent.client-permission.hasPermission.not-selected.error")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-permission.hasPermission.not-selected.error")
         }
       }
     }

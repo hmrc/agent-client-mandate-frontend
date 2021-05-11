@@ -19,9 +19,11 @@
 
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
 
 @(clientDisplayNameForm: Form[ClientDisplayName], service: String, redirectUrl: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -33,18 +35,23 @@
     @pageHeadersAndError(backLink,"pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-display-name.header"),
         Some(mandateErrorSummary(clientDisplayNameForm, "agent.client-display-name.error.general")))
 
-    <p id="info">
+    <p class="govuk-body" id="info">
        @Messages("agent.client-display-name.text", service.toUpperCase)
     </p>
 
-    @form(action = routes.ClientDisplayNameController.submit(redirectUrl)) {
-        <div id="client-display-name-form" class="form-group">
-            @mandateInput(clientDisplayNameForm("clientDisplayName"),
-            '_label -> Messages("agent.client-display-name.change"),
-            '_labelClass ->  "visuallyhidden",
-            '_showConstraints -> false)
+    @formHelper(action = routes.ClientDisplayNameController.submit(redirectUrl)) {
+        <div id="client-display-name-form" class="govuk-form-group">
+            @govukInput(
+                Input(
+                    label = Label(
+                        classes = "govuk-visually-hidden",
+                        content = Text(Messages("agent.client-display-name.change"))
+                    )
+                ).withFormField(clientDisplayNameForm("clientDisplayName"))
+            )
         </div>
-        <button class="button" id="submit" type="submit">@Messages("continue-button")</button>
+
+        <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
     }
 
 }

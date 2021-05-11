@@ -14,10 +14,10 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.play.views.html.layouts
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@import play.twirl.api.HtmlFormat
-@this(govuk_wrapper: govuk_wrapper)
+@import uk.gov.hmrc.agentclientmandate.views.html.layout
+
+@this(layout: layout)
 
 @(title: String,
   sidebarLinks: Option[Html] = None,
@@ -28,41 +28,26 @@
   delegatedService: Option[String] = None,
   isUserResearchBannerVisible:Boolean = true)(mainContent: Html)(implicit request : Request[_], messages: Messages, appConfig: AppConfig)
 
-@serviceInfoContent = {}
-
-@urToggle = @{
-    true
+@linkElement = {
+    <link rel="stylesheet" type="text/css" href='@controllers.routes.Assets.versioned("stylesheets/palette.css")'>
+    <link rel="stylesheet" type="text/css" href='@controllers.routes.Assets.versioned("stylesheets/focus.css")'>
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("stylesheets/main.css")'/>
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("jquery/jquery-ui.min.css")'/>
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("jquery/jquery-ui.structure.min.css")'/>
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("stylesheets/urBanner.css")'/>
+    @scriptElem
 }
+
 
 @sidebar = {
     @if(sidebarLinks.isDefined) {
-        @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
+        <aside class="sidebar">
+            @sidebarLinks
+        </aside>
     }
 }
 
-@afterHeader = @{
-    if(isUserResearchBannerVisible && appConfig.urBannerToggle) {
-        helpers.fullWidthBanner(
-            Some(helpers.fullWidthBannerContentUr(
-                messages("urbanner.message.text"),
-                appConfig.urBannerLink,
-                externalLinkWarning = None
-            ))
-        )
-    }
-    else HtmlFormat.empty
-}
-
-@govuk_wrapper(
-    appConfig = appConfig,
-    title = s"$title - GOV.UK",
-    afterHeader = afterHeader,
-    mainClass = mainClass,
-    bodyClasses = bodyClasses,
-    sidebar = sidebar,
-    contentHeader = contentHeader,
-    mainContent = mainContent,
-    serviceInfoContent = serviceInfoContent,
-    scriptElem = scriptElem,
-    delegatedService = delegatedService
-    )
+@layout(
+    pageTitle = Some(title).map(_ + " - GOV.UK"),
+    scripts = Some(linkElement)
+)(mainContent, sidebar)

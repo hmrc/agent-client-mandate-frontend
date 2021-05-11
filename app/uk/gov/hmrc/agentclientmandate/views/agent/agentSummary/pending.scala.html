@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.models.Mandate
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @this(main_template: main_template)
@@ -29,81 +29,81 @@
 @(service: String, mandates: Mandates, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]], screenReaderText: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/agent-summary.js")'></script>
+<script src='@controllers.routes.Assets.versioned("javascript/agent-summary.js")'></script>
 }
 
-@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if(isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), scriptElem = Some(pageScripts), delegatedService = Some(service)){
+@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), scriptElem = Some(pageScripts), delegatedService = Some(service)){
 
 <span class="screen-reader-text">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
 
 <header class="page-header page-header-margin">
-  <p id="pre-header" class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</p>
-  <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
+  <p id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</p>
+  <h1 id="header" class="govuk-heading-l">@Messages("client.summary.title", service.toUpperCase)</h1>
 </header>
 
   @clientsCancelledPartial(clientsCancelled, service)
 
-  <div class="form-group">
-    <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="link" tabindex="0">@Messages("client.summary.add-client")</a>
+  <div class="govuk-form-group">
+    <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="govuk-link" tabindex="0">@Messages("client.summary.add-client")</a>
   </div>
 
-  <div class="form-group">
+  <div class="govuk-form-group">
     <ul class="ated-tabs" role="tablist">
       @if(mandates.activeMandates.size > 0){
-      <li id="clients" class="heading-small" role="tab">
+      <li id="clients" class="govuk-heading-s" role="tab">
         <a href="@routes.AgentSummaryController.view()" id="view-clients">@Messages("client.summary.client-active.title", mandates.activeMandates.size)</a>
       </li>
       }
-      <li id="pending-clients" class="selected heading-small" role="tab">
-        @Messages("client.summary.client-pending.title", mandates.pendingMandates.size) <span class="visuallyhidden">@Messages("selected")</span>
+      <li id="pending-clients" class="selected govuk-heading-s" role="tab">
+        @Messages("client.summary.client-pending.title", mandates.pendingMandates.size) <span class="govuk-visually-hidden">@Messages("selected")</span>
       </li>
     </ul>
   </div>
 
   <section id="pending-tab" tabindex="-1">
 
-  <div class="form-group">
+  <div class="govuk-form-group">
     @for((pending, index) <- mandates.pendingMandates.zipWithIndex) {
 
-      <div class="grid-wrapper row-border">
-        <div class="grid grid-1-4 asp-return">
-          <span id="pending-client-data-@index">@pending.clientDisplayName</span>
+      <div class="grid-wrapper govuk-grid-row">
+        <div class="grid govuk-grid-column-one-quarter asp-return">
+          <span id="pending-client-data-@index" class="govuk-body">@pending.clientDisplayName</span>
         </div>
 
     @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
 
-        <div class="grid grid-1-4 asp-action">
-          <a id="edit-pending-client-link-@index" href="@routes.EditMandateDetailsController.view(pending.id)">
+        <div class="grid govuk-grid-column-one-quarter asp-action">
+          <a id="edit-pending-client-link-@index" class="govuk-body govuk-link" href="@routes.EditMandateDetailsController.view(pending.id)">
             @Messages("Edit")
-          <span class="visuallyhidden">@Messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
+          <span class="govuk-visually-hidden">@Messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
           </a>
         </div>
 
         } else {
 
-          <div class="grid grid-1-4 asp-action">
-            <a id="reject-client-link-@index" href="@routes.RejectClientController.view(pending.id)">
+          <div class="grid govuk-grid-column-one-quarter asp-action">
+            <a id="reject-client-link-@index" class="govuk-body govuk-link" href="@routes.RejectClientController.view(pending.id)">
               @Messages("client.summary.client-reject")
-            <span class="visuallyhidden">@pending.clientDisplayName</span>
+            <span class="govuk-visually-hidden">@pending.clientDisplayName</span>
             </a>
           </div>
 
         }
         @checkStatus(pending.currentStatus.status) match {
           case "Await" => {
-            <div class="grid grid-1-4 asp-status">
-              <span>@Messages("client.summary.client.pending-status")</span>
+            <div class="grid govuk-grid-column-one-quarter asp-status">
+              <span class="govuk-body">@Messages("client.summary.client.pending-status")</span>
             </div>
           }
           case "Pending" => {
-            <div class="grid grid-1-4 asp-status">
-            <span>@Messages("client.summary.client-pending")</span>
+            <div class="grid govuk-grid-column-one-quarter asp-status">
+                <span class="govuk-body">@Messages("client.summary.client-pending")</span>
             </div>
           }
           case _ => {
-            <div class="grid grid-1-4 asp-action" id="accept-client">
-              <a href="@routes.AgentSummaryController.activate(pending.id)" id="accept-@(index + 1)">
-                @Messages("client.summary.client-accept") <span class="visuallyhidden"> @pending.clientDisplayName</span>
+            <div class="grid govuk-grid-column-one-quarter asp-action" id="accept-client">
+              <a href="@routes.AgentSummaryController.activate(pending.id)" id="accept-@(index + 1)" class="govuk-body govuk-link">
+                @Messages("client.summary.client-accept") <span class="govuk-visually-hidden"> @pending.clientDisplayName</span>
               </a>
             </div>
           }
@@ -113,5 +113,5 @@
     }
   </div>
   </section>
-  <script src='@controllers.routes.Assets.at("javascript/pending.js")'></script>
+  <script src='@controllers.routes.Assets.versioned("javascript/pending.js")'></script>
 }

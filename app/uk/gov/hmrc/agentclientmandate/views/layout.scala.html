@@ -1,0 +1,89 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
+@import uk.gov.hmrc.hmrcfrontend.config.AccessibilityStatementConfig
+@import uk.gov.hmrc.hmrcfrontend.views.Aliases.ReportTechnicalIssue
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcReportTechnicalIssue
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcStandardHeader, HmrcTrackingConsentSnippet}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.En
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
+@import uk.gov.hmrc.agentclientmandate.views.html.customGovukLayout
+
+@this(
+        appConfig: AppConfig,
+        customGovukLayout: customGovukLayout,
+        govukHeader: HmrcStandardHeader,
+        problemLink: HmrcReportTechnicalIssue,
+        accessibilityStatementConfig: AccessibilityStatementConfig,
+        hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet
+)
+
+@(pageTitle: Option[String] = None, scripts: Option[Html])(contentBlock: Html, sidebarBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@headBlock = {
+    @hmrcTrackingConsentSnippet()
+    <!--[if lte IE 8]><link href='@routes.Assets.versioned("stylesheets/application-ie-8.css")' rel="stylesheet" type="text/css" /><![endif]-->
+    <!--[if gt IE 8]><!--><link href='@routes.Assets.versioned("stylesheets/application.css")' media="screen" rel="stylesheet" type="text/css" /><!--<![endif]-->
+}
+
+@beforeContentBlock = {
+}
+
+@content = {
+    @contentBlock
+
+    @problemLink(
+        ReportTechnicalIssue(serviceCode = "awrs-lookup-frontend", language = messages.lang.code match {
+            case "en" | "en-GB" => En
+        }, classes = Some("print-hidden"))
+    )
+}
+
+@allScripts = {
+    <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
+    <script>window.GOVUKFrontend.initAll();</script>
+    <script src='@controllers.routes.Assets.versioned("jquery/jquery-3.6.0.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("jquery/jquery-ui.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("jquery/jquery-ui-1.12.1.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("javascript/timeout-dialog.js")'></script>
+    @scripts
+}
+
+@siteHeader = {
+    @govukHeader(
+        signOutUrl = Some(appConfig.serviceSignOutUrl(Some("ated"))),
+        serviceUrl = Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url),
+        serviceName = Some(Messages("mandate.main-title", "ATED"))
+    )
+}
+
+@customGovukLayout(
+    pageTitle = pageTitle,
+    headBlock = Some(headBlock),
+    headerBlock = Some(siteHeader),
+    beforeContentBlock = Some(beforeContentBlock),
+    footerItems = Seq(
+        FooterItem(href = Some(appConfig.cookies), text = Some(messages("footer.links.cookies.text"))),
+        FooterItem(href = accessibilityStatementConfig.url, text = Some(messages("footer.links.accessibility.text"))),
+        FooterItem(href = Some(appConfig.privacy), text = Some(messages("footer.links.privacy_policy.text"))),
+        FooterItem(href = Some(appConfig.termsConditions), text = Some(messages("footer.links.terms_and_conditions.text"))),
+        FooterItem(href = Some(appConfig.govukHelp), text = Some(messages("footer.links.help_page.text")))
+    ),
+    scriptsBlock = Some(allScripts),
+    bodyEndBlock = None
+)(content, sidebarBlock)

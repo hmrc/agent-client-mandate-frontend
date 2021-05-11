@@ -18,9 +18,11 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
 
 @(service: String, addEmailForm: Form[ClientEmail], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -28,24 +30,25 @@
 @pageHeadersAndError(backLink, "pre-heading", Messages("client.edit-email.preheader", service), "header", Messages("client.edit-email.header"),
 Some(mandateErrorSummary(addEmailForm, "client.edit-email.error.general")))
 
-<div class="form-group">
-    <p id="lede">
+<div class="govuk-form-group">
+    <p class="govuk-body-l">
       @Messages("client.edit-email.lede")
     </p>
 </div>
 
-@form(action = routes.EditEmailController.submit()) {
+@formHelper(action = routes.EditEmailController.submit()) {
 
-<div class="form-group">
+    <div class="govuk-form-group">
+        @govukInput(
+            Input(
+                label = Label(
+                    content = Text(Messages("client.edit-email.email"))
+                )
+            ).withFormField(addEmailForm("email"))
+        )
+    </div>
 
-    @mandateInput(addEmailForm("email"),
-    '_label -> Messages("client.edit-email.email"),
-    '_showConstraints -> false
-    )
-
-</div>
-
-<button class="button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
+    <button class="govuk-button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
 
 }
 

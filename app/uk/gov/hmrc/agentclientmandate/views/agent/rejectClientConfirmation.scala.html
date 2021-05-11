@@ -26,25 +26,21 @@
 
 @main_template(title = Messages("agent.reject-client-confirmation.title", DateUtils.getDateAsText(DateTime.now)), delegatedService = Some(service)) {
 
-    <div class="transaction-banner--complete" id="banner">
-        <h1 id="banner-text"> @Messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now)) </h1>
+    <div class=" govuk-panel govuk-panel--confirmation" id="banner">
+        <h1 id="banner-text" class="govuk-panel__title"> @Messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now)) </h1>
     </div>
 
-    <p id="notification">@Messages("agent.reject-client-confirmation.notification")</p>
+    <p id="notification" class="govuk-body">@Messages("agent.reject-client-confirmation.notification")</p>
 
-    <div class="form-group">
-
-        <div class="divider--top--thick">
-            <h2 id="heading">@Messages("agent.reject-client-confirmation.you-can")</h2>
-        </div>
-
-        <ul id="list" class="bullets">
-            <li>@Messages("agent.reject-client-confirmation.request-new-client")</li>
-            <li>@Messages("agent.reject-client-confirmation.submit-returns")</li>
-        </ul>
-        
+    <div class="govuk-section-break">
+        <h2 class="govuk-heading-m">@Messages("agent.reject-client-confirmation.you-can")</h2>
     </div>
+
+    <ul id="list" class="govuk-list--bullet govuk-list">
+        <li>@Messages("agent.reject-client-confirmation.request-new-client")</li>
+        <li>@Messages("agent.reject-client-confirmation.submit-returns")</li>
+    </ul>
 
 @helper.form(action=routes.AgentSummaryController.view()){
-<button class="button" id="finish_btn">@Messages("agent.reject-client-confirmation.view-all-clients")</button>}
+<button class="govuk-button" id="finish_btn">@Messages("agent.reject-client-confirmation.view-all-clients")</button>}
 }

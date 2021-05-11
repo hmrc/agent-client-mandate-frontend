@@ -19,9 +19,10 @@
 
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: govukInput)
 
 @(agentEmailForm: Form[AgentEmail], service: String, redirectUrl: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -33,22 +34,24 @@
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.enter-email.header"),
     Some(mandateErrorSummary(agentEmailForm, "agent.enter-email.error.general")))
 
-  <p id="info">
+  <p class="govuk-body" id="info">
     @Messages("agent.enter-email.info.text")
   </p>
 
-  @form(action = routes.CollectAgentEmailController.submit(redirectUrl)) {
+  @formHelper(action = routes.CollectAgentEmailController.submit(redirectUrl)) {
 
-    <div id="agent-enter-email-form" class="form-group">
-
-      @mandateInput(agentEmailForm("email"),
-        '_label -> Messages("agent.enter-email.field.email.label"),
-        '_labelClass -> "visuallyhidden",
-        '_showConstraints -> false)
-
+    <div id="agent-enter-email-form" class="govuk-form-group">
+        @govukInput(
+            Input(
+                label = Label(
+                    classes = "govuk-visually-hidden",
+                    content = Text(Messages("agent.enter-email.field.email.label"))
+                )
+            ).withFormField(agentEmailForm("email"))
+        )
     </div>
 
-    <button class="button" id="submit" type="submit">@Messages("continue-button")</button>
+    <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
 
   }
 

@@ -68,7 +68,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
       assert(document.getElementById("add-client-link") === null)
 
       And("The sign out link should return to ATED")
-      assert(document.getElementById("logOutNavHref").attr("href") === ("http://localhost:9916/ated/logout"))
+      assert(document.getElementsByClass("hmrc-sign-out-nav__link").attr("href") === ("http://localhost:9916/ated/logout"))
     }
 
     scenario("agent visits summary page with clients cancelled in last 28 days") {
