@@ -94,7 +94,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
           document.getElementById("header").text() must include("agent.enter-email.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
-          document.getElementById("email_field").text() must be("agent.enter-email.field.email.label")
+          document.getElementsByClass("govuk-label").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -109,7 +109,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
           document.getElementById("header").text() must include("agent.enter-email.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
-          document.getElementById("email_field").text() must be("agent.enter-email.field.email.label")
+          document.getElementsByClass("govuk-label").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
@@ -189,7 +189,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
@@ -204,7 +204,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
@@ -219,7 +219,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("error-notification").text() must
+          document.getElementsByClass("govuk-error-message").text() must
             include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),

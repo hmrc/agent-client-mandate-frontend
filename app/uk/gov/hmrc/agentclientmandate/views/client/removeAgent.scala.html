@@ -17,10 +17,12 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(service: String, removeAgentForm: Form[YesNoQuestion], agentName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -28,22 +30,33 @@
     @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("client.remove-agent.header", agentName, service.toUpperCase),
         Some(mandateErrorSummary(removeAgentForm, "yes-no.error.general", Some("client.remove-agent.error"))))
 
-    @form(action = routes.RemoveAgentController.submit(mandateId)) {
+    @formHelper(action = routes.RemoveAgentController.submit(mandateId)) {
 
-        <div class="form-group" id="removeAgent">
-        @mandateInputRadioGroup(
-            removeAgentForm("yesNo"),
-            Seq("true" -> Messages("radio-yes"),
-                "false" -> Messages("radio-no")),
-            '_groupClass -> "inline",
-            '_legendClass -> "visuallyhidden",
-            '_legend -> Messages("client.remove-agent.header", agentName, service.toUpperCase),
-            '_labelClass -> "block-label",
-            '_labelAfter -> true
-        )
+        <div class="govuk-form-group" id="removeAgent">
+            @govukRadios(
+                Radios(
+                    fieldset = Some(Fieldset(
+                        classes = "govuk-radios--inline",
+                        legend = Some(Legend(
+                            classes = "govuk-visually-hidden",
+                            content = Text(Messages("client.remove-agent.header"))
+                        ))
+                    )),
+                    items = Seq(
+                        RadioItem(
+                            content = Text(Messages("radio-yes")),
+                            value = Some("true")
+                        ),
+                        RadioItem(
+                            content = Text(Messages("radio-no")),
+                            value = Some("false")
+                        )
+                    )
+                ).withFormField(removeAgentForm("yesNo"))
+            )
         </div>
 
-        <button class="button" id="submit" type="submit">@Messages("confirm-button")</button>
+        <button class="govuk-button" id="submit" type="submit">@Messages("confirm-button")</button>
 
     }
 

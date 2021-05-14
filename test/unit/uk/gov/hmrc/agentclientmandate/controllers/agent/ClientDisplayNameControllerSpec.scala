@@ -150,7 +150,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
-          document.getElementsByClass("error-notification").text() must include("agent.client-display-name.error.not-selected")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-display-name.error.not-selected")
         }
       }
 
@@ -161,7 +161,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
-          document.getElementsByClass("error-notification").text() must include("agent.client-display-name.error.length")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-display-name.error.length")
         }
       }
     }

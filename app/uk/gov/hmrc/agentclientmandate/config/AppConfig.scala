@@ -16,22 +16,16 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
-import java.util.Base64
-
-import javax.inject.{Inject, Named}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.config.AssetsConfig
-import uk.gov.hmrc.play.views.html.layouts.{Footer, GTMSnippet, Head, OptimizelySnippet}
 
+import java.util.Base64
+import javax.inject.{Inject, Named}
 import scala.util.Try
 
 class AppConfig @Inject()(
                            val servicesConfig: ServicesConfig,
                            val environment: Environment,
-                           val optimizelySnippet: OptimizelySnippet,
-                           val assetsConfig: AssetsConfig,
-                           val gtmSnippet: GTMSnippet,
                            val configuration: Configuration,
                            @Named("appName") val appName: String
                          ) extends ExternalUrls with CountryCodes {
@@ -101,8 +95,12 @@ class AppConfig @Inject()(
     new String(Base64.getDecoder.decode(base64String), "UTF-8").split(",").toList
   }
 
-  lazy val customHeadTemplate = new Head(optimizelySnippet, assetsConfig, gtmSnippet)
-  lazy val customFooterTemplate = new Footer(assetsConfig)
+
+  lazy val cookies: String = servicesConfig.getString("urls.footer.cookies")
+  lazy val accessibilityStatement: String = servicesConfig.getString("urls.footer.accessibility_statement")
+  lazy val privacy: String = servicesConfig.getString("urls.footer.privacy_policy")
+  lazy val termsConditions: String = servicesConfig.getString("urls.footer.terms_and_conditions")
+  lazy val govukHelp: String = servicesConfig.getString("urls.footer.help_page")
 }
 
 

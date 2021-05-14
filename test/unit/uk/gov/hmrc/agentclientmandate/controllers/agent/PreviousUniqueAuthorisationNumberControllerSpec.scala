@@ -109,7 +109,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec  with Bef
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.prev-auth-num.not-selected.field-error")
-          document.getElementsByClass("error-notification").text() must include("agent.prev-auth-num.not-selected.field-error")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.prev-auth-num.not-selected.field-error")
         }
       }
     }

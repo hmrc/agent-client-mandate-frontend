@@ -68,7 +68,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
           document.title() must be("agent.nrl-question.title - GOV.UK")
           document.getElementById("header").text() must include("agent.nrl-question.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("nrl_legend").text() must be("agent.nrl-question.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.nrl-question.header")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -80,8 +80,8 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
           document.title() must be("agent.nrl-question.title - GOV.UK")
           document.getElementById("header").text() must include("agent.nrl-question.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("nrl_legend").text() must be("agent.nrl-question.header")
-          document.getElementById("nrl-true").attr("checked") must be("checked")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.nrl-question.header")
+          document.getElementById("nrl").attr("checked") must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -115,7 +115,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.nrl-question.error.general.nrl")
-          document.getElementsByClass("error-notification").text() must include("agent.nrl-question.nrl.not-selected.error")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.nrl-question.nrl.not-selected.error")
         }
       }
     }

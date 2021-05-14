@@ -73,7 +73,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           document.title() must be("client.change-agent.title - GOV.UK")
           document.getElementById("header").text() must include("client.change-agent.header")
           document.getElementById("pre-heading").text() must be("ated.screen-reader.section agent.edit-mandate-details.pre-header")
-          document.getElementById("yesNo_legend").text() must be("client.change-agent.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("client.change-agent.header")
           document.getElementById("submit").text() must be("confirm-button")
         })
       }
@@ -89,7 +89,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
-          document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.changeAgent")
+          document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.changeAgent")
         }
       }
 

@@ -14,8 +14,10 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentclientmandate.views.html.layout
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(govuk_wrapper: govuk_wrapper)
+
+@this(layout: layout)
 
 @(pageTitle: String,
 heading: String,
@@ -26,13 +28,13 @@ appConfig: AppConfig)(implicit request: Request[_], messages: Messages)
 
 @secondParagraph = @{message2.getOrElse("")}
 
-@contentHeader = {
-<h1>@messages(heading)</h1>
-}
-
 @mainContent = {
-<p>@messages(message)</p>
-<p>@messages(secondParagraph)</p>
+ <h1 class="govuk-heading-l">@messages(heading)</h1>
+ <p class="govuk-body">@messages(message)</p>
+ <p class="govuk-body">@messages(secondParagraph)</p>
 }
 
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent, delegatedService = delegatedService)
+@layout(
+ pageTitle = Some(pageTitle),
+ scripts = None
+)(mainContent, Html(""))

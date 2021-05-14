@@ -18,14 +18,24 @@
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios, govukInput: GovukInput)
 
 @(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/agentMissingEmail.js")'></script>
+<script src='@controllers.routes.Assets.versioned("javascript/agentMissingEmail.js")'></script>
+}
+
+@conditionalTrue = {
+    @govukInput(
+        Input(
+            hint = Some(Hint(
+                content = Text(Messages("agent.missing-email.email_address"))
+            ))
+        ).withFormField(agentMissingEmailForm("email"))
+    )
 }
 
 @implicitFormInstance = @{ Some(agentMissingEmailForm) }
@@ -36,55 +46,49 @@
 
     Some(mandateErrorSummary(agentMissingEmailForm, "agent.enter-email.error.general")))
 
-    <div class="form-group">
-        <p id="info">
-          @Messages("agent.missing-email.text", service.toUpperCase)
-        </p>
-    </div>
+    <p id="info" class="govuk-body">
+      @Messages("agent.missing-email.text", service.toUpperCase)
+    </p>
 
-    @form(action=routes.AgentMissingEmailController.submit()) {
+    @formHelper(action=routes.AgentMissingEmailController.submit()) {
+        @govukRadios(
+            Radios(
+                fieldset = Some(Fieldset(
+                    legend = Some(Legend(
+                        classes = "govuk-visually-hidden",
+                        content = Text(Messages("agent.missing-email.header"))
+                    ))
+                )),
+                items = Seq(
+                    RadioItem(
+                        content = Text(Messages("radio-yes")),
+                        value = Some("true"),
+                        conditionalHtml = Some(conditionalTrue)
+                    ),
+                    RadioItem(
+                        content = Text(Messages("radio-no")),
+                        value = Some("false")
+                    )
+                )
+            ).withFormField(agentMissingEmailForm("useEmailAddress"))
+        )
 
-        <div class="form-group" id="useEmailAddress">
-            @mandateInputRadioGroup(
-            agentMissingEmailForm("useEmailAddress"),
-            Seq("true" -> Messages("radio-yes"),
-            "false" -> Messages("radio-no")),
-            '_groupClass -> "inline",
-            '_legend -> Messages("agent.missing-email.header"),
-            '_legendClass -> "visuallyhidden",
-            '_labelClass -> "block-label",
-            '_labelAfter -> true
-            )
-        </div>
-
-        <div class="form-group">
+        <div class="govuk-form-group">
             <div id="hidden-email-details-yes" class="panel-indent">
                 <div id="email-address">
-                    @mandateInput(agentMissingEmailForm("email"),
-                    '_label -> Messages("agent.missing-email.email_address"),
-                    '_labelClass -> "form-label-bold",
-                    '_inputClass -> "form-control-indent",
-                    '_showConstraints -> false)
+
                 </div>
             </div>
-
-            <div id="hidden-email-details-no" class="panel-indent">
-                <span id="text_no" class="paragraph">
-                  @Html(Messages("agent.missing-email.answer-no", routes.AgentSummaryController.view(), service.toUpperCase))
-                </span>
-            </div>
         </div>
 
-        <div class="form-group" id="hidden-submit-button">
-            <button class="button" id="submit_button" type="submit">@Messages("continue-button")</button>
+        <div class="govuk-inset-text">
+            @Html(Messages("agent.missing-email.answer-no", routes.AgentSummaryController.view(), service.toUpperCase))
         </div>
-        <div class="form-group" id="hidden-submit-link">
-            <a class="button" id="submit_link" href="@routes.AgentSummaryController.view()">@Messages("continue-button")</a>
+
+        <div class="govuk-button-group">
+            <button class="govuk-button" id="submit_button" type="submit">@Messages("continue-button")</button>
+
+            <a class="govuk-link" id="submit_link" href="@routes.AgentSummaryController.view()">@Messages("agent.missing-email.trapdoor")</a>
         </div>
     }
-
-        <span id="skip_question">
-          <a href="@routes.AgentSummaryController.view()">@Messages("agent.missing-email.trapdoor")</a>
-        </span>
-
 }

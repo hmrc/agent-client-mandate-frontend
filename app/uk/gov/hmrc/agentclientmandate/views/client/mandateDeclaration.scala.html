@@ -19,9 +19,9 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@this(main_template: main_template, formHelper: FormWithCSRF)
 
 @(mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -29,22 +29,22 @@
 @main_template(title = Messages("Declaration and consent"), delegatedService = Some(mandate.subscription.service.id)) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("client.agent-declaration.pre-heading"), "header", Messages("client.agent-declaration.header"))
 
-  <p id="declaration-info-1">@Messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>
-  <p id="declaration-info-2">@Messages("client.agent-declaration.declaration-info-2", mandate.subscription.service.name.toUpperCase)</p>
+  <p class="govuk-body" id="declaration-info-1">@Messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>
+  <p class="govuk-body" id="declaration-info-2">@Messages("client.agent-declaration.declaration-info-2", mandate.subscription.service.name.toUpperCase)</p>
 
-    <h2 id="declare-title">
+    <h2 class="govuk-heading-m" id="declare-title">
       @Messages("client.agent-declaration.declare-header")
     </h2>
 
 
-  <ul class="bullets">
+  <ul class="govuk-list govuk-list--bullet">
     <li id="agent-name">@Messages("client.agent-declaration.agent-name", mandate.agentParty.name, mandate.subscription.service.name.toUpperCase)</li>
     <li id="dec-info">@Messages("client.agent-declaration.information")</li>
   </ul>
 
-  @form(action = routes.MandateDeclarationController.submit()) {
+  @formHelper(action = routes.MandateDeclarationController.submit()) {
 
-    <button class="button" id="submit" type="submit">@Messages("agree-submit")</button>
+    <button class="govuk-button" id="submit" type="submit">@Messages("agree-submit")</button>
 
   }
 }

@@ -21,36 +21,39 @@
 @import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput, govukRadios: GovukRadios)
 
 @(service: String, mandates: Mandates, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]], screenReaderText: String, filterClientsForm: Form[FilterClients], isUpdate: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(filterClientsForm) }
 
-@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if(isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), delegatedService = Some(service)){
+@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), delegatedService = Some(service)){
 
 <span class="screen-reader-text">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
 
 <header class="page-header page-header-margin">
-  <p id="pre-header" class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</p>
-  <h1 id="header" class="heading-xlarge">@Messages("client.summary.title", service.toUpperCase)</h1>
+  <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
+  <h1 id="header" class="govuk-heading-l">@Messages("client.summary.title", service.toUpperCase)</h1>
 </header>
 
 @clientsCancelledPartial(clientsCancelled, service)
 
-<div class="form-group">
-  <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="link" tabindex="0">@Messages("client.summary.add-client")</a>
+<div class="govuk-form-group">
+  <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="govuk-link" tabindex="0">@Messages("client.summary.add-client")</a>
 </div>
 
-<div class="form-group">
+<div class="govuk-form-group">
   <ul class="ated-tabs" role="tablist">
-    <li id="clients" class="selected heading-small" role="tab">
-        @Messages("client.summary.client-active.title", mandates.activeMandates.size) <span class="visuallyhidden">@Messages("selected")</span>
+    <li id="clients" class="selected govuk-heading-s" role="tab">
+        @Messages("client.summary.client-active.title", mandates.activeMandates.size) <span class="govuk-visually-hidden">@Messages("selected")</span>
     </li>
     @if(!mandates.pendingMandates.isEmpty){
-    <li id="pending-clients" class="heading-small" role="tab">
+    <li id="pending-clients" class="govuk-heading-s" role="tab">
       <a href="@routes.AgentSummaryController.view(Some("pending-clients"))" id="view-pending-clients">@Messages("client.summary.client-pending.title", mandates.pendingMandates.size)
       </a>
     </li>
@@ -62,68 +65,83 @@
   <section id="clients-tab" tabindex="-1">
 
 @if(mandates.activeMandates.size >= 15 || isUpdate) {
-  <div class="form-group">
+  <div class="govuk-form-group">
     @if(isUpdate) {
-      <details open>
+      <details open class="govuk-details" data-module="govuk-details">
     } else {
-      <details>
+      <details class="govuk-details" data-module="govuk-details">
     }
-      <summary id="filter-clients" class="summary">
+      <summary id="filter-clients" class="govuk-details__summary">
+        <span class="govuk-details__summary-text">
           @Messages("client.summary.filter-clients")
+        </span>
       </summary>
 
-      <div class="filterbox">
-        @form(action = routes.AgentSummaryController.update()) {
+      <fieldset class="govuk-fieldset filterbox">
+        @formHelper(action = routes.AgentSummaryController.update()) {
+
+        @govukInput(
+          Input(
+            label = Label(
+              content = Text(Messages("client.summary.filter-display_name"))
+            )
+          ).withFormField(filterClientsForm("displayName"))
+        )
 
         <div class="form-field">
-          @mandateInput(filterClientsForm("displayName"),
-          '_label -> Messages("client.summary.filter-display_name"),
-          '_labelClass -> "form-label-bold",
-          '_showConstraints -> false)
-        </div>
-
-        <div class="form-field">
-          @mandateInputRadioGroup(filterClientsForm("showAllClients"),
-          Seq("allClients" -> Messages("client.summary.filter-show-all-clients"),
-              "myClients" -> Messages("client.summary.filter-show-only-my-clients")),
-          '_groupClass -> "",
-          '_legend -> Messages("agent.overseas-client-question.header"),
-          '_legendClass -> "screen-reader-text",
-          '_labelClass -> "block-label",
-          '_labelAfter -> true
+          @govukRadios(
+            Radios(
+              fieldset = Some(Fieldset(
+                classes = "govuk-radios--inline",
+                legend = Some(Legend(
+                  classes = "govuk-visually-hidden",
+                  content = Text(Messages("agent.overseas-client-question.header"))
+                ))
+              )),
+              items = Seq(
+                RadioItem(
+                  content = Text(Messages("client.summary.filter-show-all-clients")),
+                  value = Some("allClients")
+                ),
+                RadioItem(
+                  content = Text(Messages("client.summary.filter-show-only-my-clients")),
+                  value = Some("myClients")
+                )
+              )
+            ).withFormField(filterClientsForm("showAllClients"))
           )
-        </div>
 
-        <button id="filterClients-btn" name="filterClients" class="button" type="submit">@Messages("client.summary.filter-update")</button>
-
+        <button id="filterClients-btn" name="filterClients" class="govuk-button" type="submit">
+          @Messages("client.summary.filter-update")
+        </button>
         }
-      </div>
+      </fieldset>
       <hr>
     </details>
   </div>
 }
 
-  <div class="form-group">
+  <div class="govuk-form-group">
 
     @if(mandates.activeMandates.size > 0) {
       @for((active, index) <- mandates.activeMandates.zipWithIndex) {
 
-        <div class="grid-wrapper row-border">
-          <div class="grid grid-1-2 asp-return">
-            <span id="client-name-@index">@active.clientDisplayName</span>
+        <div class="grid-wrapper govuk-grid-row">
+          <div class="grid govuk-grid-column-one-half asp-return">
+            <span class="govuk-body" id="client-name-@index">@active.clientDisplayName</span>
           </div>
 
-          <div class="grid grid-1-4 asp-status">
-            <a id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)">
+          <div class="grid govuk-grid-column-one-quarter asp-status">
+            <a class="govuk-body govuk-link" id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)">
               @Messages("client.summary.client-edit")
-            <span class="visuallyhidden">@Messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
+            <span class="govuk-visually-hidden">@Messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
             </a>
           </div>
 
-          <div class="grid grid-1-4 asp-action">
-            <a id="client-link-@index" href='@routes.AgentSummaryController.doDelegation(active.id)'>
+          <div class="grid govuk-grid-column-one-quarter asp-action">
+            <a class="govuk-body govuk-link" id="client-link-@index" href='@routes.AgentSummaryController.doDelegation(active.id)'>
               @Messages("client.summary.client-view")
-            <span class="visuallyhidden">@Messages("client.summary.client-details-for") @active.clientDisplayName</span>
+            <span class="govuk-visually-hidden">@Messages("client.summary.client-details-for") @active.clientDisplayName</span>
             </a>
           </div>
         </div>
@@ -137,5 +155,5 @@
     </div>
 
   </section>
-  <script src='@controllers.routes.Assets.at("javascript/clients.js")'></script>
+  <script src='@controllers.routes.Assets.versioned("javascript/clients.js")'></script>
 }

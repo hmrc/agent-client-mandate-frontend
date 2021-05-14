@@ -30,23 +30,22 @@
 
 @main_template(title = Messages("client.agent-confirmation.title"), delegatedService = Some(service)) {
 
-<div class="transaction-banner--complete" id="banner">
-    <h1 id="banner-text">
+<div class=" govuk-panel govuk-panel--confirmation" id="banner">
+    <h1 id="banner-text" class="govuk-panel__title">
     @Messages("client.agent-confirmation.banner-text", agentName, DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate()))</h1>
 </div>
 
 
- <p id="notification" class="heading-small">@Messages("client.agent-confirmation.notification")</p>
+ <p id="notification" class="govuk-heading-s">@Messages("client.agent-confirmation.notification")</p>
 
 
-<h2 id="heading">@Messages("client.agent-confirmation.header")</h2>
+    <h2 class="govuk-heading-m" id="heading">@Messages("client.agent-confirmation.header")</h2>
 
-
-     <p>@Html(Messages("client.agent-confirmation.sign-in", DelegationUtils.getDelegatedServiceRedirectUrl(service)))</p>
+    <p class="govuk-body">@Html(Messages("client.agent-confirmation.sign-in", DelegationUtils.getDelegatedServiceRedirectUrl(service)))</p>
 
 
 <form action="@appConfig.serviceSignOutUrl(Some(service))">
-    <button class="button" id="finish_btn" type="submit">@Messages("client.agent-confirmation.finish-signout")
+    <button class="govuk-button" id="finish_btn" type="submit">@Messages("client.agent-confirmation.finish-signout")
     </button>
 </form>
 

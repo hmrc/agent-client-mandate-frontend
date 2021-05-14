@@ -14,15 +14,13 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.models._
-@import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.config.ExternalUrls
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+
+@this(main_template: main_template, formHelper: FormWithCSRF)
 
 @(agentDetails: AgentDetails, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -30,50 +28,54 @@
 
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-details.sub-header"), "agency-details-header", Messages("agent.edit-details.header"))
 
-<table>
-    <tr>
-        <td id="agency-name-header" class="text-bold">@Messages("agent.edit-details.agency.name")</td>
-        <td id="agency-name-val" colspan="2">@agentDetails.agentName</td>
-        <td valign="top">
-            <a href='@routes.UpdateAddressDetailsController.view()' id="agency-name-edit" aria-label='@Messages("ated.review-details.edit-registered-address.title")'>@Messages("edit-link")
-                <span class="screen-reader-text">@Messages("edit-link")</span>
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key" id="agency-name-header">
+            @Messages("agent.edit-details.agency.name")
+        </dt>
+        <dd class="govuk-summary-list__value" id="agency-name-val">
+            @agentDetails.agentName
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="@routes.UpdateAddressDetailsController.view()">
+                Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.agency.name")</span>
             </a>
-        </td>
-    </tr>
-    <tr>
-        <td id="agency-address-header" class="text-bold td-top">@Messages("agent.edit-details.registered.address")</td>
-        <td id="agency-address-val" colspan="2">
-            <div class="form-group">
-                <div id="registered-address-line-1">@agentDetails.addressDetails.addressLine1</div>
-                <div id="registered-address-line-2">@agentDetails.addressDetails.addressLine2</div>
-                <div id="registered-address-line-3">@agentDetails.addressDetails.addressLine3</div>
-                <div id="registered-address-line-4">@agentDetails.addressDetails.addressLine4</div>
-                <div id="registered-postcode">@agentDetails.addressDetails.postalCode</div>
-                <div id="registered-country">@agentDetails.addressDetails.countryCode</div>
-            </div>
-        </td>
-        <td valign="top">
-            <a href='@routes.UpdateAddressDetailsController.view()' id="agency-address-edit" aria-label='@Messages("ated.review-details.edit-registered-address.title")'>@Messages("edit-link")
-                <span class="screen-reader-text">@Messages("edit-link-1")</span>
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key" id="agency-address-header">
+            @Messages("agent.edit-details.registered.address")
+        </dt>
+        <dd class="govuk-summary-list__value" id="agency-address-val">
+            @agentDetails.addressDetails.addressLine1<br />
+            @agentDetails.addressDetails.addressLine2<br />
+            @agentDetails.addressDetails.addressLine3<br />
+            @agentDetails.addressDetails.addressLine4<br />
+            @agentDetails.addressDetails.postalCode<br />
+            @agentDetails.addressDetails.countryCode<br />
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="@routes.UpdateAddressDetailsController.view()">
+                Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.registered.address")</span>
             </a>
-        </td>
-    </tr>
-    @agentDetails.identification.map{ nonUKId =>
-    <tr>
-        <td id="agency-nonuk-header" class="text-bold td-top">@Messages("agent.edit-details.ocr.details")</td>
-        <td id="agency-nonuk-val" colspan="2">
-            <div class="form-group">
-                <div id="agency-nuk-idNumber">@nonUKId.idNumber</div>
-                <div id="agency-nuk-issuingInst">@nonUKId.issuingInstitution</div>
-                <div id="agency-nuk-country">@nonUKId.issuingCountryCode</div>
-            </div>
-        </td>
-        <td valign="top">
-            <a href='@routes.UpdateOcrDetailsController.view()' id="overseas-tax-reference-edit" aria-label='@Messages("ated.review-details.edit-overseas-tax-reference.title")'>@Messages("edit-link")
-                <span class="screen-reader-text">@Messages("edit-link")</span>
-            </a>
-        </td>
-    </tr>
+        </dd>
+    </div>
+    @agentDetails.identification.map { nonUKId =>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                @Messages("agent.edit-details.ocr.details")
+            </dt>
+            <dd class="govuk-summary-list__value">
+                @nonUKId.idNumber<br />
+                @nonUKId.issuingInstitution<br />
+                @nonUKId.issuingCountryCode<br />
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a class="govuk-link" href="@routes.UpdateOcrDetailsController.view()">
+                    Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.ocr.details")</span>
+                </a>
+            </dd>
+        </div>
     }
-</table>
+</dl>
 }

@@ -19,15 +19,16 @@
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.config.ExternalUrls
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput, govukSelect: GovukSelect)
 
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/mandate-country-auto-complete.js")'></script>
+<script src='@controllers.routes.Assets.versioned("javascript/mandate-country-auto-complete.js")'></script>
 <script>
     $(document).ready(function() {
       countryCodeAutoComplete("#businessAddress\\.country");
@@ -51,57 +52,72 @@
 @mandateErrorSummary(agentDetailsForm, "agent.edit-mandate-details-error.general")
 
 
-@form(action = routes.UpdateAddressDetailsController.submit()) {
+@formHelper(action = routes.UpdateAddressDetailsController.submit()) {
 
-  <div class="form-group">
+    <fieldset class="govuk-fieldset">
 
   <div id="non-uk-reg-form">
 
-    @mandateInput(agentDetailsForm("agentName"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.agentName")),
-    '_labelClass -> "form-label",
-    '_labelClass -> "form-label-bold",
-    '_id -> "businessName",
-    '_showConstraints -> false)
+    @govukInput(
+      Input(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.agentName"))
+          )
+      ).withFormField(agentDetailsForm("agentName"))
+    )
 
-    @mandateInput(agentDetailsForm("address.addressLine1"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.address")),
-    '_id -> "businessAddress.line_1",
-    '_labelClass -> "form-label-bold",
-    '_showConstraints -> false)
+    @govukInput(
+      Input(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.line_1"))
+          )
+      ).withFormField(agentDetailsForm("address.addressLine1"))
+    )
 
-    @mandateInput(agentDetailsForm("address.addressLine2"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.line_2")),
-    '_labelClass -> "visuallyhidden",
-    '_id -> "businessAddress.line_2",
-    '_showConstraints -> false)
+    @govukInput(
+      Input(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.line_2"))
+          )
+      ).withFormField(agentDetailsForm("address.addressLine2"))
+    )
 
-    @mandateInput(agentDetailsForm("address.addressLine3"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.line_3")),
-    '_labelClass -> "visuallyhidden",
-    '_id -> "businessAddress.line_3",
-    '_showConstraints -> false)
+    @govukInput(
+      Input(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.line_3"))
+          )
+      ).withFormField(agentDetailsForm("address.addressLine3"))
+    )
 
-    @mandateInput(agentDetailsForm("address.addressLine4"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.line_4")),
-    '_labelClass -> "visuallyhidden",
-    '_id -> "businessAddress.line_4",
-    '_showConstraints -> false)
+    @govukInput(
+      Input(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.line_4"))
+          )
+      ).withFormField(agentDetailsForm("address.addressLine4"))
+    )
 
-    @mandateNewDropdown(agentDetailsForm("address.countryCode"),
-    elementOptions = displayDetails.listOfIsoCode,
-    displayEmptyValue = true,
-    '_id -> "businessAddress.country",
-    '_emptyValueText -> Messages("agent.edit-mandate-detail.country.select"),
-    '_labelClass -> "form-label-bold",
-    '_label -> Html(Messages("agent.edit-mandate-details.country")))
-
+    @govukSelect(
+      Select(
+          label = Label(
+              content = Text(Messages("agent.edit-mandate-details.country"))
+          ),
+          id = "businessAddress.country",
+          items = displayDetails.listOfIsoCode.map {
+              case (code, country) => SelectItem(
+                  value = Some(code),
+                  text = country
+              )
+          }
+      ).withFormField(agentDetailsForm("address.countryCode"))
+    )
 
   </div>
 
-  <button class="button" id="submit" type="submit">@Messages("save-button")</button>
+  <button class="govuk-button" id="submit" type="submit">@Messages("save-button")</button>
 
-  </div>
+    </fieldset>
   }
 
 }

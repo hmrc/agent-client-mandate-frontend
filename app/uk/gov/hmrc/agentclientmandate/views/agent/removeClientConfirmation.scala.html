@@ -26,19 +26,19 @@
 
 @main_template(title = Messages("agent.remove-client-confirmation.title"), delegatedService = Some(service)) {
 
-    <div class="transaction-banner--complete" id="banner">
-        <h1 id="banner-text">
+    <div class="govuk-panel govuk-panel--confirmation" id="banner">
+        <h1 id="banner-text" class="govuk-panel__title">
             @Html(Messages("agent.remove-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now)))
         </h1>
     </div>
 
-    <p id="notification">@Messages("agent.remove-client-confirmation.notification")</p>
+    <p id="notification" class="govuk-body">@Messages("agent.remove-client-confirmation.notification")</p>
 
     @if(isNonUkClient) {
-        <p id="non-uk-with-reference">@Messages("agent.remove-client-confirmation.non-uk-client-old-unique-refno", mandateId)</p>
+        <p id="non-uk-with-reference" class="govuk-body">@Messages("agent.remove-client-confirmation.non-uk-client-old-unique-refno", mandateId)</p>
     }
 
 @helper.form(action=routes.AgentSummaryController.view()){
-<button class="button" role="button" id="finish_btn" >@Messages("agent.remove-client-confirmation.view-all-clients")</button> }
+<button class="govuk-button" role="button" id="finish_btn" >@Messages("agent.remove-client-confirmation.view-all-clients")</button> }
 
 }

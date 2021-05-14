@@ -14,15 +14,14 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
-@import uk.gov.hmrc.agentclientmandate.models._
-@import uk.gov.hmrc.agentclientmandate.service._
-@import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
 
 @(editMandateDetailsForm: Form[EditMandateDetails], service: String, mandateId: String, clientDisplayName: String, clientParty: Option[String], backLink: Option[String], showRemoveClient: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -32,36 +31,43 @@
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.edit-mandate-details.header", clientParty.getOrElse("")),
     Some(mandateErrorSummary(editMandateDetailsForm, "agent.edit-client.error.general")))
 
-  <div class="form-group">
-    <h2 id="sub-heading">@Messages("agent.edit-mandate-details.sub-heading", mandateId)</h2>
+  <div class="govuk-form-group">
+    <h2 id="sub-heading" class="govuk-heading-m">@Messages("agent.edit-mandate-details.sub-heading", mandateId)</h2>
   </div>
 
-  @form(action = routes.EditMandateDetailsController.submit(mandateId)) {
-  <fieldset>
-    <legend class="visuallyhidden">@Messages("agent.edit-mandate-details.header", clientParty.getOrElse(""))</legend>
+  @formHelper(action = routes.EditMandateDetailsController.submit(mandateId)) {
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-visually-hidden">@Messages("agent.edit-mandate-details.header", clientParty.getOrElse(""))</legend>
 
-    @mandateInput(editMandateDetailsForm("displayName"),
-    '_label -> Messages("agent.edit-mandate-details.displayName"),
-    '_labelClass -> "form-label-bold",
-    '_hintText -> Messages("agent.edit-mandate-details.hint"),
-    '_showConstraints -> false)
+      @govukInput(
+          Input(
+              label = Label(
+                  content = Text(Messages("agent.edit-mandate-details.displayName"))
+              ),
+              hint = Some(Hint(
+                  content = Text(Messages("agent.edit-mandate-details.hint"))
+              ))
+          ).withFormField(editMandateDetailsForm("displayName"))
+      )
 
-    @mandateInput(editMandateDetailsForm("email"),
-    '_label -> Messages("agent.edit-mandate-details.email"),
-    '_labelClass -> "form-label-bold",
-    '_showConstraints -> false)
+      @govukInput(
+          Input(
+              label = Label(
+                  content = Text(Messages("agent.edit-mandate-details.email"))
+              )
+          ).withFormField(editMandateDetailsForm("email"))
+      )
 
   </fieldset>
 
-    @if(showRemoveClient){
-      <div class="form-field">
-        <a id="remove-client-link" href="@routes.RemoveClientController.view(mandateId)">
-          @Messages("client.summary.client-remove")
-        </a>
+      <div class="govuk-button-group">
+          <button class="govuk-button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
+
+          @if(showRemoveClient){
+              <a id="remove-client-link" class="govuk-link" href="@routes.RemoveClientController.view(mandateId)">
+              @Messages("client.summary.client-remove")
+              </a>
+          }
       </div>
-    }
-
-    <button class="button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
-
   }
 }

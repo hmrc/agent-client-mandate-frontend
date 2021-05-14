@@ -147,7 +147,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         document.title() must be("agent.remove-client.header - GOV.UK")
         document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
         document.getElementById("header").text() must include("agent.remove-client.header")
-        document.getElementById("yesNo_legend").text() must be("agent.remove-client.header")
+        document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.remove-client.header")
         document.getElementById("submit").text() must be("confirm-button")
       }
     }
@@ -164,7 +164,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         status(result) must be(BAD_REQUEST)
         val document = Jsoup.parse(contentAsString(result))
         document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
-        document.getElementsByClass("error-notification").text() must include("yes-no.error.mandatory.removeClient")
+        document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.removeClient")
       }
     }
   }

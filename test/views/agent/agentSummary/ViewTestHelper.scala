@@ -25,8 +25,6 @@ import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
-import uk.gov.hmrc.play.config.{AssetsConfig, GTMConfig, OptimizelyConfig}
-import uk.gov.hmrc.play.views.html.layouts.{Footer, GTMSnippet, Head, OptimizelySnippet}
 
 trait ViewTestHelper {
   self: MockitoSugar =>
@@ -34,9 +32,6 @@ trait ViewTestHelper {
   private val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
   implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
-  val mockOptConfig: OptimizelyConfig = mock[OptimizelyConfig]
-  val mockGtmConfig: GTMConfig = mock[GTMConfig]
-  val mockAssetsConfig: AssetsConfig = mock[AssetsConfig]
   val mockConfig: Configuration = mock[Configuration]
 
   implicit val mockAppConfig: AppConfig = mock[AppConfig]
@@ -45,25 +40,10 @@ trait ViewTestHelper {
   when(mockAppConfig.servicesConfig)
     .thenReturn(mockServicesConfig)
 
-  when(mockOptConfig.url)
-    .thenReturn(None)
-  when(mockGtmConfig.url)
-    .thenReturn(None)
-  when(mockAssetsConfig.assetsPrefix)
-    .thenReturn("test")
-
   when(mockAppConfig.configuration)
     .thenReturn(mockConfig)
 
   when(mockAppConfig.serviceSignOutUrl(ArgumentMatchers.any()))
     .thenReturn("http://localhost:9916/ated/logout")
-
-  val optimizelySnippet: OptimizelySnippet = new OptimizelySnippet(mockOptConfig)
-  val gtmSnippet: GTMSnippet = new GTMSnippet(mockGtmConfig)
-
-  when(mockAppConfig.customHeadTemplate)
-    .thenReturn(new Head(optimizelySnippet, mockAssetsConfig, gtmSnippet))
-  when(mockAppConfig.customFooterTemplate)
-    .thenReturn(new Footer(mockAssetsConfig))
 
 }

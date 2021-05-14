@@ -119,7 +119,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.client-permission.error.general.prevRegistered")
-          document.getElementsByClass("error-notification").text() must include("agent.client-prev-registered.not-selected.field-error")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-prev-registered.not-selected.field-error")
         }
       }
     }

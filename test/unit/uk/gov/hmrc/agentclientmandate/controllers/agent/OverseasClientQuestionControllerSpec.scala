@@ -84,7 +84,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
           document.title() must be("agent.overseas-client-question.title - GOV.UK")
           document.getElementById("header").text() must include("agent.overseas-client-question.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("isOverseas-true").attr("checked") must be("checked")
+          document.getElementById("isOverseas").attr("checked") must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -117,7 +117,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.overseas-client-question.error.general.isOverseas")
-          document.getElementsByClass("error-notification").text() must include("agent.overseas-client-question.error.isOverseas")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.overseas-client-question.error.isOverseas")
         }
       }
     }

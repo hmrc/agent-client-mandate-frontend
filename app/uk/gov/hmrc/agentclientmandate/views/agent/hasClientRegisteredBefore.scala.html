@@ -17,10 +17,11 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(prevRegisteredForm: Form[PrevRegistered], callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -30,24 +31,35 @@
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-prev-registered.header"),
   Some(mandateErrorSummary(prevRegisteredForm, "agent.client-permission.error.general")))
 
-    <p>@Messages("agent.client-prev-registered.p")</p>
+    <p class="govuk-body">@Messages("agent.client-prev-registered.p")</p>
 
-  @form(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {
+  @formHelper(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {
 
-    <div class="form-group" id="registeredBefore">
-      @mandateInputRadioGroup(
-      prevRegisteredForm("prevRegistered"),
-      Seq("true" -> Messages("radio-yes"),
-      "false" -> Messages("radio-no")),
-      '_groupClass -> "inline",
-      '_legend -> Messages("agent.client-prev-registered.header"),
-      '_legendClass -> "visuallyhidden",
-      '_labelClass -> "block-label",
-      '_labelAfter -> true
+    <div class="govuk-form-group" id="registeredBefore">
+      @govukRadios(
+          Radios(
+              fieldset = Some(Fieldset(
+                  classes = "govuk-radios--inline",
+                  legend = Some(Legend(
+                      classes = "govuk-visually-hidden",
+                      content = Text(Messages("agent.client-prev-registered.header"))
+                  ))
+              )),
+              items = Seq(
+                  RadioItem(
+                      content = Text(Messages("radio-yes")),
+                      value = Some("true")
+                  ),
+                  RadioItem(
+                      content = Text(Messages("radio-no")),
+                      value = Some("false")
+                  )
+              )
+          ).withFormField(prevRegisteredForm("prevRegistered"))
       )
     </div>
 
-    <button class="button" id="submit" type="submit">@Messages("save-and-continue-button")</button>
+    <button class="govuk-button" id="submit" type="submit">@Messages("save-and-continue-button")</button>
 
   }
 

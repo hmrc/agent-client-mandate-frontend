@@ -19,25 +19,20 @@
 
 @(agentDetails: AgentDetails, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-<section class="section section--blue-top">
+<hr class="govuk-section-break--visible govuk-section-break govuk-section-break--m" />
 
-   <h2 class="heading-small" id="sidebar.agentname">@agentDetails.agentName</h2>
+<h2 class="govuk-heading-s" id="sidebar.agentname">@agentDetails.agentName</h2>
 
-   <div class="form-group">
-      <ul>
-         <li class="font-xsmall" id="sidebar.addressLine1">@agentDetails.addressDetails.addressLine1</li>
-         <li class="font-xsmall" id="sidebar.addressLine2">@agentDetails.addressDetails.addressLine2</li>
-         <li class="font-xsmall" id="sidebar.addressLine3">@agentDetails.addressDetails.addressLine3</li>
-         <li class="font-xsmall" id="sidebar.addressLine4">@agentDetails.addressDetails.addressLine4</li>
-         <li class="font-xsmall" id="sidebar.postcode">@agentDetails.addressDetails.postalCode</li>
-         <li class="font-xsmall" id="sidebar.countrycode">@agentDetails.addressDetails.countryCode</li>
-         <li class="font-xsmall">
-             <a href="@uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view()" id="change-details-link">
-                @messages("mandate.agent.change.details")
-             </a>
-         </li>
-
-      </ul>
-   </div>
-
-</section>
+<ul class="govuk-list">
+    <li class="govuk-body-s" id="sidebar.addressLine1">@agentDetails.addressDetails.addressLine1</li>
+    <li class="govuk-body-s" id="sidebar.addressLine2">@agentDetails.addressDetails.addressLine2</li>
+    <li class="govuk-body-s" id="sidebar.addressLine3">@agentDetails.addressDetails.addressLine3</li>
+    <li class="govuk-body-s" id="sidebar.addressLine4">@agentDetails.addressDetails.addressLine4</li>
+    <li class="govuk-body-s" id="sidebar.postcode">@agentDetails.addressDetails.postalCode</li>
+    <li class="govuk-body-s" id="sidebar.countrycode">@agentDetails.addressDetails.countryCode</li>
+    <li class="govuk-body-s">
+        <a class="govuk-link" href="@uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgencyDetailsController.view()" id="change-details-link">
+            @messages("mandate.agent.change.details")
+        </a>
+    </li>
+</ul>

@@ -76,7 +76,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
           document.title() must be("agent.select-service.title - GOV.UK")
           document.getElementById("header").text() must include("agent.select-service.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("service_legend").text() must be("agent.select-service.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.select-service.header")
           document.getElementById("submit").text() must be("submit-button")
         }
       }
@@ -136,7 +136,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.select-service.error.general.service")
-          document.getElementsByClass("error-notification").text() must include("agent.select-service.error.service")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.select-service.error.service")
         }
       }
     }

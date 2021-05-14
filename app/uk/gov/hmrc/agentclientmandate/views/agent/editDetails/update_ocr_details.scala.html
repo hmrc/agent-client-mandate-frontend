@@ -18,26 +18,27 @@
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import uk.gov.hmrc.play.views.html.helpers._
+
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.models.BusinessRegistrationDisplayDetails
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+
+@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios, govukInput: GovukInput, govukSelect: GovukSelect)
 
 @(identificationForm: Form[OverseasCompany], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.at("javascript/mandate-country-auto-complete.js")'></script>
-<script src='@controllers.routes.Assets.at("javascript/overseas-company-registration.js")'></script>
-<script>
-    $(document).ready(function() {
-      countryCodeAutoComplete("#businessAddress\\.country");
-      var classOfSelect1 = $('#businessAddress\\.country_').attr('class');
-      $("#businessAddress\\.country").addClass(classOfSelect1);
-      var labelText1 = $("#businessAddress\\.country_field").text();
-      var divId1 = "businessAddress\\.country_div";
-      var fieldId1 = "businessAddress.country_";
-      createLabelForHiddenSelect(divId1, fieldId1, labelText1);
-    });
+    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("stylesheets/location-autocomplete.min.css")'>
+    <script src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("javascript/overseas-company-registration.js")'></script>
+    <script type="text/javascript">
+        openregisterLocationPicker({
+            selectElement: document.getElementById('businessAddress.country'),
+            url: '@controllers.routes.Assets.versioned("json/location-autocomplete-graph.json")'
+        })
+        showHideIdentifiersSection();
     </script>
 }
 
@@ -50,52 +51,79 @@
 @mandateErrorSummary(identificationForm, "agent.edit-mandate-details-error.general")
 
 
-@form(action = routes.UpdateOcrDetailsController.submit()) {
+@formHelper(action = routes.UpdateOcrDetailsController.submit()) {
 
-  <div class="form-group">
+  <fieldset class="govuk-fieldset">
 
   <div id="non-uk-reg-form">
 
-    <div class="form-group" id="hasBusinessUniqueId">
-
-      @mandateInputRadioGroup(identificationForm("hasBusinessUniqueId"),
-      Seq("true" -> Messages("radio-yes"),
-      "false" -> Messages("radio-no")),
-      '_groupClass -> "inline",
-      '_legend -> Messages("agent.edit-mandate-details.nonuk.overseas.title"),
-      '_legendClass -> "visuallyhidden",
-      '_labelClass -> "block-label",
-      '_labelAfter -> true
-      )
+    <div class="govuk-form-group" id="hasBusinessUniqueId">
+        @govukRadios(
+            Radios(
+                fieldset = Some(Fieldset(
+                    classes = "govuk-radios--inline",
+                    legend = Some(Legend(
+                        classes = "govuk-visually-hidden",
+                        content = Text(Messages("agent.client-permission.header"))
+                    ))
+                )),
+                name = "hasBusinessUniqueId",
+                items = Seq(
+                    RadioItem(
+                        content = Text(Messages("radio-yes")),
+                        value = Some("true"),
+                        id = Some("hasBusinessUniqueId-true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("radio-no")),
+                        value = Some("false"),
+                        id = Some("hasBusinessUniqueId-false")
+                    )
+                )
+            ).withFormField(identificationForm("hasBusinessUniqueId"))
+        )
     </div>
 
-    <div class="form-group" id="hidden-ocrDetails">
-    @mandateInput(identificationForm("idNumber"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.idNumber")),
-    '_labelClass -> "form-label",
-    '_id -> "businessName",
-    '_showConstraints -> false)
+    <div class="govuk-form-group" id="hidden-ocrDetails">
+        @govukInput(
+            Input(
+                id = "businessName",
+                label = Label(
+                    content = Text(Messages("agent.edit-mandate-details.idNumber"))
+                )
+            ).withFormField(identificationForm("idNumber"))
+        )
 
-     @mandateNewDropdown(identificationForm("issuingCountryCode"),
-     elementOptions = displayDetails.listOfIsoCode,
-     displayEmptyValue = true,
-     '_id -> "businessAddress.country",
-     '_emptyValueText -> Messages("agent.edit-mandate-detail.country.select"),
-     '_labelClass -> "form-label-bold",
-     '_label -> Html(Messages("agent.edit-mandate-details.issuingCountry")))
+        @govukSelect(
+            Select(
+                label = Label(
+                    content = Text(Messages("agent.edit-mandate-details.issuingCountry"))
+                ),
+                id = "businessAddress.country",
+                items = displayDetails.listOfIsoCode.map {
+                    case (code, country) => SelectItem(
+                        value = Some(code),
+                        text = country
+                    )
+                }
+            ).withFormField(identificationForm("issuingCountryCode"))
+        )
 
-
-    @mandateInput(identificationForm("issuingInstitution"),
-    '_label ->  Html(Messages("agent.edit-mandate-details.issuingIntitution")),
-    '_id -> "businessAddress.line_1",
-    '_showConstraints -> false)
+        @govukInput(
+            Input(
+                id = "businessName.line_1",
+                label = Label(
+                    content = Text(Messages("agent.edit-mandate-details.issuingIntitution"))
+                )
+            ).withFormField(identificationForm("issuingInstitution"))
+        )
     </div>
 
   </div>
 
-  <button class="button" id="submit" type="submit">@Messages("save-button")</button>
+  <button class="govuk-button" id="submit" type="submit">@Messages("save-button")</button>
 
-  </div>
+      </fieldset>
   }
 
 }

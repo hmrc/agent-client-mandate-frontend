@@ -17,16 +17,16 @@
 @(backLink: Option[String], subHeaderId: String, subHeaderValue: String, headerId: String, headerValue: String, errorDisplay: Option[Html] = None)(implicit messages: Messages)
 
 @if(backLink.isDefined){
-<a id="backLinkHref" class="link-back" href='@backLink'>@Messages("mandate.back")</a>
+<a id="backLinkHref" class="govuk-back-link" href='@backLink'>@Messages("mandate.back")</a>
 @errorDisplay
 <header class="page-header">
-  <p id=@subHeaderId class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.section") </span>@subHeaderValue</p>
-  <h1 id=@headerId class="heading-xlarge">@headerValue</h1>
+  <span id=@subHeaderId class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.section") </span>@subHeaderValue</span>
+  <h1 id=@headerId class="govuk-heading-l">@headerValue</h1>
 </header>
 } else {
 @errorDisplay
 <header class="page-header page-header-margin">
-  <p id=@subHeaderId class="heading-secondary"><span class="visuallyhidden">@Messages("ated.screen-reader.section") </span>@subHeaderValue</p>
-  <h1 id=@headerId class="heading-xlarge">@headerValue</h1>
+  <span id=@subHeaderId class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.section") </span>@subHeaderValue</span>
+  <h1 id=@headerId class="govuk-heading-l">@headerValue</h1>
 </header>
 }
