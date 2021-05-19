@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -44,7 +44,7 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
   override def beforeEach(): Unit = {
     when(mockSessionCookieCrypto.crypto)
       .thenReturn(mockEncWithDec)
-    when(mockEncWithDec.encrypt(ArgumentMatchers.any()))
+    when(mockEncWithDec.encrypt(any()))
       .thenReturn(Crypted("test"))
 
     reset(mockDefaultHttpClient)
@@ -63,10 +63,10 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
   "AtedSubscriptionFrontendConnector" must {
     "clear cache" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
-        (ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        (any(), any(), any())
+        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val response = connector.clearCache("")
+      val response: Future[HttpResponse] = connector.clearCache("")
       await(response).status must be(OK)
     }
 

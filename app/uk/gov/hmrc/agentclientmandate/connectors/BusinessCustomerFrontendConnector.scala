@@ -43,5 +43,5 @@ class BusinessCustomerFrontendConnector @Inject()(
     http.GET[HttpResponse](getUrl)
   }
 
-  override def crypto: String => String = identity
+  def crypto: String => String = identity
 }

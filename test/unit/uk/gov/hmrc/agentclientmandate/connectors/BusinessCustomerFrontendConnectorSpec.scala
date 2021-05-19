@@ -64,7 +64,7 @@ class BusinessCustomerFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
   "BusinessCustomerFrontendConnector" must {
     "clear cache" in new Setup {
       when(mockDefaultHttpClient.GET[HttpResponse]
-        (ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = connector.clearCache("")
