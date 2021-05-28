@@ -41,7 +41,7 @@ function countryCodeAutoComplete(selectId) {
                 .val( value )
                 .attr( "title", "" )
                 .attr( "id", this.element.attr("id") )
-                .addClass( "custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control")
+                .addClass( "custom-combobox-input govuk-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control")
                 .autocomplete({
                     delay: 0,
                     minLength: 2,
@@ -54,7 +54,7 @@ function countryCodeAutoComplete(selectId) {
                 .val( value )
                 .attr( "title", "" )
                 .attr( "id", this.element.attr("id") )
-                .addClass( "custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control")
+                .addClass( "custom-combobox-input govuk-input ui-widget ui-widget-content ui-state-default ui-corner-left form-control")
                 .autocomplete({
                     delay: 0,
                     minLength: 2,

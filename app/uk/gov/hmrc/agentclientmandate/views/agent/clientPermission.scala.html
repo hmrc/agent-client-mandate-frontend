@@ -55,29 +55,27 @@
 
   @formHelper(action = routes.ClientPermissionController.submit(callingPage)) {
 
-  <div class="govuk-form-group" id="hasPermission">
-      @govukRadios(
-          Radios(
-              fieldset = Some(Fieldset(
-                  classes = "govuk-radios--inline",
-                  legend = Some(Legend(
-                      classes = "govuk-visually-hidden",
-                      content = Text(Messages("agent.client-permission.header"))
-                  ))
-              )),
-              items = Seq(
-                  RadioItem(
-                      content = Text(Messages("radio-yes")),
-                      value = Some("true")
-                  ),
-                  RadioItem(
-                      content = Text(Messages("radio-no")),
-                      value = Some("false")
-                  )
+  @govukRadios(
+      Radios(
+          fieldset = Some(Fieldset(
+              classes = "govuk-radios--inline",
+              legend = Some(Legend(
+                  classes = "govuk-visually-hidden",
+                  content = Text(Messages("agent.client-permission.header"))
+              ))
+          )),
+          items = Seq(
+              RadioItem(
+                  content = Text(Messages("radio-yes")),
+                  value = Some("true")
+              ),
+              RadioItem(
+                  content = Text(Messages("radio-no")),
+                  value = Some("false")
               )
-          ).withFormField(clientPermissionForm("hasPermission"))
-      )
-  </div>
+          )
+      ).withFormField(clientPermissionForm("hasPermission"))
+  )
 
   @conditionalFalse
 

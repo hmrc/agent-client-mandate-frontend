@@ -39,6 +39,10 @@
 
       @govukInput(
           Input(
+              label = Label(
+                  classes = "govuk-visually-hidden",
+                  content = Text(Messages("client.search-mandate.header"))
+              ),
               hint = Some(Hint(
                   content = Text(Messages("client.search-mandate.hint"))
               ))

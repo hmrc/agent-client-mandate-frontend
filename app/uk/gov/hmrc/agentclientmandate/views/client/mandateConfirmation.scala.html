@@ -30,14 +30,14 @@
 
 @main_template(title = Messages("client.agent-confirmation.title"), delegatedService = Some(service)) {
 
-<div class=" govuk-panel govuk-panel--confirmation" id="banner">
-    <h1 id="banner-text" class="govuk-panel__title">
-    @Messages("client.agent-confirmation.banner-text", agentName, DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate()))</h1>
-</div>
+    <div class=" govuk-panel govuk-panel--confirmation" id="banner">
+        <h1 id="banner-text" class="govuk-panel__title">
+        @Messages("client.agent-confirmation.banner-text", agentName, DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate()))</h1>
+    </div>
 
+    <br />
 
- <p id="notification" class="govuk-heading-s">@Messages("client.agent-confirmation.notification")</p>
-
+    <p id="notification" class="govuk-body">@Messages("client.agent-confirmation.notification")</p>
 
     <h2 class="govuk-heading-m" id="heading">@Messages("client.agent-confirmation.header")</h2>
 
