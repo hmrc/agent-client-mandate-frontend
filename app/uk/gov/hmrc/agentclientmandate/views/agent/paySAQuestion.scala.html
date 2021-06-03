@@ -33,29 +33,27 @@
 
 @formHelper(action = routes.PaySAQuestionController.submit()) {
 
-    <div class="govuk-form-group" id="paySA">
-        @govukRadios(
-            Radios(
-                fieldset = Some(Fieldset(
-                    classes = "govuk-radios--inline",
-                    legend = Some(Legend(
-                        classes = "govuk-visually-hidden",
-                        content = Text(Messages("agent.paySA-question.header"))
-                    ))
-                )),
-                items = Seq(
-                    RadioItem(
-                        content = Text(Messages("radio-yes")),
-                        value = Some("true")
-                    ),
-                    RadioItem(
-                        content = Text(Messages("radio-no")),
-                        value = Some("false")
-                    )
+    @govukRadios(
+        Radios(
+            fieldset = Some(Fieldset(
+                classes = "govuk-radios--inline",
+                legend = Some(Legend(
+                    classes = "govuk-visually-hidden",
+                    content = Text(Messages("agent.paySA-question.header"))
+                ))
+            )),
+            items = Seq(
+                RadioItem(
+                    content = Text(Messages("radio-yes")),
+                    value = Some("true")
+                ),
+                RadioItem(
+                    content = Text(Messages("radio-no")),
+                    value = Some("false")
                 )
-            ).withFormField(paySAQuestionForm("paySA"))
-        )
-    </div>
+            )
+        ).withFormField(paySAQuestionForm("paySA"))
+    )
 
     <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
 

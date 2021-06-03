@@ -41,6 +41,7 @@ client.summary.client-name.title = Name
 client.summary.client-action.title = Action
 client.summary.client-reject = Reject
 client.summary.client-edit = Edit
+client.summary.client-change = Change
 client.summary.client-remove = Remove this client
 client.summary.client-view = View
 client.summary.client-pending.title = Requests ({0})
