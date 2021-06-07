@@ -13,7 +13,7 @@ private object AppDependencies {
     "uk.gov.hmrc"       %% "emailaddress"                  % "3.5.0",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.9.0-play-27",
     "com.typesafe.play" %% "play-json-joda"                % "2.9.2",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "0.64.0-play-27"
+    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "0.69.0-play-27"
   )
 
   trait TestDependencies {
