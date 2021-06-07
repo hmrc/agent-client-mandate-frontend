@@ -27,12 +27,13 @@ import uk.gov.hmrc.agentclientmandate.models.AgentAuthRetrievals
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, EmptyRetrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatestplus.play.PlaySpec
+import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
+class AuthorisedWrappersSpec extends PlaySpec with MockitoSugar {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -46,7 +47,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
     }
   }
 
-  "agentAuthenticated" should {
+  "agentAuthenticated" must {
     "authenticate an agent" when {
       "the agent has an enrolment, with no retrieval" in new Setup {
         val future: Future[Result] = Future.successful(Results.Ok("test"))
@@ -57,7 +58,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(()))
 
-        await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)) shouldBe await(future)
+        await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)) mustBe await(future)
       }
     }
 
@@ -72,8 +73,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
           .thenReturn(Future.failed(MissingBearerToken("No bearer token")))
         when(mockAppConfig.loginCallbackAgent).thenReturn("/mandate/agent/summary")
 
-        val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
-        status(result) shouldBe 303
+        val result = authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)
+        status(result) mustBe 303
       }
 
       "there is an internal error exception" in new Setup {
@@ -85,8 +86,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(InternalError("test")))
 
-        val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
-        status(result) shouldBe 500
+        val result = authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)
+        status(result) mustBe 500
       }
 
       "there are insufficient enrolments" in new Setup {
@@ -98,8 +99,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.failed(InsufficientEnrolments("test")))
 
-        val result: Result = await(authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body))
-        status(result) shouldBe 303
+        val result = authorisedWrappers.agentAuthenticated(None, EmptyRetrieval)(body)
+        status(result) mustBe 303
       }
     }
   }
@@ -115,7 +116,7 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise(ArgumentMatchers.any(), ArgumentMatchers.eq(EmptyRetrieval))(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(()))
 
-        await(authorisedWrappers.clientAuthenticated(None, EmptyRetrieval)(body)) shouldBe await(future)
+        await(authorisedWrappers.clientAuthenticated(None, EmptyRetrieval)(body)) mustBe await(future)
       }
     }
   }
@@ -142,8 +143,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
-        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
-        status(result) shouldBe 200
+        val result = authorisedWrappers.withAgentRefNumber(None)(body)
+        status(result) mustBe 200
       }
     }
 
@@ -165,8 +166,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
-        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
-        status(result) shouldBe 500
+        val result = authorisedWrappers.withAgentRefNumber(None)(body)
+        status(result) mustBe 500
       }
 
       "there is no agent code" in new Setup {
@@ -189,8 +190,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
-        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
-        status(result) shouldBe 500
+        val result = authorisedWrappers.withAgentRefNumber(None)(body)
+        status(result) mustBe 500
       }
 
       "there is no credentials" in new Setup {
@@ -211,8 +212,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
-        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
-        status(result) shouldBe 500
+        val result = authorisedWrappers.withAgentRefNumber(None)(body)
+        status(result) mustBe 500
       }
 
       "there is no internalId" in new Setup {
@@ -233,8 +234,8 @@ class AuthorisedWrappersSpec extends UnitSpec with MockitoSugar {
         when(mockAuthConnector.authorise[RetrievalConstruction](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(retrievalConstruction))
 
-        val result: Result = await(authorisedWrappers.withAgentRefNumber(None)(body))
-        status(result) shouldBe 500
+        val result = authorisedWrappers.withAgentRefNumber(None)(body)
+        status(result) mustBe 500
       }
     }
   }

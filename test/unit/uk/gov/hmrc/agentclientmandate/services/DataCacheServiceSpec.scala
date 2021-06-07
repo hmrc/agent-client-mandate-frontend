@@ -17,6 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.services
 
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -26,13 +27,29 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, SessionId}
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import scala.concurrent.Future
 
 class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("test")))
+
+  val formId = "form-id"
+  val formIdNotExist = "no-form-id"
+
+  val formData: FormData = FormData("some-data")
+
+  val formDataJson: JsValue = Json.toJson(formData)
+
+  val cacheMap: CacheMap = CacheMap(id = formId, Map("date" -> formDataJson))
+
+  val mockSessionCache: SessionCache = mock[SessionCache]
+
+  override def beforeEach: Unit = {
+    reset(mockSessionCache)
+  }
 
   case class FormData(name: String)
 
@@ -56,12 +73,12 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
       "formId of the cached form does not exist for defined data type" in new Setup {
 
         when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+          (any(), any(), any())) thenReturn {
           Future.successful(None)
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.GET[CacheMap](any(), any(), any())
+          (any(), any(), any()))
           .thenReturn(Future.successful(CacheMap("test", Map())))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(None)
@@ -72,12 +89,12 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
       "formId of the cached form does exist for defined data type" in new Setup {
 
         when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+          (any(), any(), any())) thenReturn {
           Future.successful(Some(formData))
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.GET[CacheMap](any(), any(), any())
+          (any(), any(), any()))
           .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(Some(formData))
@@ -87,12 +104,12 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
     "save form data" when {
       "valid form data with a valid form id is passed" in new Setup {
         when(mockSessionCache.cache[FormData](ArgumentMatchers.eq(formId), ArgumentMatchers.eq(formData))
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+          (any(), any(), any())) thenReturn {
           Future.successful(cacheMap)
         }
 
-        when(mockDefaultHttpClient.PUT[FormData, CacheMap](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockDefaultHttpClient.PUT[FormData, CacheMap](any(), any(), any())
+          (any(), any(), any(), any()))
           .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
 
         await(testDataCacheService.cacheFormData[FormData](formId, formData)) must be(formData)
@@ -101,33 +118,17 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
     "clear cache" when {
       "asked to do so" in new Setup {
-        when(mockSessionCache.remove()(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockSessionCache.remove()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+
         when(mockDefaultHttpClient.DELETE[HttpResponse]
-          (ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        (any(), any())
+        (any(), any(), any())
         ).thenReturn(Future.successful(HttpResponse(OK, "")))
 
         await(testDataCacheService.clearCache()).status must be(OK)
       }
     }
 
-  }
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("test")))
-
-  val formId = "form-id"
-  val formIdNotExist = "no-form-id"
-
-  val formData = FormData("some-data")
-
-  val formDataJson: JsValue = Json.toJson(formData)
-
-  val cacheMap = CacheMap(id = formId, Map("date" -> formDataJson))
-
-  val mockSessionCache: SessionCache = mock[SessionCache]
-
-  override def beforeEach: Unit = {
-    reset(mockSessionCache)
   }
 
 }
