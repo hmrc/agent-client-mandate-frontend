@@ -79,7 +79,7 @@ POST     /agent/search-previous/:callingPage      uk.gov.hmrc.agentclientmandate
 
 GET     /agent/unique-reference    uk.gov.hmrc.agentclientmandate.controllers.agent.UniqueAgentReferenceController.view(service = "ated")
 
-GET     /agent/summary                      uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController.view(service = "ated", tabName : Option[String] ?= None)
+GET     /agent/summary                      uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController.view(service = "ated")
 GET     /agent/doDelegation/:mandateId       uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController.doDelegation(service = "ated", mandateId: String)
 GET     /agent/summary/activate/:mandateId   uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController.activate(service = "ated", mandateId: String)
 POST    /agent/summary/update                uk.gov.hmrc.agentclientmandate.controllers.agent.AgentSummaryController.update(service = "ated")

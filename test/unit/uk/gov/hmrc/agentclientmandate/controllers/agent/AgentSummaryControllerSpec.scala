@@ -77,8 +77,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("filter-clients") must be(null)
           document.getElementById("displayName_field") must be(null)
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
-          document.getElementById("view-clients") must be(null)
+          document.getElementById("pending-mandate-tab").attr("href") must be("#pending-mandates")
         }
       }
 
@@ -98,8 +97,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.getElementById("filter-clients").text() must be("client.summary.filter-clients")
           document.getElementsByClass("govuk-label").first().text() must be("client.summary.filter-display_name")
           document.getElementById("add-client-btn") must be(null)
-          document.getElementById("view-pending-clients").attr("href") must be("/mandate/agent/summary?tabName=pending-clients")
-          document.getElementById("view-clients") must be(null)
+          document.getElementById("pending-mandate-tab").attr("href") must be("#pending-mandates")
         }
       }
     }
@@ -110,15 +108,14 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))
         )
 
-        viewAuthorisedAgent(controller)(mockMandates, Some("pending-clients")) { result =>
+        viewAuthorisedAgent(controller)(mockMandates) { result =>
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("client.summary.title - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
-          document.getElementById("view-pending-clients") must be(null)
-          document.getElementById("view-clients").attr("href") must be("/mandate/agent/summary")
+          document.getElementById("active-mandate-tab").attr("href") must be("#active-mandates")
         }
       }
     }
@@ -136,8 +133,8 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
           document.title() must be("client.summary.title - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
-          document.getElementById("view-pending-clients") must be(null)
-          document.getElementById("view-clients") must be(null)
+          document.getElementById("pending-mandate-tab").attr("href") must be("#pending-mandates")
+          document.getElementById("active-mandate-tab").attr("href") must be("#active-mandates")
         }
       }
     }
@@ -282,7 +279,6 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstancePending = app.injector.instanceOf[views.html.agent.agentSummary.pending]
   val injectedViewInstanceClients = app.injector.instanceOf[views.html.agent.agentSummary.clients]
   val injectedViewInstanceNoClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
 
@@ -295,7 +291,6 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      injectedViewInstancePending,
       injectedViewInstanceClients,
       injectedViewInstanceNoClientsNoPending
     )
@@ -353,7 +348,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
     statusHistory = Seq(MandateStatus(Status.New, time1, "credId")), Subscription(None, Service("ated", "ATED")),
     clientDisplayName = "client display name 5")
 
-  def viewAuthorisedAgent(controller: AgentSummaryController)(mockMandates: Option[Mandates], tabName: Option[String] = None)(test: Future[Result] => Any) {
+  def viewAuthorisedAgent(controller: AgentSummaryController)(mockMandates: Option[Mandates])(test: Future[Result] => Any) {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -372,7 +367,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
     when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(),
       ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
-    val result = controller.view(service, tabName).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 

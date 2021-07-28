@@ -50,7 +50,7 @@ class AgentMissingEmailController @Inject()(
         formWithError => Future.successful(BadRequest(templateAgentMissingEmail(formWithError, service))),
         data => {
           agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
-          Future.successful(Redirect(routes.AgentSummaryController.view(Some(service))))
+          Future.successful(Redirect(routes.AgentSummaryController.view()))
         }
       )
     }

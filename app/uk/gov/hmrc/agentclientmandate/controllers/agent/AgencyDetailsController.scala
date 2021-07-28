@@ -47,7 +47,7 @@ class AgencyDetailsController @Inject()(
         _            <- dataCacheService.cacheFormData[AgentDetails](agentDetailsFormId, agentDetails)
       } yield {
         Ok(templateAgentDetails(agentDetails, service,
-          Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view(Some(service)).url)))
+          Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url)))
       }
     }
   }

@@ -42,14 +42,13 @@ class AgentSummaryController @Inject()(
                                         val authConnector: AuthConnector,
                                         implicit val ec: ExecutionContext,
                                         implicit val appConfig: AppConfig,
-                                        templatePending:views.html.agent.agentSummary.pending,
                                         templateClients: views.html.agent.agentSummary.clients,
                                         templateNoClientsNoPending: views.html.agent.agentSummary.noClientsNoPending
                                       ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   val screenReaderTextId = "screenReaderTextId"
 
-  def view(service: String, tabName: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
+  def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) {agentAuthRetrievals =>
       for {
         screenReaderText <- dataCacheService.fetchAndGetFormData[String](screenReaderTextId)
@@ -60,7 +59,7 @@ class AgentSummaryController @Inject()(
       } yield {
         val messageScreenReaderText = screenReaderText.getOrElse("")
 
-        showView(service, mandates, agentDetails, clientsCancelled, messageScreenReaderText, tabName)
+        showView(service, mandates, agentDetails, clientsCancelled, messageScreenReaderText)
       }
     }
   }
@@ -72,7 +71,7 @@ class AgentSummaryController @Inject()(
           agentClientMandateService.fetchClientMandate(mandateId, agentAuthRetrievals).flatMap {
             case Some(x) =>
               dataCacheService.cacheFormData[String](screenReaderTextId, x.clientDisplayName) map {_ =>
-                Redirect(routes.AgentSummaryController.view(Some(service)))
+                Redirect(routes.AgentSummaryController.view())
               }
             case _ => throw new RuntimeException("Failed to fetch client")
           }
@@ -112,18 +111,13 @@ class AgentSummaryController @Inject()(
                        mandates: Option[Mandates],
                        agentDetails: AgentDetails,
                        clientsCancelled: Option[Seq[String]],
-                       screenReaderText: String,
-                       tabName: Option[String])(implicit request: Request[_]): Result = {
+                       screenReaderText: String)(implicit request: Request[_]): Result = {
 
     mandates match {
-      case Some(x) if x.pendingMandates.nonEmpty && tabName.contains("pending-clients") =>
-        Ok(templatePending(service, x, agentDetails, clientsCancelled, screenReaderText))
-      case Some(x) if x.activeMandates.nonEmpty =>
+      case Some(x) if x.activeMandates.nonEmpty || x.pendingMandates.nonEmpty =>
         Ok(templateClients(
           service, x, agentDetails, clientsCancelled, screenReaderText, filterClientsForm.fill(FilterClients(None, "allClients")))
         )
-      case Some(x) if x.pendingMandates.nonEmpty =>
-        Ok(templatePending(service, x, agentDetails, clientsCancelled, screenReaderText))
       case _ =>
         Ok(templateNoClientsNoPending(service, agentDetails, clientsCancelled))
     }
