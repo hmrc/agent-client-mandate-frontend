@@ -137,7 +137,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
         val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary?tabName=ATED"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
         }
       }
     }

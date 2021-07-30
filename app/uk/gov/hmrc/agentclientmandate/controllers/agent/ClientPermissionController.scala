@@ -73,7 +73,7 @@ class ClientPermissionController @Inject()(
             val result = if (data.hasPermission.getOrElse(false)) {
               Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
             } else {
-              Redirect(routes.AgentSummaryController.view(Some(service)))
+              Redirect(routes.AgentSummaryController.view())
             }
 
             Future.successful(result)

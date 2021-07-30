@@ -91,9 +91,9 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       assert(document.title() === "client.summary.title - GOV.UK")
 
       And("The Clients tab - should exist and have 1 item")
-      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
-      And("The Pending Clients tab - should not exist")
-      assert(document.getElementById("pending-clients").text === "client.summary.client-pending.title")
+      assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")
+      And("The Pending Clients tab - should exist and have 0 item")
+      assert(document.getElementById("pending-mandate-tab").text() === "client.summary.client-pending.title")
 
       And("The Add Client Button - should not exist")
       assert(document.getElementById("add-client-btn") === null)
@@ -116,9 +116,9 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       assert(document.title() === "client.summary.title - GOV.UK")
 
       And("The Clients tab - should exist and have 1 item")
-      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
-      And("The Pending Clients tab - should not exist")
-      assert(document.getElementById("pending-clients") === null)
+      assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")
+      And("The Pending Clients tab - should exist and have 0 item")
+      assert(document.getElementById("pending-mandate-tab").text() === "client.summary.client-pending.title")
 
       And("The Clients table - has the correct data and View link")
       assert(document.getElementById("client-name-0").text === "client display name 2")
@@ -147,8 +147,8 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
 
       val document = Jsoup.parse(html.toString())
 
-      Then("The Clients tab - should exist and have 15 items")
-      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
+      And("The Clients tab - should exist and have 15 items")
+      assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")
 
       And("The Clients table - has the correct data and View link")
       assert(document.getElementById("client-name-0").text === "client display name 2")
@@ -173,8 +173,8 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
 
       val document = Jsoup.parse(html.toString())
 
-      Then("The Clients tab - should exist and have 0 items")
-      assert(document.getElementById("clients").text === "client.summary.client-active.title selected")
+      And("The Clients tab - should exist and have 0 items")
+      assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")
 
       And("I should not see the clients cancelled panel")
       assert(document.getElementById("client-cancelled-title") === null)
@@ -186,9 +186,6 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
 
       And("The filter box should exist")
       assert(document.getElementById("filter-clients").text === "client.summary.filter-clients")
-
-      And("The text for no results should exist")
-      assert(document.getElementById("filter-no-results").text === "client.summary.no_clients_found")
     }
 
     scenario("agent visits summary page with clients cancelled in last 28 days") {
