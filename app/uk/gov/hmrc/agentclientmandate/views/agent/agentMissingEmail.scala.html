@@ -20,6 +20,21 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.input.Input
+
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukRadios
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.hint.Hint
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.Fieldset
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.fieldset.Legend
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+
 @this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios, govukInput: GovukInput)
 
 @(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)

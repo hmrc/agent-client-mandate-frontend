@@ -76,7 +76,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with 
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
           document.getElementsByClass("govuk-error-message").text() must
-            include("Error: agent.edit-client.error.dispName Error: client.email.error.email.empty")
+            include("govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName govukErrorMessage.visuallyHiddenText: client.email.error.email.empty")
         }
       }
 
