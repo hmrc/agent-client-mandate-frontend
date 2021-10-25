@@ -44,8 +44,7 @@
 
     </div>
 
-    <form action="@routes.RemoveAgentController.returnToService">
-        <button class="govuk-button" id="return_to_service_button" type="submit">@Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)</button>
-    </form>
-
+    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="return_to_service_button" href="@routes.RemoveAgentController.returnToService.url">
+        @Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)
+    </a>
 }

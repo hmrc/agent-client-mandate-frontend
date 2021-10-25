@@ -35,8 +35,7 @@
 
   @clientsCancelledPartial(clientsCancelled, service)
 
-  <form action="@routes.CollectAgentEmailController.addClient()">
-      <button id="add-client-btn" class="govuk-button" type="submit">@Messages("client.summary.add-client")</button>
-  </form>
-
+    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="add-client-btn" href="@routes.CollectAgentEmailController.addClient().url">
+        @Messages("client.summary.add-client")
+    </a>
 }
