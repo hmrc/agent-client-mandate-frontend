@@ -43,8 +43,10 @@
 
     <p class="govuk-body">@Html(Messages("client.agent-confirmation.sign-in", DelegationUtils.getDelegatedServiceRedirectUrl(service)))</p>
 
-    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@appConfig.serviceSignOutUrl(Some(service))">
-        @Messages("client.agent-confirmation.finish-signout")
-    </a>
+    <div>
+        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@appConfig.serviceSignOutUrl(Some(service))">
+            @Messages("client.agent-confirmation.finish-signout")
+        </a>
+    </div>
 
 }

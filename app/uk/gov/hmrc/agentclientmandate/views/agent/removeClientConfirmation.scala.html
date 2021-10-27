@@ -40,9 +40,10 @@
         <p id="non-uk-with-reference" class="govuk-body">@Messages("agent.remove-client-confirmation.non-uk-client-old-unique-refno", mandateId)</p>
     }
 
-    <div><a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@routes.AgentSummaryController.view().url">
-        @Messages("agent.remove-client-confirmation.view-all-clients")
-    </a></div>
-
+    <div>
+        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@routes.AgentSummaryController.view().url">
+            @Messages("agent.remove-client-confirmation.view-all-clients")
+        </a>
+    </div>
 
 }
