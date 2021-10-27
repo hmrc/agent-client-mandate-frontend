@@ -1,8 +1,5 @@
-import uk.gov.hmrc._
-import DefaultBuildSettings._
-import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName: String = "agent-client-mandate-frontend"
@@ -27,7 +24,7 @@ lazy val scoverageSettings = {
       "uk.gov.hmrc.BuildInfo*;" +
       "uk.gov.hmrc.agentclientmandate.viewModelsAndForms.*;" +
       "uk.gov.hmrc.agentclientmandate.controllers.testOnly.*;",
-    ScoverageKeys.coverageMinimum := 90,
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -52,8 +49,7 @@ lazy val microservice = Project(appName, file("."))
     ),
     scalaVersion := "2.12.12",
     libraryDependencies ++= appDependencies,
-    retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+    retrieveManaged := true
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)

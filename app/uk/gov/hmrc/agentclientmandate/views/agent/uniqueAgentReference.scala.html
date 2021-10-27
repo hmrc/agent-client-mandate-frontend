@@ -46,7 +46,9 @@
     <li id="agent.unique-reference.details.text.4">@Messages("agent.unique-reference.details.text.4", clientDisplayDetails.mandateId)</li>
   </ol>
 
-@helper.form(action=routes.AgentSummaryController.view()){
-<button class="govuk-button" role = "button" id="submit">@Messages("agent.unique-reference.button")</button>}
-
+  <div>
+    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="submit" href="@routes.AgentSummaryController.view().url">
+        @Messages("agent.unique-reference.button")
+    </a>
+  </div>>
 }

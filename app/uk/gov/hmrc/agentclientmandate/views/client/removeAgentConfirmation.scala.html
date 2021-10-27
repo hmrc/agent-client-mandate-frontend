@@ -35,17 +35,18 @@
 
         <div class="govuk-form-group">
 
-        <h2 id="heading-1">@Messages("client.remove-agent-confirmation.header")</h2>
+        <h2 class="govuk-heading-m" id="heading-1">@Messages("client.remove-agent-confirmation.header")</h2>
 
-        <ul id="list" class="bullets">
+        <ul id="list" class="govuk-list govuk-list--bullet">
             <li>@Messages("client.remove-agent-confirmation.create-return")</li>
             <li>@Messages("client.remove-agent-confirmation.appoint-agent")</li>
         </ul>
 
     </div>
 
-    <form action="@routes.RemoveAgentController.returnToService">
-        <button class="govuk-button" id="return_to_service_button" type="submit">@Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)</button>
-    </form>
-
+    <div>
+        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="return_to_service_button" href="@routes.RemoveAgentController.returnToService.url">
+            @Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)
+        </a>
+    </div>
 }

@@ -43,6 +43,9 @@
         <li>@Messages("agent.reject-client-confirmation.submit-returns")</li>
     </ul>
 
-@helper.form(action=routes.AgentSummaryController.view()){
-<button class="govuk-button" id="finish_btn">@Messages("agent.reject-client-confirmation.view-all-clients")</button>}
+    <div>
+        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@routes.AgentSummaryController.view().url">
+            @Messages("agent.reject-client-confirmation.view-all-clients")
+        </a>
+    </div>
 }

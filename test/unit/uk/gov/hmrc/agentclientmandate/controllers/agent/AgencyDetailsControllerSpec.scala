@@ -30,6 +30,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.AgencyDetailsController
 import uk.gov.hmrc.agentclientmandate.models.AgentDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.agentDetails
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
@@ -65,7 +66,7 @@ class AgencyDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befor
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceAgentDetails = app.injector.instanceOf[views.html.agent.agentDetails]
+  val injectedViewInstanceAgentDetails: agentDetails = app.injector.instanceOf[views.html.agent.agentDetails]
 
   class Setup {
     val controller = new AgencyDetailsController(
