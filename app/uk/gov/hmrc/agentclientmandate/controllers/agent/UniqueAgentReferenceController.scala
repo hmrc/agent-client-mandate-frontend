@@ -43,7 +43,7 @@ class UniqueAgentReferenceController @Inject()(
     withAgentRefNumber(Some(service)) { _ =>
       dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
         case Some(x) => Ok(templateUniqueAgentReference(x, service))
-        case None => Redirect(routes.SelectServiceController.view())
+        case None => Redirect(routes.SelectServiceController.view)
       }
     }
   }
