@@ -31,7 +31,7 @@
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.select-service.header"),
     Some(mandateErrorSummary(selectServiceForm, "agent.select-service.error.general")))
 
-  @formHelper(action = routes.SelectServiceController.submit()) {
+  @formHelper(action = routes.SelectServiceController.submit) {
 
     <div class="govuk-form-group" id="service">
         @govukRadios(
