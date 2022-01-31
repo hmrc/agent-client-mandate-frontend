@@ -16,19 +16,18 @@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
 @import uk.gov.hmrc.hmrcfrontend.config.AccessibilityStatementConfig
-@import uk.gov.hmrc.hmrcfrontend.views.Aliases.ReportTechnicalIssue
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcReportTechnicalIssue
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcStandardHeader, HmrcTrackingConsentSnippet}
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.En
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
 @import uk.gov.hmrc.agentclientmandate.views.html.customGovukLayout
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
 
 @this(
         appConfig: AppConfig,
         customGovukLayout: customGovukLayout,
         govukHeader: HmrcStandardHeader,
-        problemLink: HmrcReportTechnicalIssue,
+        problemLinkHelper: HmrcReportTechnicalIssueHelper,
         accessibilityStatementConfig: AccessibilityStatementConfig,
         hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet
 )
@@ -46,12 +45,7 @@
 
 @content = {
     @contentBlock
-
-    @problemLink(
-        ReportTechnicalIssue(serviceCode = "awrs-lookup-frontend", language = messages.lang.code match {
-            case "en" | "en-GB" => En
-        }, classes = Some("print-hidden"))
-    )
+    @problemLinkHelper()
 }
 
 @allScripts = {
