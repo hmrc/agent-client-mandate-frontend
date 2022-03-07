@@ -20,11 +20,11 @@
 @this(layout: layout)
 
 @(pageTitle: String,
-heading: String,
-message: String,
-message2: Option[String] = None,
-delegatedService: Option[String] = None,
-appConfig: AppConfig)(implicit request: Request[_], messages: Messages)
+  heading: String,
+  message: String,
+  message2: Option[String] = None,
+  delegatedService: Option[String] = None,
+  appConfig: AppConfig)(implicit request: Request[_], messages: Messages)
 
 @secondParagraph = @{message2.getOrElse("")}
 
@@ -37,4 +37,4 @@ appConfig: AppConfig)(implicit request: Request[_], messages: Messages)
 @layout(
  pageTitle = Some(pageTitle),
  scripts = None
-)(mainContent, Html(""))
+)(mainContent, None)

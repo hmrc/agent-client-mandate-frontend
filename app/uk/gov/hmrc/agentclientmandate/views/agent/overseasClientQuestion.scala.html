@@ -28,7 +28,7 @@
 
 @implicitFormInstance = @{ Some(overseasClientQuestionForm) }
 
-@main_template(title = Messages("agent.overseas-client-question.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.overseas-client-question.title")) {
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.overseas-client-question.header"),
     Some(mandateErrorSummary(overseasClientQuestionForm, "agent.overseas-client-question.error.general")))
 

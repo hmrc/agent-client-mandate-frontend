@@ -27,7 +27,7 @@
 
 @implicitFormInstance = @{ Some(prevRegisteredForm) }
 
-@main_template(title = Messages("agent.client-prev-registered.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.client-prev-registered.title")) {
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-prev-registered.header"),
   Some(mandateErrorSummary(prevRegisteredForm, "agent.client-permission.error.general")))
 

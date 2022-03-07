@@ -24,7 +24,7 @@
 @(service: String, mandateId: String, clientName: String, isNonUkClient: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
-@main_template(title = Messages("agent.remove-client-confirmation.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.remove-client-confirmation.title")) {
 
     <div class="govuk-panel govuk-panel--confirmation" id="banner">
         <h1 id="banner-text" class="govuk-panel__title">

@@ -26,7 +26,7 @@
 
 @(removeClientForm: Form[YesNoQuestion], service: String, clientName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("agent.remove-client.header", clientName), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.remove-client.header", clientName)) {
     @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.remove-client.header", clientName),
         Some(mandateErrorSummary(removeClientForm, "yes-no.error.general", Some("agent.remove-client.error"))))
 

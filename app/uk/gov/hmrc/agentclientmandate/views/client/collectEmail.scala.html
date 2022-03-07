@@ -25,7 +25,7 @@
 
 @(service: String, addEmailForm: Form[ClientEmail], mode: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("client.collect-email.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("client.collect-email.title")) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("client.collect-email.preheader"), "header", Messages("client.collect-email.header"),
     Some(mandateErrorSummary(addEmailForm, "client.collect-email.error.general")))
 

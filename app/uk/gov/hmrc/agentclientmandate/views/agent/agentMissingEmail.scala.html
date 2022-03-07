@@ -55,7 +55,7 @@
 
 @implicitFormInstance = @{ Some(agentMissingEmailForm) }
 
-@main_template(title = Messages("agent.missing-email.title"), scriptElem = Some(pageScripts), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.missing-email.title"), scriptElem = Some(pageScripts)) {
 
     @pageHeadersAndError(None, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.missing-email.header"),
 

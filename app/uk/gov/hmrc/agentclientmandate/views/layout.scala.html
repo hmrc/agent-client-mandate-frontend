@@ -14,34 +14,18 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
-@import uk.gov.hmrc.hmrcfrontend.config.AccessibilityStatementConfig
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcStandardHeader, HmrcTrackingConsentSnippet}
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.En
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
-@import uk.gov.hmrc.agentclientmandate.views.html.customGovukLayout
+@import uk.gov.hmrc.agentclientmandate.views.html.customHmrcLayout
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
 
 @this(
         appConfig: AppConfig,
-        customGovukLayout: customGovukLayout,
-        govukHeader: HmrcStandardHeader,
+        customHmrcLayout: customHmrcLayout,
         problemLinkHelper: HmrcReportTechnicalIssueHelper,
-        accessibilityStatementConfig: AccessibilityStatementConfig,
-        hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet
 )
 
-@(pageTitle: Option[String] = None, scripts: Option[Html])(contentBlock: Html, sidebarBlock: Html)(implicit request: Request[_], messages: Messages)
-
-@headBlock = {
-    @hmrcTrackingConsentSnippet()
-    <!--[if lte IE 8]><link href='@routes.Assets.versioned("stylesheets/application-ie-8.css")' rel="stylesheet" type="text/css" /><![endif]-->
-    <!--[if gt IE 8]><!--><link href='@routes.Assets.versioned("stylesheets/application.css")' media="screen" rel="stylesheet" type="text/css" /><!--<![endif]-->
-}
-
-@beforeContentBlock = {
-}
+@(pageTitle: Option[String] = None, scripts: Option[Html])(contentBlock: Html, sidebarBlock: Option[Html])(implicit request: Request[_], messages: Messages)
 
 @content = {
     @contentBlock
@@ -58,26 +42,7 @@
     @scripts
 }
 
-@siteHeader = {
-    @govukHeader(
-        signOutUrl = Some(appConfig.serviceSignOutUrl(Some("ated"))),
-        serviceUrl = Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url),
-        serviceName = Some(Messages("mandate.main-title", "ATED"))
-    )
-}
-
-@customGovukLayout(
+@customHmrcLayout(
     pageTitle = pageTitle,
-    headBlock = Some(headBlock),
-    headerBlock = Some(siteHeader),
-    beforeContentBlock = Some(beforeContentBlock),
-    footerItems = Seq(
-        FooterItem(href = Some(appConfig.cookies), text = Some(messages("footer.links.cookies.text"))),
-        FooterItem(href = accessibilityStatementConfig.url, text = Some(messages("footer.links.accessibility.text"))),
-        FooterItem(href = Some(appConfig.privacy), text = Some(messages("footer.links.privacy_policy.text"))),
-        FooterItem(href = Some(appConfig.termsConditions), text = Some(messages("footer.links.terms_and_conditions.text"))),
-        FooterItem(href = Some(appConfig.govukHelp), text = Some(messages("footer.links.help_page.text")))
-    ),
     scriptsBlock = Some(allScripts),
-    bodyEndBlock = None
 )(content, sidebarBlock)

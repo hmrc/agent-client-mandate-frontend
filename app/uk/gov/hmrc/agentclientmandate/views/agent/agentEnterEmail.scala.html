@@ -36,7 +36,7 @@
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 @implicitFormInstance = @{ Some(agentEmailForm) }
 
-@main_template(title = Messages("agent.enter-email.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.enter-email.title")) {
 
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.enter-email.header"),
     Some(mandateErrorSummary(agentEmailForm, "agent.enter-email.error.general")))

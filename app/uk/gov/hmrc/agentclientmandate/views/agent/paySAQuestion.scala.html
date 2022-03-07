@@ -27,7 +27,7 @@
 
 @implicitFormInstance = @{ Some(paySAQuestionForm) }
 
-@main_template(title = Messages("agent.paySA-question.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.paySA-question.title")) {
     @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.paySA-question.header"),
         Some(mandateErrorSummary(paySAQuestionForm, "agent.paySA-question.error.general")))
 
