@@ -32,9 +32,9 @@
 
 @implicitFormInstance = @{ Some(filterClientsForm) }
 
-@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service))){
+@main_template(title = Messages("client.summary.title", service.toUpperCase), sideBar = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service))){
 
-<span class="screen-reader-text">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
+<span class="govuk-visually-hidden">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
 
 <header class="page-header page-header-margin">
   <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>

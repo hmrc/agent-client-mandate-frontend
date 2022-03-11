@@ -70,7 +70,7 @@ class AgentSummaryControllerSpec extends PlaySpec  with MockitoSugar with Before
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("screen-reader-text").eq(0).text must be("client.summary.hidden.client_activated")
+          document.getElementsByClass("govuk-visually-hidden").eq(0).text must be("client.summary.hidden.client_activated")
           document.title() must be("client.summary.title - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
