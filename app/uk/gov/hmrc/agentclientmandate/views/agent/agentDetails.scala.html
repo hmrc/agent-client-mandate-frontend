@@ -48,14 +48,12 @@
             @Messages("agent.edit-details.registered.address")
         </dt>
         <dd class="govuk-summary-list__value" id="agency-address-val">
-        <ol class="govuk-list">
-            <li>@agentDetails.addressDetails.addressLine1</li>
-            <li>@agentDetails.addressDetails.addressLine2</li>
-            <li>@agentDetails.addressDetails.addressLine3</li>
-            <li>@agentDetails.addressDetails.addressLine4</li>
-            <li>@agentDetails.addressDetails.postalCode</li>
-            <li>@agentDetails.addressDetails.countryCode</li>
-        </ol>
+            @agentDetails.addressDetails.addressLine1<br/>
+            @agentDetails.addressDetails.addressLine2<br/>
+            @if(agentDetails.addressDetails.addressLine3.isDefined){@agentDetails.addressDetails.addressLine3<br/>}
+            @if(agentDetails.addressDetails.addressLine4.isDefined){@agentDetails.addressDetails.addressLine4<br/>}
+            @if(agentDetails.addressDetails.postalCode.isDefined){@agentDetails.addressDetails.postalCode<br/>}
+            @agentDetails.addressDetails.countryCode<br/>
         </dd>
         <dd class="govuk-summary-list__actions">
             <a class="govuk-link" href="@routes.UpdateAddressDetailsController.view()">
