@@ -259,6 +259,7 @@ agent.prev-auth-num.accordion = How an agent can find the UAN for a client
 agent.prev-auth-num.accordion.p = The UAN is shown on the client record on the agent’s ATED account. The agent needs to select ‘Edit’ link next to the client’s name, which shows the number at the top.
 agent.prev-auth-num.accordion.p2 = The agent also needs to click ‘Remove this client’ to allow the transfer to the new agent to take place.
 agent.prev-auth-num.not-selected.field-error = Select yes if you have the previous unique authorisation number
+agent.prev-auth-num.not-selected.field-error.authNum = Select yes if you have the previous unique authorisation number
 
 ##### AGENT INFORM HMRC PAGE
 

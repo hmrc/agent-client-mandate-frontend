@@ -27,7 +27,7 @@
 
 @implicitFormInstance = @{ Some(nrlQuestionForm) }
 
-@main_template(title = Messages("agent.nrl-question.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.nrl-question.title")) {
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.nrl-question.header"),
     Some(mandateErrorSummary(nrlQuestionForm, "agent.nrl-question.error.general")))
 

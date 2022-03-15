@@ -27,7 +27,7 @@
 
 @(service: String, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("client.summary.title", service.toUpperCase), sidebarLinks = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service)), delegatedService = Some(service)){
+@main_template(title = Messages("client.summary.title", service.toUpperCase), sideBar = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service))){
   <header class="page-header page-header-margin">
     <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
     <h1 id="header" class="govuk-heading-l">@Messages("client.summary.title", service.toUpperCase)</h1>

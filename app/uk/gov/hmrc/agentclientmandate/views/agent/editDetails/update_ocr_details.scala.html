@@ -44,7 +44,7 @@
 
 @implicitFormInstance = @{ Some(identificationForm) }
 
-@main_template(title = Messages("agent.edit-details.title"),scriptElem = Some(pageScripts), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.edit-details.title"),scriptElem = Some(pageScripts)) {
 
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.edit-mandate-details.ocr.header"))
 

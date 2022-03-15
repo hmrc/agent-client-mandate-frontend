@@ -26,7 +26,7 @@
 @(mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
-@main_template(title = Messages("Declaration and consent"), delegatedService = Some(mandate.subscription.service.id)) {
+@main_template(title = Messages("Declaration and consent")) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("client.agent-declaration.pre-heading"), "header", Messages("client.agent-declaration.header"))
 
   <p class="govuk-body" id="declaration-info-1">@Messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>

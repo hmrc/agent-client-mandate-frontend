@@ -28,7 +28,7 @@
 @implicitFormInstance = @{ Some(prevUniqueAuthNumForm) }
 
 
-@main_template(title = messages("agent.prev-auth-num.title"), delegatedService = Some(service)) {
+@main_template(title = messages("agent.prev-auth-num.title")) {
     @pageHeadersAndError(backLink, "pre-header", messages("agent.add-a-client.sub-header"), "header", messages("agent.prev-auth-num.header"),
         Some(mandateErrorSummary(prevUniqueAuthNumForm, "agent.prev-auth-num.not-selected.field-error")))
 

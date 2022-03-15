@@ -11,6 +11,10 @@
 
 }
 
+.service-banner {
+    border-bottom: 10px solid #005ea5;
+}
+
 .custom-combobox-toggle {
     position: absolute;
     top: 0;
@@ -25,14 +29,6 @@
 .custom-combobox-input {
     margin: 0;
     padding: 5px 10px;
-}
-
-.screen-reader-text {
-  clip: rect(1px, 1px, 1px, 1px);
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  position: absolute !important;
 }
 
 .link-back {

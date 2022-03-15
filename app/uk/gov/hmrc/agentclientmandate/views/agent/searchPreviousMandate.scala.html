@@ -26,7 +26,7 @@
 
 @(service: String, mandateRefForm: Form[MandateReference], callingPage: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("agent.search-previous-mandate.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.search-previous-mandate.title")) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.search-previous-mandate.header"),
     Some(mandateErrorSummary(mandateRefForm, "agent.search-previous-mandate.error")))
 

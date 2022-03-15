@@ -26,7 +26,7 @@
 @(service: String, mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
-@main_template(title = Messages("client.review-agent.title"), delegatedService = Some(mandate.subscription.service.id)) {
+@main_template(title = Messages("client.review-agent.title")) {
 
 @pageHeadersAndError(backLink, "pre-heading", Messages("client.review-agent.preheader"), "header", Messages("client.review-agent.header"))
 

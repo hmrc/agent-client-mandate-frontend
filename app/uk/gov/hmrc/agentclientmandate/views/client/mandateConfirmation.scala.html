@@ -28,7 +28,7 @@
 @(agentName: String, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
-@main_template(title = Messages("client.agent-confirmation.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("client.agent-confirmation.title")) {
 
     <div class=" govuk-panel govuk-panel--confirmation" id="banner">
         <h1 id="banner-text" class="govuk-panel__title">

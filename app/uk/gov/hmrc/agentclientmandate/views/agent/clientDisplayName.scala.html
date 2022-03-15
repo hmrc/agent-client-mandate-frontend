@@ -30,7 +30,7 @@
 
 @implicitFormInstance = @{ Some(clientDisplayNameForm) }
 
-@main_template(title = Messages("agent.client-display-name.title"), delegatedService = Some(service)) {
+@main_template(title = Messages("agent.client-display-name.title")) {
 
     @pageHeadersAndError(backLink,"pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-display-name.header"),
         Some(mandateErrorSummary(clientDisplayNameForm, "agent.client-display-name.error.general")))
