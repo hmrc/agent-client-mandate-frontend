@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 
 @this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios, govukInput: GovukInput, govukSelect: GovukSelect)
 
@@ -44,7 +45,7 @@
 
 @implicitFormInstance = @{ Some(identificationForm) }
 
-@main_template(title = Messages("agent.edit-details.title"),scriptElem = Some(pageScripts)) {
+@main_template(title = titleBuilder(Messages("agent.edit-details.title"), Some(identificationForm)),scriptElem = Some(pageScripts)) {
 
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.edit-mandate-details.ocr.header"))
 

@@ -27,7 +27,7 @@ import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfTrue
 case class AgentSelectService(service: Option[String] = None)
 
 object AgentSelectServiceForm {
-  def selectServiceForm =
+  def selectServiceForm: Form[AgentSelectService] =
     Form(
       mapping(
         "service" -> optional(text).verifying("agent.select-service.error.service", serviceOpt => serviceOpt.isDefined)
@@ -42,7 +42,7 @@ object FilterClients {
 }
 
 object FilterClientsForm {
- val filterClientsForm = Form(
+ val filterClientsForm: Form[FilterClients] = Form(
     mapping(
        "displayName" -> optional(text),
        "showAllClients" -> text
@@ -57,7 +57,7 @@ object AgentEmail {
 }
 
 object AgentEmailForm extends Constraints {
-  def agentEmailForm =
+  def agentEmailForm: Form[AgentEmail] =
     Form(
       mapping(
         "email" -> text
@@ -76,7 +76,7 @@ object AgentMissingEmail {
 
 object AgentMissingEmailForm extends Constraints  {
 
-  def agentMissingEmailForm =
+  def agentMissingEmailForm: Form[AgentMissingEmail] =
     Form(
         mapping(
 
@@ -97,7 +97,7 @@ object OverseasClientQuestion {
 }
 
 object OverseasClientQuestionForm {
-  def overseasClientQuestionForm =
+  def overseasClientQuestionForm: Form[OverseasClientQuestion] =
     Form(
       mapping(
         "isOverseas" -> optional(boolean).verifying("agent.overseas-client-question.error.isOverseas", x => x.isDefined)
@@ -117,7 +117,7 @@ object CollectClientBusinessDetailsForm {
   val length0 = 0
   val length105 = 105
 
-  def collectClientBusinessDetails = Form(mapping(
+  def collectClientBusinessDetails: Form[CollectClientBusinessDetails] = Form(mapping(
     "businessName" -> text
       .verifying("agent.enter-business-details-error.businessName", x => x.length > length0)
       .verifying("agent.enter-business-details-error.businessName.length", x => x.isEmpty || (x.nonEmpty && x.length <= length105)),
@@ -136,7 +136,7 @@ object EditMandateDetailsForm extends Constraints {
   val length0 = 0
   val length99 = 99
 
-  def editMandateDetailsForm =
+  def editMandateDetailsForm: Form[EditMandateDetails] =
     Form(
       mapping(
     "displayName" -> text
@@ -156,7 +156,7 @@ case class NRLQuestion(nrl: Option[Boolean] = None)
 object NRLQuestionForm {
   implicit val formats: OFormat[NRLQuestion] = Json.format[NRLQuestion]
 
-  def nrlQuestionForm = Form(
+  def nrlQuestionForm: Form[NRLQuestion] = Form(
     mapping(
       "nrl" -> optional(boolean).verifying("agent.nrl-question.nrl.not-selected.error", a => a.isDefined)
     )(NRLQuestion.apply)(NRLQuestion.unapply)
@@ -169,7 +169,7 @@ case class PaySAQuestion(paySA: Option[Boolean] = None)
 object PaySAQuestion {
   implicit val formats: OFormat[PaySAQuestion] = Json.format[PaySAQuestion]
 
-  def paySAQuestionForm = Form(
+  def paySAQuestionForm: Form[PaySAQuestion] = Form(
     mapping(
       "paySA" -> optional(boolean).verifying("agent.paySA-question.paySA.not-selected.error", a => a.isDefined)
     )(PaySAQuestion.apply)(PaySAQuestion.unapply)
@@ -182,7 +182,7 @@ case class ClientPermission(hasPermission: Option[Boolean] = None)
 object ClientPermissionForm {
   implicit val formats: OFormat[ClientPermission] = Json.format[ClientPermission]
 
-  def clientPermissionForm = Form(
+  def clientPermissionForm: Form[ClientPermission] = Form(
     mapping(
       "hasPermission" -> optional(boolean).verifying("agent.client-permission.hasPermission.not-selected.error", a => a.isDefined)
     )(ClientPermission.apply)(ClientPermission.unapply)
@@ -195,7 +195,7 @@ case class PrevUniqueAuthNum(authNum: Option[Boolean] = None)
 object PrevUniqueAuthNumForm{
   implicit val formats: OFormat[PrevUniqueAuthNum] = Json.format[PrevUniqueAuthNum]
 
-  def prevUniqueAuthNumForm = Form(
+  def prevUniqueAuthNumForm: Form[PrevUniqueAuthNum] = Form(
     mapping(
       "authNum" -> optional(boolean).verifying("agent.prev-auth-num.not-selected.field-error", a => a.isDefined)
     )(PrevUniqueAuthNum.apply)(PrevUniqueAuthNum.unapply)
@@ -208,7 +208,7 @@ case class PrevRegistered(prevRegistered: Option[Boolean] = None)
 object PrevRegisteredForm {
   implicit val formats: OFormat[PrevRegistered] = Json.format[PrevRegistered]
 
-  def prevRegisteredForm = Form(
+  def prevRegisteredForm: Form[PrevRegistered] = Form(
     mapping(
       "prevRegistered" -> optional(boolean).verifying("agent.client-prev-registered.not-selected.field-error", a => a.isDefined)
     )(PrevRegistered.apply)(PrevRegistered.unapply)
@@ -233,7 +233,7 @@ object ClientMandateDisplayDetails {
 object ClientDisplayNameForm {
 
   val lengthZero = 0
-  def clientDisplayNameForm = Form(
+  def clientDisplayNameForm: Form[ClientDisplayName] = Form(
     mapping(
       "clientDisplayName" -> text
         .verifying("agent.client-display-name.error.not-selected", x => x.trim.length > lengthZero)
@@ -261,7 +261,7 @@ object EditAgentAddressDetailsForm {
 
   val countryUK = "GB"
 
-  def editAgentAddressDetailsForm = Form(
+  def editAgentAddressDetailsForm: Form[EditAgentAddressDetails] = Form(
     mapping(
       "agentName" -> text.
         verifying("agent.edit-details-error.businessName", x => x.trim.length > length0)
@@ -303,7 +303,7 @@ object NonUkIdentificationForm {
 
   val countryUK = "GB"
 
-  def nonUkIdentificationForm = Form(
+  def nonUkIdentificationForm: Form[OverseasCompany] = Form(
     mapping(
       "hasBusinessUniqueId" -> optional(boolean).verifying("agent.edit-details-error.hasBusinessUniqueId.not-selected", x => x.isDefined),
       "idNumber" -> optional(text)

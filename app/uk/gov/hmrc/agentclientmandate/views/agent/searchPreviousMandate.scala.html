@@ -18,7 +18,7 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 
@@ -26,7 +26,7 @@
 
 @(service: String, mandateRefForm: Form[MandateReference], callingPage: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("agent.search-previous-mandate.title")) {
+@main_template(title = titleBuilder(messages("agent.search-previous-mandate.title"), Some(mandateRefForm))) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.search-previous-mandate.header"),
     Some(mandateErrorSummary(mandateRefForm, "agent.search-previous-mandate.error")))
 

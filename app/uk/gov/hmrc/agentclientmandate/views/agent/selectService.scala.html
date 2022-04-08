@@ -19,15 +19,16 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
-
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+
 @this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(selectServiceForm: Form[AgentSelectService], backLink:Option[String]=None)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(selectServiceForm) }
 
-@main_template(title = Messages("agent.select-service.title")) {
+@main_template(title = titleBuilder(messages("agent.select-service.title"), Some(selectServiceForm))) {
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.select-service.header"),
     Some(mandateErrorSummary(selectServiceForm, "agent.select-service.error.general")))
 

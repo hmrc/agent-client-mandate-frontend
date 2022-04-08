@@ -23,12 +23,13 @@
 @import org.joda.time.format.DateTimeFormat
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+
 @this(main_template: main_template)
 
 @(agentName: String, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-
-@main_template(title = Messages("client.agent-confirmation.title")) {
+@main_template(title = titleBuilder(messages("client.agent-confirmation.title"))) {
 
     <div class=" govuk-panel govuk-panel--confirmation" id="banner">
         <h1 id="banner-text" class="govuk-panel__title">
