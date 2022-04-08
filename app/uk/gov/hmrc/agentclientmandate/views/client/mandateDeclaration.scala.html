@@ -19,14 +19,14 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+
 @this(main_template: main_template, formHelper: FormWithCSRF)
 
 @(mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-
-@main_template(title = Messages("Declaration and consent")) {
+@main_template(title = titleBuilder(messages("Declaration and consent"))) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("client.agent-declaration.pre-heading"), "header", Messages("client.agent-declaration.header"))
 
   <p class="govuk-body" id="declaration-info-1">@Messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>

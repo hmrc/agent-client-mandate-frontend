@@ -19,15 +19,16 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
-
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+
 @this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(paySAQuestionForm: Form[PaySAQuestion], service: String, backLink:Option[String]=None)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(paySAQuestionForm) }
 
-@main_template(title = Messages("agent.paySA-question.title")) {
+@main_template(title = titleBuilder(messages("agent.paySA-question.title"), Some(paySAQuestionForm))) {
     @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.paySA-question.header"),
         Some(mandateErrorSummary(paySAQuestionForm, "agent.paySA-question.error.general")))
 

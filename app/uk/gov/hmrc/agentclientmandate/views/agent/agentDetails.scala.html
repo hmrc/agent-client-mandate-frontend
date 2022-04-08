@@ -20,12 +20,13 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 
 @this(main_template: main_template, formHelper: FormWithCSRF)
 
 @(agentDetails: AgentDetails, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("agent.edit-details.title")) {
+@main_template(title = titleBuilder(messages("agent.edit-details.title"))) {
 
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-details.sub-header"), "agency-details-header", Messages("agent.edit-details.header"))
 

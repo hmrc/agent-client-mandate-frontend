@@ -17,16 +17,16 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
+@import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 
 @this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
 
 @(service: String, rejectClientForm: Form[YesNoQuestion], clientName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = Messages("agent.reject-client.title")) {
+@main_template(title = titleBuilder(messages("agent.reject-client.title"), Some(rejectClientForm))) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "heading", Messages("agent.reject-client.header", clientName),
         Some(mandateErrorSummary(rejectClientForm, "yes-no.error.general", Some("agent.reject-client.error"))))
 

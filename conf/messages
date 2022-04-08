@@ -485,6 +485,7 @@ urbanner.message.reject = No thanks
 
 ##### GENERIC ERROR
 
+agent.client.mandate.error.title.prefix = Error:
 agent.client.mandate.generic.error.header = Sorry, there is a problem with the service
 agent.client.mandate.generic.error.title = Sorry, there is a problem with the service
 agent.client.mandate.generic.error.message = You will be able to use the service later.
