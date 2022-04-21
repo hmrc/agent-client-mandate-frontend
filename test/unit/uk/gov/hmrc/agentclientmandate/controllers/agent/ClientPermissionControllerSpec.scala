@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -34,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.clientPermission
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ClientPermissionController" must {
 
@@ -74,7 +74,13 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
+          assert(document.getElementById("hasPermission") != null)
+          assert(document.getElementById("hasPermission-2") != null)
+          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
+          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
+
           document.getElementById("continue").text() must be("continue-button")
+          assert(document.select("#submit").text() === "agent.all-my-clients.button")
 
           document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
@@ -107,12 +113,17 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
           document.getElementById("header").text() must include("agent.client-permission.header")
           document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
-          document.getElementById("continue").text() must be("continue-button")
-
+          assert(document.getElementById("hasPermission") != null)
+          assert(document.getElementById("hasPermission-2") != null)
+          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
+          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
+          assert(document.select("#continue").text() === "continue-button")
+          assert(document.select("#submit").text() === "agent.all-my-clients.button")
           document.getElementById("backLinkHref").text() must be("mandate.back")
           document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/nrl-question")
         }
       }
+
       "agent requests(GET) for 'client permission' view for other service - it doesn't clear session cache for ated-subscription" in new Setup {
         viewWithAuthorisedAgent(serviceUsed = "otherService", "") { result =>
           status(result) must be(OK)
@@ -124,7 +135,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
 
     "redirect agent to 'enter client non-uk details' page in business-customer-frontend application" when {
       "valid form is submitted and YES is selected" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "true")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/client-registered-previously")
@@ -134,7 +145,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
 
     "redirect agent to 'mandate summary' page" when {
       "valid form is submitted and NO" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
@@ -144,7 +155,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -153,7 +164,6 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
         }
       }
     }
-
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -161,7 +171,7 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceClientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
+  val injectedViewInstanceClientPermission: clientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
 
   class Setup {
     val controller = new ClientPermissionController(
@@ -193,8 +203,10 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
     def viewWithAuthorisedAgent(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
 
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
+      when(mockBusinessCustomerConnector.clearCache(
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
+      when(mockAtedSubscriptionConnector.clearCache(
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
@@ -205,8 +217,10 @@ class ClientPermissionControllerSpec extends PlaySpec  with BeforeAndAfterEach w
     def viewWithAuthorisedAgentWithSomeData(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any) {
       val userId = s"user-${UUID.randomUUID}"
 
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
+      when(mockBusinessCustomerConnector.clearCache(
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
+      when(mockAtedSubscriptionConnector.clearCache(
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(HttpResponse(OK, ""))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientPermission](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(ClientPermission(Some(true)))))

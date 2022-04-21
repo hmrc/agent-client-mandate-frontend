@@ -21,8 +21,9 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
+@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput, govukButton: GovukButton)
 
 @(editMandateDetailsForm: Form[EditMandateDetails], service: String, mandateId: String, clientDisplayName: String, clientParty: Option[String], backLink: Option[String], showRemoveClient: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -60,14 +61,19 @@
 
   </fieldset>
 
-      <div class="govuk-button-group">
-          <button class="govuk-button" id="submit" type="submit">@Messages("agent.edit-mandate-details.submit")</button>
+      @govukButton(Button(
+          content = Text(messages("agent.edit-mandate-details.submit")),
+          inputType = Some("submit"),
+          attributes = Map("id" -> "submit")
+      ))
 
-          @if(showRemoveClient){
-              <a id="remove-client-link" class="govuk-link" href="@routes.RemoveClientController.view(mandateId)">
+      @if(showRemoveClient){
+          <div class="govuk-form-group">
+              <a id="remove-client-link" class="govuk-link govuk-!-font-size-19" href="@routes.RemoveClientController.view(mandateId)">
               @Messages("client.summary.client-remove")
               </a>
-          }
-      </div>
+          </div>
+      }
+
   }
 }
