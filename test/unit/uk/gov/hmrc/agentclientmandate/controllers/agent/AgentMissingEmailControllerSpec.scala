@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.AgentMissingEmailControl
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmail
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.agentMissingEmail
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "AgentMissingEmailControllerSpec" must {
 
@@ -69,15 +69,21 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
           document.getElementById("header").text() must include("agent.missing-email.header")
           document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementById("info").text() must be("agent.missing-email.text")
+          assert(document.getElementById("useEmailAddress") != null)
+          assert(document.getElementById("useEmailAddress-2") != null)
+          assert( document.getElementsByAttributeValue("for", "useEmailAddress").text() contains "radio-yes")
+          assert( document.getElementsByAttributeValue("for", "useEmailAddress-2").text() contains "radio-no")
           document.getElementsByClass("govuk-hint").text() must be("agent.missing-email.email_address")
-          document.getElementById("submit_button").text() must be("continue-button")
+          assert(document.select(".govuk-inset-text").text() === "agent.missing-email.answer-no")
+          assert(document.select("#submit_button").text() === "continue-button")
+          assert(document.select("#submit_link").text() === "agent.missing-email.trapdoor")
         }
       }
     }
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody()
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -87,7 +93,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
       }
 
       "user selected option 'yes' for use email address and left email as empty" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -98,7 +104,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
       "email field has more than expected length" in new Setup {
         val tooLongEmail: String = "aaa@" + "a" * 237 + ".com"
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true", "email" -> tooLongEmail)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true", "email" -> tooLongEmail)
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -108,7 +114,7 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
       }
 
       "invalid email is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("useEmailAddress" -> "true","email" -> "testtest.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -120,7 +126,8 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
     "returns OK and redirects" when {
       "valid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@invalid.com", "useEmailAddress" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest()
+          .withFormUrlEncodedBody("email" -> "aa@invalid.com", "useEmailAddress" -> "true")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
@@ -133,11 +140,9 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-
-
   val service: String = "ated".toUpperCase
   val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
-  val injectedViewInstanceAgentMissingEmail = app.injector.instanceOf[views.html.agent.agentMissingEmail]
+  val injectedViewInstanceAgentMissingEmail: agentMissingEmail = app.injector.instanceOf[views.html.agent.agentMissingEmail]
 
   override def beforeEach(): Unit = {
     reset(mockAgentClientMandateService)
@@ -185,6 +190,4 @@ class AgentMissingEmailControllerSpec  extends PlaySpec  with MockitoSugar with 
       test(result)
     }
   }
-
-
 }
