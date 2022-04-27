@@ -21,30 +21,35 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukButton: GovukButton)
 
 @(mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = titleBuilder(messages("Declaration and consent"))) {
   @pageHeadersAndError(backLink, "pre-heading", Messages("client.agent-declaration.pre-heading"), "header", Messages("client.agent-declaration.header"))
 
-  <p class="govuk-body" id="declaration-info-1">@Messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>
-  <p class="govuk-body" id="declaration-info-2">@Messages("client.agent-declaration.declaration-info-2", mandate.subscription.service.name.toUpperCase)</p>
+  <p class="govuk-body" id="declaration-info-1">@messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>
+  <p class="govuk-body" id="declaration-info-2">@messages("client.agent-declaration.declaration-info-2", mandate.subscription.service.name.toUpperCase)</p>
 
     <h2 class="govuk-heading-m" id="declare-title">
-      @Messages("client.agent-declaration.declare-header")
+      @messages("client.agent-declaration.declare-header")
     </h2>
 
-
-  <ul class="govuk-list govuk-list--bullet">
-    <li id="agent-name">@Messages("client.agent-declaration.agent-name", mandate.agentParty.name, mandate.subscription.service.name.toUpperCase)</li>
-    <li id="dec-info">@Messages("client.agent-declaration.information")</li>
-  </ul>
+    <ul class="govuk-list govuk-list--bullet">
+      <li id="agent-name">@messages("client.agent-declaration.agent-name", mandate.agentParty.name, mandate.subscription.service.name.toUpperCase)</li>
+      <li id="dec-info">@messages("client.agent-declaration.information")</li>
+    </ul>
 
   @formHelper(action = routes.MandateDeclarationController.submit()) {
 
-    <button class="govuk-button" id="submit" type="submit">@Messages("agree-submit")</button>
-
+    @govukButton(Button(
+        content = Text(messages("agree-submit")),
+        inputType = Some("submit"),
+        attributes = Map("id" -> "submit")
+     ))
   }
 }

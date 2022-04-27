@@ -19,9 +19,9 @@
 @(clientsCancelled: Option[Seq[String]], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @if(clientsCancelled.isDefined) {
-<div class="govuk-form-group">
+    <div class="govuk-form-group">
 
-        <h2 class="govuk-heading-m" id="client-cancelled-title">@Messages("client.summary.client-cancelled.text", service.toUpperCase)</h2>
+        <h2 class="govuk-heading-m" id="client-cancelled-title">@messages("client.summary.client-cancelled.text", service.toUpperCase)</h2>
         <ul class="govuk-list govuk-list--bullet">
         @for((name, index) <- clientsCancelled.get.zipWithIndex) {
             <li id="client-cancelled-name-@index">@name</li>
@@ -29,5 +29,5 @@
         </ul>
 
         <p class="govuk-body">@messages("client.summary.client-cancelled.text.28days")</p>
-</div>
+    </div>
 }

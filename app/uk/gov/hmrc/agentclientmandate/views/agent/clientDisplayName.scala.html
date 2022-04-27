@@ -21,8 +21,12 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukInput: GovukInput,
+    govukButton: GovukButton)
 
 @(clientDisplayNameForm: Form[ClientDisplayName], service: String, redirectUrl: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -34,7 +38,7 @@
         Some(mandateErrorSummary(clientDisplayNameForm, "agent.client-display-name.error.general")))
 
     <p class="govuk-body" id="info">
-       @Messages("agent.client-display-name.text", service.toUpperCase)
+       @messages("agent.client-display-name.text", service.toUpperCase)
     </p>
 
     @formHelper(action = routes.ClientDisplayNameController.submit(redirectUrl)) {
@@ -49,7 +53,10 @@
             )
         </div>
 
-        <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
+        @govukButton(Button(
+            content = Text(messages("continue-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
     }
-
 }

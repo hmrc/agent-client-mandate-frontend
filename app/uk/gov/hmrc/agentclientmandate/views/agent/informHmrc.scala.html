@@ -20,8 +20,11 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukButton: GovukButton)
 
 @(callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -35,6 +38,10 @@
 
     @formHelper(action = routes.InformHmrcController.continue(callingPage)) {
 
-        <button class="govuk-button" id="submit" type="submit">@messages("continue-to-add-client-button")</button>
+        @govukButton(Button(
+            content = Text(messages("continue-to-add-client-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
     }
 }

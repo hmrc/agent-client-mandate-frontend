@@ -21,8 +21,12 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton)
 
 @(service: String, removeAgentForm: Form[YesNoQuestion], agentName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -39,16 +43,16 @@
                         classes = "govuk-radios--inline",
                         legend = Some(Legend(
                             classes = "govuk-visually-hidden",
-                            content = Text(Messages("client.remove-agent.header"))
+                            content = Text(messages("client.remove-agent.header"))
                         ))
                     )),
                     items = Seq(
                         RadioItem(
-                            content = Text(Messages("radio-yes")),
+                            content = Text(messages("radio-yes")),
                             value = Some("true")
                         ),
                         RadioItem(
-                            content = Text(Messages("radio-no")),
+                            content = Text(messages("radio-no")),
                             value = Some("false")
                         )
                     )
@@ -56,8 +60,10 @@
             )
         </div>
 
-        <button class="govuk-button" id="submit" type="submit">@Messages("confirm-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("confirm-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
     }
-
 }

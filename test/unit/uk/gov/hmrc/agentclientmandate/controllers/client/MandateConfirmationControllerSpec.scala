@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -32,6 +31,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.MandateConfirmationCont
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.mandateConfirmation
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
@@ -67,7 +67,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
     "return search mandate view for AUTHORISED client" when {
 
       "client requests(GET) for agent confirm view" in new Setup {
-        val mandate = Mandate(id = "ABC123", createdBy = User("cerdId", "Joe Bloggs"),
+        val mandate: Mandate = Mandate(id = "ABC123", createdBy = User("cerdId", "Joe Bloggs"),
           agentParty = Party("ated-ref-no", "name",
             `type` = PartyType.Organisation,
             contactDetails = ContactDetails("aa@aa.com", None)),
@@ -80,7 +80,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("client.agent-confirmation.title - GOV.UK")
-          document.getElementById("banner-text").text() must include("client.agent-confirmation.banner-text")
+          document.getElementById("banner").text() must include("client.agent-confirmation.banner-text")
           document.getElementById("notification").text() must be("client.agent-confirmation.notification")
           document.getElementById("heading").text() must be("client.agent-confirmation.header")
           document.getElementById("finish_btn").text() must be("client.agent-confirmation.finish-signout")
@@ -103,7 +103,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val service: String = "ATED"
-  val injectedViewInstanceMandateConfirmation = app.injector.instanceOf[views.html.client.mandateConfirmation]
+  val injectedViewInstanceMandateConfirmation: mandateConfirmation = app.injector.instanceOf[views.html.client.mandateConfirmation]
 
   class Setup {
     val controller = new MandateConfirmationController(

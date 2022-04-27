@@ -20,7 +20,7 @@
 
 @if(form.hasGlobalErrors || form.hasErrors) {
   <div id="errors" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary" class="govuk-error-summary">
-    <h2 class="govuk-error-summary__title" id="form-error-heading">@Messages("agent-client-mandate.error.summaryHeader")</h2>
+    <h2 class="govuk-error-summary__title" id="form-error-heading">@messages("agent-client-mandate.error.summaryHeader")</h2>
       <div class="govuk-error-summary__body">
         <ul class="govuk-list govuk-error-summary__list">
           @form.errors.zipWithIndex.map { case (error, i) =>
@@ -40,8 +40,8 @@
                     <a href="#@anchor" class="error-list" data-focuses="@error.key">
                       @{
                          formErrorMessageParam match {
-                          case Some(x) => Messages(s"$errorMessageFieldPrefix.$anchor", Messages(formErrorMessageParam.get))
-                          case None => Messages(s"$errorMessageFieldPrefix.$anchor")
+                          case Some(x) => messages(s"$errorMessageFieldPrefix.$anchor", messages(formErrorMessageParam.get))
+                          case None => messages(s"$errorMessageFieldPrefix.$anchor")
                         }
                       }
                     </a>

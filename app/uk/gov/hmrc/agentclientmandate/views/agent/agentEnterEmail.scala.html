@@ -25,8 +25,13 @@
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.label.Label
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput)
+
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukInput: GovukInput,
+    govukButton: GovukButton)
 
 @(agentEmailForm: Form[AgentEmail], service: String, redirectUrl: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -39,7 +44,7 @@
     Some(mandateErrorSummary(agentEmailForm, "agent.enter-email.error.general")))
 
   <p class="govuk-body" id="info">
-    @Messages("agent.enter-email.info.text")
+    @messages("agent.enter-email.info.text")
   </p>
 
   @formHelper(action = routes.CollectAgentEmailController.submit(redirectUrl)) {
@@ -55,8 +60,10 @@
         )
     </div>
 
-    <button class="govuk-button" id="submit" type="submit">@Messages("continue-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("continue-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
   }
-
 }

@@ -129,8 +129,6 @@ class clientsViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfter
       And("The Add Client Link - should exist")
       assert(document.getElementById("add-client-link").text() === "client.summary.add-client")
 
-      And("The filter box should not exist")
-      assert(document.getElementById("filterbox") == null)
     }
 
     scenario("agent has visited the page and will filter clients") {

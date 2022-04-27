@@ -73,7 +73,7 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           assert(document.getElementById("useEmailAddress-2") != null)
           assert( document.getElementsByAttributeValue("for", "useEmailAddress").text() contains "radio-yes")
           assert( document.getElementsByAttributeValue("for", "useEmailAddress-2").text() contains "radio-no")
-          document.getElementsByClass("govuk-hint").text() must be("agent.missing-email.email_address")
+          document.getElementsByAttributeValue("for", "email").text() must be("agent.missing-email.email_address")
           assert(document.select(".govuk-inset-text").text() === "agent.missing-email.answer-no")
           assert(document.select("#submit_button").text() === "continue-button")
           assert(document.select("#submit_link").text() === "agent.missing-email.trapdoor")
