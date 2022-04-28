@@ -20,33 +20,37 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template)
+@this(main_template: main_template,
+    govukPanel : GovukPanel,
+    govukButton: GovukButton)
 
 @(service: String, clientName: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = titleBuilder(messages("agent.reject-client-confirmation.title", DateUtils.getDateAsText(DateTime.now)))) {
 
-    <div class=" govuk-panel govuk-panel--confirmation" id="banner">
-        <h1 id="banner-text" class="govuk-panel__title"> @Messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now)) </h1>
-    </div>
+    @govukPanel(Panel(
+        title = Text(messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now))),
+        attributes = Map("id" -> "banner")
+    ))
 
-    <br />
-
-    <p id="notification" class="govuk-body">@Messages("agent.reject-client-confirmation.notification")</p>
+    <p id="notification" class="govuk-body govuk-!-padding-top-5">@messages("agent.reject-client-confirmation.notification")</p>
 
     <div class="govuk-section-break">
-        <h2 class="govuk-heading-m">@Messages("agent.reject-client-confirmation.you-can")</h2>
+        <h2 class="govuk-heading-m">@messages("agent.reject-client-confirmation.you-can")</h2>
     </div>
 
     <ul id="list" class="govuk-list--bullet govuk-list">
-        <li>@Messages("agent.reject-client-confirmation.request-new-client")</li>
-        <li>@Messages("agent.reject-client-confirmation.submit-returns")</li>
+        <li>@messages("agent.reject-client-confirmation.request-new-client")</li>
+        <li>@messages("agent.reject-client-confirmation.submit-returns")</li>
     </ul>
 
-    <div>
-        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="finish_btn" href="@routes.AgentSummaryController.view().url">
-            @Messages("agent.reject-client-confirmation.view-all-clients")
-        </a>
+    <div class="govuk-form-group">
+        @govukButton(Button(
+            content = Text(messages("agent.reject-client-confirmation.view-all-clients")),
+            href = Some(routes.AgentSummaryController.view().url),
+            attributes = Map("id" -> "finish_btn")
+        ))
     </div>
 }

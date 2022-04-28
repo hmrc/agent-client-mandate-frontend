@@ -18,38 +18,41 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
-@this(main_template: main_template)
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+
+@this(main_template: main_template,
+    govukPanel : GovukPanel,
+    govukButton: GovukButton)
 
 @(clientDisplayDetails: uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails, service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = titleBuilder(messages("agent.unique-reference.title", clientDisplayDetails.mandateId))) {
 
-    <div class="govuk-panel govuk-panel--confirmation" id="banner">
-      <h1 id="banner-text" class="govuk-panel__title">
-        @Html(Messages("agent.unique-reference.header", clientDisplayDetails.name, clientDisplayDetails.mandateId))
-      </h1>
-    </div>
+    @govukPanel(Panel(
+        title = Text(messages("agent.unique-reference.header", clientDisplayDetails.name, clientDisplayDetails.mandateId)),
+        attributes = Map("id" -> "banner")
+    ))
 
-    <br />
+  <h2 id="what-you-must-do" class="govuk-heading-m govuk-!-padding-top-5">@messages("agent.unique-reference.next.heading.text")</h2>
 
-  <h2 id="what-you-must-do" class="govuk-heading-m">@Messages("agent.unique-reference.next.heading.text")</h2>
+  <p id="agent-instruction-1" class="govuk-body">@Html(messages("agent.unique-reference.do-next1",clientDisplayDetails.mandateId))</p>
 
-  <p id="agent-instruction-1" class="govuk-body">@Html(Messages("agent.unique-reference.do-next1",clientDisplayDetails.mandateId))</p>
+  <p id="agent-instruction-2" class="govuk-body">@messages("agent.unique-reference.do-next2")</p>
 
-  <p id="agent-instruction-2" class="govuk-body">@Messages("agent.unique-reference.do-next2")</p>
-
-  <h2 id="tell-your-client" class="govuk-heading-m">@Messages("agent.unique-reference.tell-client")</h2>
+  <h2 id="tell-your-client" class="govuk-heading-m">@messages("agent.unique-reference.tell-client")</h2>
 
   <ol class="govuk-list govuk-list--number">
-    <li id="agent.unique-reference.details.text.1">@Messages("agent.unique-reference.details.text.1")</li>
-    <li id="agent.unique-reference.details.text.2">@Messages("agent.unique-reference.details.text.2", service.toUpperCase)</li>
-    <li id="agent.unique-reference.details.text.3">@Messages("agent.unique-reference.details.text.3")</li>
-    <li id="agent.unique-reference.details.text.4">@Messages("agent.unique-reference.details.text.4", clientDisplayDetails.mandateId)</li>
+    <li id="agent.unique-reference.details.text.1">@messages("agent.unique-reference.details.text.1")</li>
+    <li id="agent.unique-reference.details.text.2">@messages("agent.unique-reference.details.text.2", service.toUpperCase)</li>
+    <li id="agent.unique-reference.details.text.3">@messages("agent.unique-reference.details.text.3")</li>
+    <li id="agent.unique-reference.details.text.4">@messages("agent.unique-reference.details.text.4", clientDisplayDetails.mandateId)</li>
   </ol>
 
-  <div>
-    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="submit" href="@routes.AgentSummaryController.view().url">
-        @Messages("agent.unique-reference.button")
-    </a>
-  </div>
+    <div class="govuk-form-group">
+        @govukButton(Button(
+            content = Text(messages("agent.unique-reference.button")),
+            href = Some(routes.AgentSummaryController.view().url),
+            attributes = Map("id" -> "submit")
+        ))
+    </div>
 }

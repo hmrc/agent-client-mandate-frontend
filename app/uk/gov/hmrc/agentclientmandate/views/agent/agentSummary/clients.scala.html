@@ -26,8 +26,14 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukInput: GovukInput, govukRadios: GovukRadios)
+
+@this(main_template: main_template,
+  formHelper: FormWithCSRF,
+  govukInput: GovukInput,
+  govukRadios: GovukRadios,
+  govukButton: GovukButton)
 
 @(service: String, mandates: Mandates, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]], screenReaderText: String, filterClientsForm: Form[FilterClients], isUpdate: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -38,14 +44,14 @@
 <span class="govuk-visually-hidden">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
 
 <header class="page-header page-header-margin">
-  <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
-  <h1 id="header" class="govuk-heading-l">@Messages("client.summary.title", service.toUpperCase)</h1>
+  <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
+  <h1 id="header" class="govuk-heading-l">@messages("client.summary.title", service.toUpperCase)</h1>
 </header>
 
 @clientsCancelledPartial(clientsCancelled, service)
 
 <div class="govuk-form-group">
-  <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="govuk-link govuk-!-font-size-19" tabindex="0">@Messages("client.summary.add-client")</a>
+  <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="govuk-link govuk-!-font-size-19" tabindex="0">@messages("client.summary.add-client")</a>
 </div>
 
   <section id="clients-tab" tabindex="-1">
@@ -59,11 +65,11 @@
     }
       <summary id="filter-clients" class="govuk-details__summary">
         <span class="govuk-details__summary-text">
-          @Messages("client.summary.filter-clients")
+          @messages("client.summary.filter-clients")
         </span>
       </summary>
 
-      <fieldset class="govuk-fieldset filterbox">
+      <fieldset class="govuk-fieldset govuk-!-margin-bottom-5 govuk-!-margin-top-5">
         @formHelper(action = routes.AgentSummaryController.update()) {
 
         @govukInput(
@@ -74,7 +80,6 @@
           ).withFormField(filterClientsForm("displayName"))
         )
 
-        <div class="form-field">
           @govukRadios(
             Radios(
               fieldset = Some(Fieldset(
@@ -97,11 +102,13 @@
             ).withFormField(filterClientsForm("showAllClients"))
           )
 
-          <button id="filterClients-btn" name="filterClients" class="govuk-button" type="submit">
-            @Messages("client.summary.filter-update")
-          </button>
-        </div>
+         @govukButton(Button(
+            content = Text(messages("client.summary.filter-update")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "filterClients-btn")
+         ))
         }
+
       </fieldset>
       <hr>
     </details>
@@ -115,12 +122,12 @@
       <ul class="govuk-tabs__list">
         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
           <a class="govuk-tabs__tab" href="#active-mandates" id="active-mandate-tab">
-            @Messages("client.summary.client-active.title", mandates.activeMandates.size)
+            @messages("client.summary.client-active.title", mandates.activeMandates.size)
           </a>
         </li>
         <li class="govuk-tabs__list-item">
           <a class="govuk-tabs__tab" href="#pending-mandates" id="pending-mandate-tab">
-            @Messages("client.summary.client-pending.title", mandates.pendingMandates.size)
+            @messages("client.summary.client-pending.title", mandates.pendingMandates.size)
           </a>
         </li>
       </ul>
@@ -141,14 +148,14 @@
                 <td class="govuk-table__cell" id="client-name-@index">@active.clientDisplayName</td>
                 <td class="govuk-table__cell">
                   <a class="govuk-body govuk-link" id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)">
-                  @Messages("client.summary.client-change")
-                  <span class="govuk-visually-hidden">@Messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
+                  @messages("client.summary.client-change")
+                  <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
                   </a>
                 </td>
                 <td class="govuk-table__cell">
                   <a class="govuk-body govuk-link" id="client-link-@index" href='@routes.AgentSummaryController.doDelegation(active.id)'>
-                  @Messages("client.summary.client-view")
-                  <span class="govuk-visually-hidden">@Messages("client.summary.client-details-for") @active.clientDisplayName</span>
+                  @messages("client.summary.client-view")
+                  <span class="govuk-visually-hidden">@messages("client.summary.client-details-for") @active.clientDisplayName</span>
                   </a>
                 </td>
               </tr>
@@ -176,12 +183,12 @@
                 <td class="govuk-table__cell">
                 @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
                     <a id="edit-pending-client-link-@index" class="govuk-body govuk-link" href="@routes.EditMandateDetailsController.view(pending.id)">
-                      @Messages("client.summary.client-change")
-                      <span class="govuk-visually-hidden">@Messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
+                      @messages("client.summary.client-change")
+                      <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
                     </a>
                 } else {
                     <a id="reject-client-link-@index" class="govuk-body govuk-link" href="@routes.RejectClientController.view(pending.id)">
-                      @Messages("client.summary.client-reject")
+                      @messages("client.summary.client-reject")
                       <span class="govuk-visually-hidden">@pending.clientDisplayName</span>
                     </a>
                 }
@@ -189,14 +196,14 @@
                 <td class="govuk-table__cell">
                 @checkStatus(pending.currentStatus.status) match {
                   case "Await" => {
-                    <span class="govuk-body">@Messages("client.summary.client.pending-status")</span>
+                    <span class="govuk-body">@messages("client.summary.client.pending-status")</span>
                   }
                   case "Pending" => {
-                    <span class="govuk-body">@Messages("client.summary.client-pending")</span>
+                    <span class="govuk-body">@messages("client.summary.client-pending")</span>
                   }
                   case _ => {
                     <a href="@routes.AgentSummaryController.activate(pending.id)" id="accept-@(index + 1)" class="govuk-body govuk-link">
-                      @Messages("client.summary.client-accept") <span class="govuk-visually-hidden"> @pending.clientDisplayName</span>
+                      @messages("client.summary.client-accept") <span class="govuk-visually-hidden"> @pending.clientDisplayName</span>
                     </a>
                   }
                 }

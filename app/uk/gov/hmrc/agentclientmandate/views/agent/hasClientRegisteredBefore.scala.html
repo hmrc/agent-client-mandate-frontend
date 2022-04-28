@@ -21,8 +21,12 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton)
 
 @(prevRegisteredForm: Form[PrevRegistered], callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -32,7 +36,7 @@
   @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-prev-registered.header"),
   Some(mandateErrorSummary(prevRegisteredForm, "agent.client-permission.error.general")))
 
-    <p class="govuk-body">@Messages("agent.client-prev-registered.p")</p>
+    <p class="govuk-body">@messages("agent.client-prev-registered.p")</p>
 
   @formHelper(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {
 
@@ -60,8 +64,10 @@
       )
     </div>
 
-    <button class="govuk-button" id="submit" type="submit">@Messages("save-and-continue-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("save-and-continue-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
   }
-
 }

@@ -23,22 +23,25 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template)
+@this(main_template: main_template, govukButton: GovukButton)
 
 @(service: String, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = titleBuilder(messages("client.summary.title", service.toUpperCase)), sideBar = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service))){
   <header class="page-header page-header-margin">
-    <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@Messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
-    <h1 id="header" class="govuk-heading-l">@Messages("client.summary.title", service.toUpperCase)</h1>
+    <span id="pre-header" class="govuk-caption-l"><span class="govuk-visually-hidden">@messages("ated.screen-reader.name") </span>@agentDetails.agentName</span>
+    <h1 id="header" class="govuk-heading-l">@messages("client.summary.title", service.toUpperCase)</h1>
   </header>
 
   @clientsCancelledPartial(clientsCancelled, service)
 
-  <div>
-    <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="add-client-btn" href="@routes.CollectAgentEmailController.addClient().url">
-        @Messages("client.summary.add-client")
-    </a>
-  </div>
+    <div class="govuk-form-group">
+        @govukButton(Button(
+            content = Text(messages("client.summary.add-client")),
+            href = Some(routes.CollectAgentEmailController.addClient().url),
+            attributes = Map("id" -> "add-client-btn")
+        ))
+    </div>
 }

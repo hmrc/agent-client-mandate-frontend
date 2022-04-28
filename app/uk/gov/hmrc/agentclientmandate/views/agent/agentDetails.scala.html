@@ -33,20 +33,20 @@
 <dl class="govuk-summary-list">
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key" id="agency-name-header">
-            @Messages("agent.edit-details.agency.name")
+            @messages("agent.edit-details.agency.name")
         </dt>
         <dd class="govuk-summary-list__value" id="agency-name-val">
             @agentDetails.agentName
         </dd>
         <dd class="govuk-summary-list__actions">
             <a class="govuk-link" href="@routes.UpdateAddressDetailsController.view()">
-                Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.agency.name")</span>
+                Change<span class="govuk-visually-hidden">@messages("agent.edit-details.agency.name")</span>
             </a>
         </dd>
     </div>
     <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key" id="agency-address-header">
-            @Messages("agent.edit-details.registered.address")
+            @messages("agent.edit-details.registered.address")
         </dt>
         <dd class="govuk-summary-list__value" id="agency-address-val">
             @agentDetails.addressDetails.addressLine1<br/>
@@ -58,23 +58,23 @@
         </dd>
         <dd class="govuk-summary-list__actions">
             <a class="govuk-link" href="@routes.UpdateAddressDetailsController.view()">
-                Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.registered.address")</span>
+                Change<span class="govuk-visually-hidden">@messages("agent.edit-details.registered.address")</span>
             </a>
         </dd>
     </div>
     @agentDetails.identification.map { nonUKId =>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">
-                @Messages("agent.edit-details.ocr.details")
+                @messages("agent.edit-details.ocr.details")
             </dt>
             <dd class="govuk-summary-list__value">
-                @nonUKId.idNumber<br />
-                @nonUKId.issuingInstitution<br />
-                @nonUKId.issuingCountryCode<br />
+                @nonUKId.idNumber<br/>
+                @nonUKId.issuingInstitution<br/>
+                @nonUKId.issuingCountryCode<br/>
             </dd>
             <dd class="govuk-summary-list__actions">
                 <a class="govuk-link" href="@routes.UpdateOcrDetailsController.view()">
-                    Change<span class="govuk-visually-hidden"> @Messages("agent.edit-details.ocr.details")</span>
+                    Change<span class="govuk-visually-hidden">@messages("agent.edit-details.ocr.details")</span>
                 </a>
             </dd>
         </div>

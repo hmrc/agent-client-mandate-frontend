@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentclientmandate.views.helpers
 
-
 import play.api.data._
 
 object FormHelpers {
@@ -54,5 +53,4 @@ object FormHelpers {
       }
     }
   }
-
 }

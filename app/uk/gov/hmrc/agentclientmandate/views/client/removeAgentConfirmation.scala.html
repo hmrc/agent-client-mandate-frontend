@@ -20,35 +20,39 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template)
+@this(main_template: main_template,
+    govukPanel : GovukPanel,
+    govukButton: GovukButton)
 
 @(service: String, agentName: String, mandateId: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = titleBuilder(messages("client.remove-agent-confirmation.title"))) {
 
-    <div class="govuk-panel govuk-panel--confirmation" id="banner">
-        <h1 id="banner-text" class="govuk-panel__title"> @Messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now)) </h1>
-    </div>
+    @govukPanel(Panel(
+        title = Text(messages("client.remove-agent-confirmation.banner-text", agentName,  DateUtils.getDateAsText(DateTime.now))),
+        attributes = Map("id" -> "banner")
+    ))
 
-    <br />
-
-    <p id="notification" class="govuk-heading-s">@Messages("client.agent-confirmation.notification")</p>
+    <p id="notification" class="govuk-heading-s govuk-!-padding-top-5">@messages("client.agent-confirmation.notification")</p>
 
         <div class="govuk-form-group">
 
-        <h2 class="govuk-heading-m" id="heading-1">@Messages("client.remove-agent-confirmation.header")</h2>
+        <h2 class="govuk-heading-m" id="heading-1">@messages("client.remove-agent-confirmation.header")</h2>
 
         <ul id="list" class="govuk-list govuk-list--bullet">
-            <li>@Messages("client.remove-agent-confirmation.create-return")</li>
-            <li>@Messages("client.remove-agent-confirmation.appoint-agent")</li>
+            <li>@messages("client.remove-agent-confirmation.create-return")</li>
+            <li>@messages("client.remove-agent-confirmation.appoint-agent")</li>
         </ul>
 
     </div>
 
-    <div>
-        <a role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="return_to_service_button" href="@routes.RemoveAgentController.returnToService.url">
-            @Messages("client.remove-agent-confirmation.service_button", service.toUpperCase)
-        </a>
+     <div class="govuk-form-group">
+        @govukButton(Button(
+            content = Text(messages("client.remove-agent-confirmation.service_button", service.toUpperCase)),
+            href = Some(routes.RemoveAgentController.returnToService.url),
+            attributes = Map("id" -> "return_to_service_button")
+        ))
     </div>
 }

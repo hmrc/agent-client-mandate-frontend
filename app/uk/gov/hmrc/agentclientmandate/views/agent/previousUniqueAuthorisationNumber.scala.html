@@ -21,12 +21,22 @@
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton,
+    govukDetails : GovukDetails)
 
 @(prevUniqueAuthNumForm: Form[PrevUniqueAuthNum], callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @implicitFormInstance = @{ Some(prevUniqueAuthNumForm) }
+
+@summaryContent = {
+    <p class="govuk-body" id="titleNumber-text">@messages("agent.prev-auth-num.accordion.p")</p>
+    <p class="govuk-body" id="titleNumber-text-2">@messages("agent.prev-auth-num.accordion.p2")</p>
+}
 
 @main_template(title = titleBuilder(messages("agent.prev-auth-num.title"), Some(prevUniqueAuthNumForm))) {
     @pageHeadersAndError(backLink, "pre-header", messages("agent.add-a-client.sub-header"), "header", messages("agent.prev-auth-num.header"),
@@ -34,17 +44,11 @@
 
     <p class="govuk-body">@messages("agent.prev-auth-num.p")</p>
 
-    <details class="govuk-details" data-module="govuk-details">
-        <summary id="titleNumber-reveal" class="govuk-details__summary">
-            <span class="govuk-details__summary-text">
-                @messages("agent.prev-auth-num.accordion")
-            </span>
-        </summary>
-        <div class="govuk-details__text">
-            <p id="titleNumber-text">@Html(messages("agent.prev-auth-num.accordion.p"))</p>
-            <p id="titleNumber-text-2">@Html(messages("agent.prev-auth-num.accordion.p2"))</p>
-        </div>
-    </details>
+    @govukDetails(Details(
+        summary = Text(messages("agent.prev-auth-num.accordion")),
+        content = HtmlContent(summaryContent),
+        attributes = Map("id" -> "titleNumber-reveal")
+    ))
 
     @formHelper(action = routes.PreviousUniqueAuthorisationNumberController.submit(callingPage)) {
 
@@ -72,9 +76,11 @@
             )
         </div>
 
-        <button class="govuk-button" id="submit" type="submit">@messages("save-and-continue-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("save-and-continue-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
     }
-
 }
 

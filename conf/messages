@@ -372,7 +372,7 @@ agent.remove-client.error = remove client
 ##### AGENT REMOVE CLIENT CONFIRMATION 
 
 agent.remove-client-confirmation.title = You have removed your client
-agent.remove-client-confirmation.banner-text = You have removed {0} on <br/> {1}
+agent.remove-client-confirmation.banner-text = You have removed {0} on {1}
 agent.remove-client-confirmation.notification = Your client will get an email notification.
 agent.remove-client-confirmation.non-uk-client-old-unique-refno = You need to give your client your unique authorisation number, {0}.
 agent.remove-client-confirmation.view-all-clients = View all your clients
@@ -394,7 +394,7 @@ agent.missing-email.text = We can send you a notification when a client accepts 
 agent.missing-email.question = Do you want to use the same email address for all your clients?
 agent.missing-email.answer-no = You can enter a separate email address for each of your clients using the edit links on <a href="{0}">your {1} clients</a> page.
 agent.missing-email.trapdoor = Enter my email at a later date
-agent.missing-email.email_address = Your email address
+agent.missing-email.email_address = Email address
 agent.missing-email.must_answer = You must answer the question
 agent.enter-email.error.general.useEmailAddress = There is a problem with the question
 
@@ -445,7 +445,7 @@ agent.edit-mandate-detail.save.error = Failed to update
 agent.edit-mandate-details.ocr.header = Edit overseas company registration details
 agent.edit-mandate-details.idNumber = Overseas company registration number
 agent.edit-mandate-details.issuingCountry = Country that issued the number
-agent.edit-mandate-details.issuingIntitution = Institution that issued the number
+agent.edit-mandate-details.issuingInstitution = Institution that issued the number
 
 agent.edit-details-error.businessName = You must enter a business name
 agent.edit-details-error.line_1 = You must enter an address into Address line 1
@@ -478,10 +478,6 @@ agent.search-previous-mandate.error.general.mandate-ref-form = The unique author
 agent.search-previous-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation number you entered cannot be found. Check the number, or enter a different number.
 agent.search-previous-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation number you entered has already been used. Check the number, or enter a different number.
 
-##### UR BANNER TEXT
-
-urbanner.message.text = Help improve digital services by joining the HMRC user panel (opens in new window)
-urbanner.message.reject = No thanks
 
 ##### GENERIC ERROR
 

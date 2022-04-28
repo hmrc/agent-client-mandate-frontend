@@ -21,8 +21,12 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton)
 
 @(service: String, rejectClientForm: Form[YesNoQuestion], clientName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -31,7 +35,7 @@
         Some(mandateErrorSummary(rejectClientForm, "yes-no.error.general", Some("agent.reject-client.error"))))
 
     <p class="govuk-body" id="reject-text">
-        @Messages("agent.reject-client.text")
+        @messages("agent.reject-client.text")
     </p>
 
     @formHelper(action = routes.RejectClientController.submit(mandateId)) {
@@ -58,8 +62,10 @@
             ).withFormField(rejectClientForm("yesNo"))
         )
 
-        <button class="govuk-button" id="submit" type="submit">@Messages("confirm-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("confirm-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
     }
-
 }

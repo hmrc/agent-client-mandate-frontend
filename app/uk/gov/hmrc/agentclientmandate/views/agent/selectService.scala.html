@@ -21,8 +21,12 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF, govukRadios: GovukRadios)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukRadios: GovukRadios,
+    govukButton: GovukButton)
 
 @(selectServiceForm: Form[AgentSelectService], backLink:Option[String]=None)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -34,7 +38,7 @@
 
   @formHelper(action = routes.SelectServiceController.submit) {
 
-    <div class="govuk-form-group" id="service">
+    <div class="govuk-form-group" id="serviceDiv">
         @govukRadios(
             Radios(
                 fieldset = Some(Fieldset(
@@ -53,8 +57,10 @@
         )
     </div>
 
-      <button class="govuk-button" id="submit" type="submit">@Messages("submit-button")</button>
-
+        @govukButton(Button(
+            content = Text(messages("submit-button")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
   }
-
 }

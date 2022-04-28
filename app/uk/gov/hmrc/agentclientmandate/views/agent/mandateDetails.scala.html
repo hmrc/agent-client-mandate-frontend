@@ -20,8 +20,11 @@
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(main_template: main_template, formHelper: FormWithCSRF)
+@this(main_template: main_template,
+    formHelper: FormWithCSRF,
+    govukButton: GovukButton)
 
 @(email: String, service: String, displayName: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -31,7 +34,7 @@
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">
-                @Messages("agent.check-client-details.service")
+                @messages("agent.check-client-details.service")
             </dt>
             <dd class="govuk-summary-list__value" id="service-name">
                 @service.toUpperCase
@@ -41,27 +44,27 @@
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key" id="email-address-label">
-                @Messages("agent.check-client-details.your-email")
+                @messages("agent.check-client-details.your-email")
             </dt>
             <dd class="govuk-summary-list__value" id="email-address">
                 @email
             </dd>
             <dd class="govuk-summary-list__actions">
                 <a class="govuk-link" href="@routes.CollectAgentEmailController.editFromSummary()">
-                    @Messages("change-link")<span class="govuk-visually-hidden"> @Messages("agent.check-client-details.your-email")</span>
+                    @messages("change-link")<span class="govuk-visually-hidden">@messages("agent.check-client-details.your-email")</span>
                 </a>
             </dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">
-                @Messages("agent.check-client-details.display-name")
+                @messages("agent.check-client-details.display-name")
             </dt>
             <dd class="govuk-summary-list__value" id="clientDisplayName">
                 @displayName
             </dd>
             <dd class="govuk-summary-list__actions">
                 <a class="govuk-link" href="@routes.ClientDisplayNameController.editFromSummary()">
-                    @Messages("change-link")<span class="govuk-visually-hidden"> @Messages("agent.check-client-details.display-name")</span>
+                    @messages("change-link")<span class="govuk-visually-hidden">@messages("agent.check-client-details.display-name")</span>
                 </a>
             </dd>
         </div>
@@ -69,8 +72,10 @@
 
   @formHelper(action = routes.MandateDetailsController.submit()) {
 
-      <button class="govuk-button" id="submit" type="submit">
-            @Messages("agent.check-client-details.confirm")
-      </button>
+        @govukButton(Button(
+            content = Text(messages("agent.check-client-details.confirm")),
+            inputType = Some("submit"),
+            attributes = Map("id" -> "submit")
+        ))
   }
 }

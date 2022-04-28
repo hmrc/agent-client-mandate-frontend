@@ -35,6 +35,8 @@ trait MockControllerSetup {
 
   val stubbedMessagesControllerComponents: MessagesControllerComponents = stubMessagesControllerComponents()
 
+  when(mockAppConfig.serviceSignOutUrl(ArgumentMatchers.any()))
+    .thenReturn("http://localhost:9916/ated/logout")
   when(mockAppConfig.basGatewayHost)
     .thenReturn("")
   when(mockAppConfig.loginPath)

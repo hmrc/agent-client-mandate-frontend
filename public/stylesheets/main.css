@@ -395,12 +395,6 @@ table td {
     vertical-align: top;
 }
 
-.filterbox {
-    box-sizing:border-box;
-    padding-top: 10px;
-    padding-bottom: 15px;
-}
-
 .content__body{
     width: 66.6666666667%;
 }
