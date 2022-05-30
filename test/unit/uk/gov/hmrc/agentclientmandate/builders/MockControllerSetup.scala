@@ -41,8 +41,6 @@ trait MockControllerSetup {
     .thenReturn("")
   when(mockAppConfig.loginPath)
     .thenReturn("gg/sign-in")
-  when(mockAppConfig.urBannerToggle)
-    .thenReturn(true)
   when(mockAppConfig.getIsoCodeTupleList)
     .thenReturn(List())
   when(mockAppConfig.addNonUkClientCorrespondenceUri(ArgumentMatchers.any()))
