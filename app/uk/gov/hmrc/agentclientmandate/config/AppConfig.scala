@@ -46,8 +46,6 @@ class AppConfig @Inject()(
     feedbackUrl + "?return=" + returnUri
   }
 
-  lazy val urBannerToggle: Boolean = loadConfig("urBanner.toggle").toBoolean
-  lazy val urBannerLink: String = loadConfig("urBanner.link")
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
