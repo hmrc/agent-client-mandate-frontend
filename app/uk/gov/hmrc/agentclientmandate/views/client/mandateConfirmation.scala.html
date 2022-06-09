@@ -43,7 +43,11 @@
 
     <h2 class="govuk-heading-m" id="heading">@messages("client.agent-confirmation.header")</h2>
 
-    <p class="govuk-body">@Html(messages("client.agent-confirmation.sign-in", DelegationUtils.getDelegatedServiceRedirectUrl(service)))</p>
+    <p class="govuk-body">@messages("client.agent-confirmation.sign-in.paragraph")
+        <a href="@DelegationUtils.getDelegatedServiceRedirectUrl(service)" class="govuk-link">
+            @messages("client.agent-confirmation.sign-in.link-text")
+        </a>
+    </p>
 
     <div class="govuk-form-group">
         @govukButton(Button(

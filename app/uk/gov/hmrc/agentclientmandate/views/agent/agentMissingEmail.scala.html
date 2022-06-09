@@ -95,9 +95,12 @@
             ).withFormField(agentMissingEmailForm("useEmailAddress"))
         )
 
-        <div class="govuk-inset-text">
-            @Html(Messages("agent.missing-email.answer-no", routes.AgentSummaryController.view(), service.toUpperCase))
-        </div>
+<div class="govuk-inset-text">
+    <p> @messages("agent.missing-email.answer-no.start")
+        <a href="@routes.AgentSummaryController.view().url" class="govuk-link">@messages("agent.missing-email.answer-no.link-text")</a>
+        @messages("agent.missing-email.answer-no.end")
+    </p>
+</div>
 
         @govukButton(Button(
             content = Text(messages("continue-button")),
