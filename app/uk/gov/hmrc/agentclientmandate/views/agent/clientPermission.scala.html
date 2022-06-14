@@ -56,8 +56,7 @@
 
   <p class="govuk-body" id="permission-text">
       @messages("agent.client-permission.hasPermission.selected.ated.yes.notice.start")
-      <a class="govuk-link" href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">@messages("agent.client-permission.hasPermission.selected.ated.yes.notice.link-text")</a>
-      @messages("agent.client-permission.hasPermission.selected.ated.yes.notice.end")
+      <a class="govuk-link" href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">@messages("agent.client-permission.hasPermission.selected.ated.yes.notice.link-text")</a>@messages("agent.client-permission.hasPermission.selected.ated.yes.notice.end")
   </p>
 
   @formHelper(action = routes.ClientPermissionController.submit(callingPage)) {

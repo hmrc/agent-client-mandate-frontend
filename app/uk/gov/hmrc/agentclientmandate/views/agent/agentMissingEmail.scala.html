@@ -41,7 +41,8 @@
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
     govukInput: GovukInput,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+    govukInsetText : GovukInsetText)
 
 @(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -58,6 +59,12 @@
             )
           ).withFormField(agentMissingEmailForm("email"))
         )
+}
+@textInsert = {
+    <p>@messages("agent.missing-email.answer-no.start")
+        <a href="@routes.AgentSummaryController.view().url" class="govuk-link">@messages("agent.missing-email.answer-no.link-text")</a>
+        @messages("agent.missing-email.answer-no.end")
+    </p>
 }
 
 @implicitFormInstance = @{ Some(agentMissingEmailForm) }
@@ -95,12 +102,9 @@
             ).withFormField(agentMissingEmailForm("useEmailAddress"))
         )
 
-<div class="govuk-inset-text">
-    <p> @messages("agent.missing-email.answer-no.start")
-        <a href="@routes.AgentSummaryController.view().url" class="govuk-link">@messages("agent.missing-email.answer-no.link-text")</a>
-        @messages("agent.missing-email.answer-no.end")
-    </p>
-</div>
+        @govukInsetText(InsetText(
+            content = HtmlContent(textInsert)
+        ))
 
         @govukButton(Button(
             content = Text(messages("continue-button")),
