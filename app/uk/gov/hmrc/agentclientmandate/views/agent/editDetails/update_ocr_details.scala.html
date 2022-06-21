@@ -38,14 +38,12 @@
 @(identificationForm: Form[OverseasCompany], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-    <link rel="stylesheet" href='@controllers.routes.Assets.versioned("stylesheets/location-autocomplete.min.css")'>
-    <script src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
-    <script type="text/javascript">
-        openregisterLocationPicker({
-            selectElement: document.getElementById('businessAddress.country'),
-            url: '@controllers.routes.Assets.versioned("json/location-autocomplete-graph.json")'
-        })
-        showHideIdentifiersSection();
+
+    <script src='@controllers.routes.Assets.versioned("javascript/mandate-country-auto-complete.js")'></script>
+    <script>
+        $(document).ready(function() {
+          countryCodeAutoComplete("#issuingCountryCode");
+        });
     </script>
 }
 
@@ -66,8 +64,7 @@
                 label = Label(
                     content = Text(Messages("agent.edit-mandate-details.issuingCountry"))
                 ),
-                id = "businessAddress.country",
-                items = displayDetails.listOfIsoCode.map {
+                items = Seq(SelectItem(Some(""), "")) ++ displayDetails.listOfIsoCode.map {
                     case (code, country) => SelectItem(
                         value = Some(code),
                         text = country
