@@ -438,6 +438,7 @@ agent.edit-mandate-details-error.general.address.addressLine3 = There is a probl
 agent.edit-mandate-details-error.general.address.addressLine4 = There is a problem with the address line 4
 agent.edit-mandate-details-error.general.address.countryCode = There is a problem with the country field
 
+agent.edit-mandate-details-error.general.hasBusinessUniqueId = Select Yes if you wish to edit overseas company registration details
 agent.edit-mandate-details-error.general.idNumber = There is a problem with the Overseas company registration number
 agent.edit-mandate-details-error.general.issuingCountryCode = There is a problem with the Country that issued the number
 agent.edit-mandate-details-error.general.issuingInstitution = There is a problem with the Institution that issued the number
