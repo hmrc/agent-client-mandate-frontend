@@ -13,7 +13,7 @@ private object AppDependencies {
     "uk.gov.hmrc"       %% "emailaddress"                  % "3.6.0",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.11.0-play-28",
     "com.typesafe.play" %% "play-json-joda"                % "2.9.2",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "3.21.0-play-28"
+    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "3.22.0-play-28"
   )
 
   trait TestDependencies {
@@ -26,7 +26,7 @@ private object AppDependencies {
       override lazy val test: Seq[ModuleID] = Seq(
         "org.scalatestplus.play"       %% "scalatestplus-play"     % "5.1.0"    % scope,
         "org.pegdown"                  %  "pegdown"                % "1.6.0"    % scope,
-        "org.jsoup"                    %  "jsoup"                  % "1.15.1"   % scope,
+        "org.jsoup"                    %  "jsoup"                  % "1.15.2"   % scope,
         "org.scalatestplus"            %% "scalacheck-1-15"        % "3.2.11.0" % scope,
         "org.mockito"                  %  "mockito-core"           % "4.6.1"    % scope,
         "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2" % scope,
