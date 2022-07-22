@@ -34,14 +34,18 @@
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.versioned("javascript/mandate-country-auto-complete.js")'></script>
-<script>
+    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
+    <script>
     $(document).ready(function() {
-      countryCodeAutoComplete("#address\\.countryCode");
-    });
-</script>
-}
 
+      accessibleAutocomplete.enhanceSelectElement({
+            defaultValue: '',
+            selectElement: document.querySelector('#address\\.countryCode')
+      })
+
+    });
+    </script>
+}
 
 @implicitFormInstance = @{ Some(agentDetailsForm) }
 
@@ -50,7 +54,6 @@
 @pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.edit-mandate-details.address.header"))
 
 @mandateErrorSummary(agentDetailsForm, "agent.edit-mandate-details-error.general")
-
 
 @formHelper(action = routes.UpdateAddressDetailsController.submit()) {
 
@@ -109,7 +112,7 @@
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.country"))
           ),
-          items = Seq(SelectItem(Some(""), "")) ++ displayDetails.listOfIsoCode.map {
+          items = Seq(SelectItem(Some(""), "Select a country")) ++ displayDetails.listOfIsoCode.map {
               case (code, country) => SelectItem(
                   value = Some(code),
                   text = country
