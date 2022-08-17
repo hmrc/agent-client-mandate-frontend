@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,6 +31,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.SelectServiceController
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.selectService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -39,7 +39,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   implicit val mockConfiguration: ServicesConfig = mock[ServicesConfig]
 
@@ -110,7 +110,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(false))
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/summary"))
@@ -121,7 +121,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(true))
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "ated")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/missing-email"))
@@ -131,7 +131,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("service" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("service" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -145,8 +145,7 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceSelectServices = app.injector.instanceOf[views.html.agent.selectService]
-
+  val injectedViewInstanceSelectServices: selectService = app.injector.instanceOf[views.html.agent.selectService]
 
   class Setup {
     val controller = new SelectServiceController(
@@ -158,35 +157,31 @@ class SelectServiceControllerSpec extends PlaySpec  with MockitoSugar with Befor
       injectedViewInstanceSelectServices
     )
 
-
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit().apply(SessionBuilder.updateRequestFormWithSession(request, userId))

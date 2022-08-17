@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -35,6 +34,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.RemoveAgentController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.{removeAgent, removeAgentConfirmation}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -42,7 +42,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "RemoveAgentController" must {
 
@@ -72,7 +72,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some(mandate))
         when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("AS12345678"))
-        val request = FakeRequest(GET, "/client/remove-agent/1?returnUrl=/app/return").withJsonBody(Json.toJson("""{}"""))
+        val request: FakeRequest[AnyContentAsJson] = FakeRequest(GET, "/client/remove-agent/1?returnUrl=/app/return").withJsonBody(Json.toJson("""{}"""))
         viewAuthorisedClient(controller)(request, "/app/return") { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -91,8 +91,8 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           .thenReturn(Future.successful("AS12345678"))
         val userId = s"user-${UUID.randomUUID}"
         AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-        val request = FakeRequest(GET, "/client/remove-agent/1?returnUrl=/app/return").withJsonBody(Json.toJson("""{}"""))
-        val thrown = the[RuntimeException] thrownBy await(controller.view(service, "1", "/api/anywhere")
+        val request: FakeRequest[AnyContentAsJson] = FakeRequest(GET, "/client/remove-agent/1?returnUrl=/app/return").withJsonBody(Json.toJson("""{}"""))
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.view(service, "1", "/api/anywhere")
           .apply(SessionBuilder.updateRequestWithSession(request, userId)))
 
         thrown.getMessage must be("No Mandate returned")
@@ -107,7 +107,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
         when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some("/api/anywhere")))
 
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -119,7 +119,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       "submitted with true will redirect to change agent" in new Setup {
         when(mockAgentClientMandateService.removeAgent(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/client/change")
@@ -132,8 +132,8 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
         val userId = s"user-${UUID.randomUUID}"
         AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
-        val thrown = the[RuntimeException] thrownBy await(controller.submit(service, "1")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.submit(service, "1")
           .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
 
         thrown.getMessage must be("Agent Removal Failed")
@@ -142,20 +142,20 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       "submitted with false will redirect to cached return url" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some("/api/anywhere")))
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must be("/api/anywhere")
         }
       }
 
-      "submitted with false but retreival of returnUrl from cache fails" in new Setup {
+      "submitted with false but retrieval of returnUrl from cache fails" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
           ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
         val userId = s"user-${UUID.randomUUID}"
         AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
-        val thrown = the[RuntimeException] thrownBy await(controller.submit(service, "1")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.submit(service, "1")
           .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
 
         thrown.getMessage must be("Cache Retrieval Failed with id 1")
@@ -178,7 +178,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
           ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
         val userId = s"user-${UUID.randomUUID}"
         AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-        val thrown = the[RuntimeException] thrownBy await(controller.returnToService()
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.returnToService()
           .apply(SessionBuilder.buildRequestWithSession(userId)))
 
         thrown.getMessage must be("Cache Retrieval Failed")
@@ -210,8 +210,8 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
   val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
 
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceRemoveAgent = app.injector.instanceOf[views.html.client.removeAgent]
-  val injectedViewInstanceRemoveAgentConfirmation = app.injector.instanceOf[views.html.client.removeAgentConfirmation]
+  val injectedViewInstanceRemoveAgent: removeAgent = app.injector.instanceOf[views.html.client.removeAgent]
+  val injectedViewInstanceRemoveAgentConfirmation: removeAgentConfirmation = app.injector.instanceOf[views.html.client.removeAgentConfirmation]
 
   class Setup {
     val controller = new RemoveAgentController(
@@ -235,7 +235,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
     currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
@@ -243,7 +243,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
   val service: String = "ATED"
 
-  def viewUnAuthenticatedClient(controller: RemoveAgentController)(test: Future[Result] => Any) {
+  def viewUnAuthenticatedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSessionNoUser)
@@ -251,7 +251,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
   }
 
 
-  def viewUnAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any) {
+  def viewUnAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -259,15 +259,16 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     test(result)
   }
 
-  def viewAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsJson], continueUrl: String)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
+  def viewAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsJson], continueUrl: String)
+                          (test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
 
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    val result = controller.view(service, "1", continueUrl).apply(SessionBuilder.updateRequestWithSession(request, userId))
-    test(result)
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      val result = controller.view(service, "1", continueUrl).apply(SessionBuilder.updateRequestWithSession(request, userId))
+      test(result)
   }
 
-  def submitWithAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+  def submitWithAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -276,7 +277,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     test(result)
   }
 
-  def returnToServiceWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any) {
+  def returnToServiceWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -284,7 +285,7 @@ class RemoveAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     test(result)
   }
 
-  def confirmationWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any) {
+  def confirmationWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)

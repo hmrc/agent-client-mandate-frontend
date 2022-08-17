@@ -74,7 +74,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "", "email" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "", "email" -> "")
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -85,7 +85,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
       }
 
       "valid form is submitted with invalid email" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaam")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaam")
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -96,7 +97,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
 
       "valid form is submitted but email provided is too long" in new Setup {
         val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> tooLongEmail)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> tooLongEmail)
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -119,7 +121,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
 
     "valid form is submitted throw No Mandate Found! exception" when {
       "valid form is submitted but no valid mandate is fetched for the mandate id" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, None) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("No Mandate Found with id AS123456 for service ATED")
@@ -129,7 +132,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
 
     "redirect to summary page" when {
       "valid form is submitted with valid email and mandate is edited" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
@@ -139,7 +143,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
 
     "return back to edit-client page" when {
       "valid form is submitted with valid email but mandate is NOT edited" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aa@mail.com")
         submitEditMandateDetails(fakeRequest, emailValid = true, getMandate = Some(mandate)) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/edit-client/AS123456"))
@@ -191,7 +196,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
       injectedViewInstanceEditClient
     )
 
-    def viewWithAuthorisedAgent(mandate: Option[Mandate] = None)(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(mandate: Option[Mandate] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -204,7 +209,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
     def submitEditMandateDetails(request: FakeRequest[AnyContentAsFormUrlEncoded],
                                  emailValid: Boolean,
                                  getMandate: Option[Mandate] = None,
-                                 editMandate: Option[Mandate] = None)(test: Future[Result] => Any) {
+                                 editMandate: Option[Mandate] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

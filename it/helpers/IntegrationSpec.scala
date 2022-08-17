@@ -21,7 +21,7 @@ import helpers.wiremock.WireMockSetup
 import org.scalatest._
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSRequest
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 
 trait IntegrationSpec
   extends PlaySpec
@@ -33,6 +33,7 @@ trait IntegrationSpec
     with LoginStub {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val BearerToken: String = "mock-bearer-token"
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -50,8 +51,13 @@ trait IntegrationSpec
   }
 
   def hitApplicationEndpoint(url: String): WSRequest = {
+    val sessionId = HeaderNames.xSessionId -> SessionId
+    val authorisation = HeaderNames.authorisation -> BearerToken
+    val headers = List(sessionId, authorisation)
+
     val appendSlash = if(url.startsWith("/")) url else s"/$url"
     ws.url(s"$testAppUrl$appendSlash")
       .withFollowRedirects(false)
+      .withHttpHeaders(headers:_*)
   }
 }

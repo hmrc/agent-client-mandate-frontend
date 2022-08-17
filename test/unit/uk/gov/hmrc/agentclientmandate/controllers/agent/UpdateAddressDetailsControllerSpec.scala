@@ -17,14 +17,13 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsJson, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,13 +32,14 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetails
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.editDetails.update_address_details
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "UpdateAddressDetailsController" should {
 
@@ -77,11 +77,12 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
         }
       }
     }
+
     "submit the input business details" when {
       "AUTHORISED user tries to submit" in new Setup {
-        val x = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
-        val inputJson = Json.toJson(x)
-        val fakeRequest = FakeRequest().withJsonBody(inputJson)
+        val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
+        val inputJson: JsValue = Json.toJson(x)
+        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
         saveWithAuthorisedUser(updateRegDetails, "abc")(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/edit")
@@ -91,24 +92,25 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
 
     "fail to submit the input business details" when {
       "AUTHORISED user tries to submit but fails due to form eror" in new Setup {
-        val x = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = ""))
-        val inputJson = Json.toJson(x)
-        val fakeRequest = FakeRequest().withJsonBody(inputJson)
+        val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = ""))
+        val inputJson: JsValue = Json.toJson(x)
+        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
 
       "AUTHORISED user tries to submit but ETMP update fails" in new Setup {
-        val x = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
-        val inputJson = Json.toJson(x)
-        val fakeRequest = FakeRequest().withJsonBody(inputJson)
+        val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
+        val inputJson: JsValue = Json.toJson(x)
+        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
     }
   }
+
   val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
   val updateRegDetails: Option[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
@@ -118,9 +120,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceUpdateAddressDetails = app.injector.instanceOf[views.html.agent.editDetails.update_address_details]
-
-
+  val injectedViewInstanceUpdateAddressDetails: update_address_details = app.injector.instanceOf[views.html.agent.editDetails.update_address_details]
 
   class Setup {
     val controller = new UpdateAddressDetailsController(
@@ -154,7 +154,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
       test(result)
     }
 
-    def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any) {
+    def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -163,7 +163,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec  with MockitoSugar wit
     }
 
     def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
-                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any) {
+                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

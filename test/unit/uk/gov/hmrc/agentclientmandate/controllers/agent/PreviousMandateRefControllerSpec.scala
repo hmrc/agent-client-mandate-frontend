@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -34,13 +33,14 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.searchPreviousMandate
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "PreviousMandateRefController" must {
 
@@ -77,7 +77,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       }
 
       "agent requests(GET) for search mandate view pre-populated and the data has been cached" in new Setup {
-        val cached = ClientCache(mandate = Some(mandate1))
+        val cached: ClientCache = ClientCache(mandate = Some(mandate1))
         viewWithAuthorisedAgent(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -93,12 +93,12 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
     "redirect to ated-subscription corresponding address page" when {
 
       "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
-        val clientParty = Some(Party("client-id", "client name",
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1 = mandate.copy(clientParty = clientParty)
-        val returnCache = cachedData.copy(mandate = Some(mandate1))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(
@@ -108,12 +108,12 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
 
       "valid form is submitted but with mandate having spaces, mandate is found from backend, " +
         "cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
-        val clientParty = Some(Party("client-id", "client name",
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1 = mandate.copy(clientParty = clientParty)
-        val returnCache = cachedData.copy(mandate = Some(mandate1))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(
@@ -125,7 +125,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -140,7 +140,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       }
 
       "mandateRef field has more than expected length" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "a" * 11)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "a" * 11)
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -155,7 +155,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       }
 
       "invalid agent reference is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -173,8 +173,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
 
     "throw exception" when {
       "when client ref not found" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
-        val returnCache = ClientCache(mandate = Some(mandate))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        val returnCache: ClientCache = ClientCache(mandate = Some(mandate))
         submitWithAuthorisedAgent(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
           thrown.getMessage must include("No Client Ref no. found!")
@@ -192,7 +192,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
   }
 
   val mandateId = "ABC123"
-  val mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+  val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
@@ -200,7 +200,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
     statusHistory = Nil, subscription = Subscription(referenceNumber = Some("atedref"),
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")
-  val mandate1 = Mandate(id = mandateId, createdBy = User("credId", "Joe Bloggs"),
+  val mandate1: Mandate = Mandate(id = mandateId, createdBy = User("credId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
@@ -210,14 +210,12 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
     clientDisplayName = "client display name")
   val service = "ATED"
 
-  val oldMandateReference = OldMandateReference("mandateId", "atedRefNum")
+  val oldMandateReference: OldMandateReference = OldMandateReference("mandateId", "atedRefNum")
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceSearchPreviousMandate = app.injector.instanceOf[views.html.agent.searchPreviousMandate]
-
-
+  val injectedViewInstanceSearchPreviousMandate: searchPreviousMandate = app.injector.instanceOf[views.html.agent.searchPreviousMandate]
 
   class Setup {
     val controller = new PreviousMandateRefController(
@@ -230,16 +228,15 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       injectedViewInstanceSearchPreviousMandate
     )
 
-    def viewUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithAuthorisedAgent(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -251,7 +248,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
     def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded],
                                   cachedData: Option[ClientCache] = None,
                                   mandate: Option[Mandate] = None,
-                                  returnCache: ClientCache = ClientCache())(test: Future[Result] => Any) {
+                                  returnCache: ClientCache = ClientCache())(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -269,10 +266,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec  with MockitoSugar with 
       test(result)
     }
 
-
-    def retrieveOldMandateFromSessionAuthorisedAgent(cachedData:Option[OldMandateReference] = None)(test: Future[Result] => Any) {
+    def retrieveOldMandateFromSessionAuthorisedAgent(cachedData:Option[OldMandateReference] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[OldMandateReference](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))

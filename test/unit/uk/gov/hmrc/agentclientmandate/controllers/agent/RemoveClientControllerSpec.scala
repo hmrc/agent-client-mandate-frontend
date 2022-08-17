@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -33,29 +32,28 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.RemoveClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.{removeClient, removeClientConfirmation}
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mandateId: String = "1"
   val agentName: String = "Acme"
-  val injectedViewInstanceRemoveClient = app.injector.instanceOf[views.html.agent.removeClient]
-  val injectedViewInstanceRemoveClientConfirmation = app.injector.instanceOf[views.html.agent.removeClientConfirmation]
+  val injectedViewInstanceRemoveClient: removeClient = app.injector.instanceOf[views.html.agent.removeClient]
+  val injectedViewInstanceRemoveClientConfirmation: removeClientConfirmation = app.injector.instanceOf[views.html.agent.removeClientConfirmation]
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
     currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil,
     Subscription(None, Service("ated", "ATED")), clientDisplayName = "ACME Limited")
-
-
 
   class Setup {
     val controller = new RemoveClientController(
@@ -68,7 +66,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       injectedViewInstanceRemoveClientConfirmation
     )
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -76,14 +74,14 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       test(result)
     }
 
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -91,7 +89,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       test(result)
     }
 
-    def showConfirmationWithAuthorisedAgent(test: Future[Result] => Any) {
+    def showConfirmationWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -99,7 +97,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -111,7 +109,6 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
   override def beforeEach: Unit = {
     reset(mockAgentClientMandateService)
   }
-
 
   "redirect to login page for UNAUTHENTICATED agent" when {
 
@@ -159,7 +156,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(BAD_REQUEST)
         val document = Jsoup.parse(contentAsString(result))
@@ -171,7 +168,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
   "submitting form " when {
     "submitted with false will redirect to agent summary" in new Setup {
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
       when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
@@ -184,7 +181,7 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
     "submitted with true will redirect to confirmation" in new Setup {
       when(mockAgentClientMandateService.removeClient(ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
       when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
@@ -199,14 +196,14 @@ class RemoveClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
       val userId = s"user-${UUID.randomUUID}"
 
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
       when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(mandate))
 
-      val thrown = the[RuntimeException] thrownBy await(controller.confirm(service, "ABC123")
+      val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.confirm(service, "ABC123")
         .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
 
       thrown.getMessage must include("Client removal Failed")

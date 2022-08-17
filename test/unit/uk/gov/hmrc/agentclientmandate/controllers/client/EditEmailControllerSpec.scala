@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -34,13 +33,14 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.editEmail
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "EditEmailController" must {
 
@@ -73,7 +73,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
     "get clients mandate details" when {
       "find the mandate" in new Setup {
-        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+        val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
           agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
           clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
           currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
@@ -90,7 +90,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       }
 
       "mandate is not active" in new Setup {
-        val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+        val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
           agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
           clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
           currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
@@ -109,7 +109,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -126,7 +126,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
       "email field and confirmEmail field has more than expected length" in new Setup {
         val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> tooLongEmail)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> tooLongEmail)
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -143,7 +143,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
       }
 
       "invalid email id is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aainvalid.com")
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -162,7 +162,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
     "redirect to respective page " when {
 
       "valid form is submitted, while updating existing client cache object" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitWithAuthorisedClient(controller)(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
@@ -172,13 +172,13 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
     }
 
     "back link has not been cached" in new Setup {
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("email" -> "")
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(None))
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
+      val result: Future[Result] = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       status(result) must be(BAD_REQUEST)
       verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
         ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -193,8 +193,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceEditEmail = app.injector.instanceOf[views.html.client.editEmail]
-
+  val injectedViewInstanceEditEmail: editEmail = app.injector.instanceOf[views.html.client.editEmail]
 
   class Setup {
     val controller = new EditEmailController(
@@ -216,7 +215,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
   val service = "ATED"
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
     currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
@@ -232,7 +231,6 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
   def getDetailsWithAuthorisedClient(controller: EditEmailController)(mandate: Option[Mandate], continueUrl: String)(test: Future[Result] => Any): Any = {
     val userId = s"user-${UUID.randomUUID}"
 
-
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
     (ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
@@ -240,9 +238,8 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
     test(result)
   }
 
-  def viewWithAuthorisedClient(controller: EditEmailController)(continueUrl: String)(test: Future[Result] => Any) {
+  def viewWithAuthorisedClient(controller: EditEmailController)(continueUrl: String)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
@@ -257,7 +254,7 @@ class EditEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
   def submitWithAuthorisedClient(controller: EditEmailController)(request: FakeRequest[AnyContentAsFormUrlEncoded],
                                  isValidEmail: Boolean = false,
-                                 redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+                                 redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
