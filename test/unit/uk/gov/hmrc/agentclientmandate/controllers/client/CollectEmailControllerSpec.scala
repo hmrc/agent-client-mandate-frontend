@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.client.CollectEmailController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.collectEmail
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "CollectEmailController" must {
 
@@ -74,7 +74,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       }
 
       "client requests(GET) for collect email view pre-populated and the data has been cached" in new Setup {
-        val cached = ClientCache(email = Some(ClientEmail("aa@mail.com")))
+        val cached: ClientCache = ClientCache(email = Some(ClientEmail("aa@mail.com")))
         viewWithAuthorisedClient(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -106,7 +106,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "client requests(GET) for collect email view pre-populated and the data and redirect have been cached" in new Setup {
 
-        val cached = ClientCache(email = Some(ClientEmail("aa@mail.com")))
+        val cached: ClientCache = ClientCache(email = Some(ClientEmail("aa@mail.com")))
         viewWithAuthorisedClient(Some(cached), Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -120,7 +120,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "client requests(GET) for collect email view pre-populated and the data has been cached, but no redirect" in new Setup {
 
-        val cached = ClientCache(email = Some(ClientEmail("aa@mail.com")))
+        val cached: ClientCache = ClientCache(email = Some(ClientEmail("aa@mail.com")))
         viewWithAuthorisedClient(Some(cached), None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -136,7 +136,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "client requests(GET) for collect email view and the data hasn't been cached" in new Setup {
 
-        val cached = ClientCache(email = Some(ClientEmail("aa@mail.com")))
+        val cached: ClientCache = ClientCache(email = Some(ClientEmail("aa@mail.com")))
         backWithAuthorisedClient(Some(cached), Some("http://backlink")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -151,9 +151,9 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
     "redirect to respective page " when {
 
       "valid form is submitted, while updating existing client cache object" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
-        val cachedData = ClientCache()
-        val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val cachedData: ClientCache = ClientCache()
+        val returnData: ClientCache = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = Some(cachedData), returnCache = returnData, mode = Some("edit")) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
@@ -164,8 +164,8 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       }
 
       "valid form is submitted, while creating new client cache object" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
-        val returnData = ClientCache(email = Some(ClientEmail("aa@aa.com")))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val returnData: ClientCache = ClientCache(email = Some(ClientEmail("aa@aa.com")))
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = None, returnCache = returnData) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/search"))
@@ -179,7 +179,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "")
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -196,7 +196,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
 
       "email field and confirmEmail field has more than expected length" in new Setup {
         val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> tooLongEmail)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> tooLongEmail)
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -213,7 +213,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       }
 
       "invalid email id is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aainvalid.com")
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -227,15 +227,12 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
             ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
-
     }
-
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceCollectEmail = app.injector.instanceOf[views.html.client.collectEmail]
-
+  val injectedViewInstanceCollectEmail: collectEmail = app.injector.instanceOf[views.html.client.collectEmail]
 
   class Setup {
     val controller = new CollectEmailController(
@@ -247,14 +244,14 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       injectedViewInstanceCollectEmail
     )
 
-    def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
+    def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -266,7 +263,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       test(result)
     }
 
-    def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[String])(test: Future[Result] => Any) {
+    def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[String])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -280,7 +277,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
       test(result)
     }
 
-    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -302,7 +299,7 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
                                    cachedData: Option[ClientCache] = None,
                                    isValidEmail: Boolean = false,
                                    returnCache: ClientCache = ClientCache(),
-                                   mode: Option[String] = None)(test: Future[Result] => Any) {
+                                   mode: Option[String] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -325,7 +322,5 @@ class CollectEmailControllerSpec extends PlaySpec  with MockitoSugar with Before
   }
 
   val service = "ATED"
-
-
 
 }

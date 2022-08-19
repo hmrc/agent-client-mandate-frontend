@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailControl
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.agentEnterEmail
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "CollectAgentEmailController" must {
 
@@ -123,7 +123,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
       "agent requests(GET) for 'what is your email address' view pre-populated and the data has been cached" in new Setup {
 
-        val clientMandatDisplay = ClientMandateDisplayDetails("name", "mandateId", "agent@mail.com")
+        val clientMandatDisplay: ClientMandateDisplayDetails = ClientMandateDisplayDetails("name", "mandateId", "agent@mail.com")
         addClientAuthorisedAgent(Some(clientMandatDisplay)){ result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -150,7 +150,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
     "valid form is submitted with valid email" when {
       "redirect to 'client display name' Page" in new Setup {
 
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/client-display-name"))
@@ -163,7 +163,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
       "redirect to redirect Page if one is supplied" in new Setup {
 
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST")withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
@@ -175,7 +175,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       }
 
       "return url is invalid format" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("http://website.com")) { result =>
           status(result) must be(BAD_REQUEST)
         }
@@ -184,7 +184,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "")
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -199,7 +199,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
 
       "invalid email id is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> "aainvalid.com")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aainvalid.com")
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -214,7 +214,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
 
       "email provided is too long" in new Setup {
         val tooLongEmail: String = "aaa@" + "a"*237 + ".com"
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("email" -> tooLongEmail)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> tooLongEmail)
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -245,7 +245,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
   val formId1: String = "agent-email"
   val agentEmail: AgentEmail = AgentEmail("aa@aa.com")
   val agentRefCacheId: String = "agent-ref-id"
-  val injectedViewInstanceAgentEnterEmail = app.injector.instanceOf[views.html.agent.agentEnterEmail]
+  val injectedViewInstanceAgentEnterEmail: agentEnterEmail = app.injector.instanceOf[views.html.agent.agentEnterEmail]
 
   override def beforeEach(): Unit = {
     reset(mockDataCacheService)
@@ -264,7 +264,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       injectedViewInstanceAgentEnterEmail
     )
 
-    def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any) {
+    def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -275,14 +275,14 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any) {
+    def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any) {
+    def viewEmailUnAuthorisedAgent()(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -290,7 +290,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+    def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -300,7 +300,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+    def editEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -313,7 +313,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
     }
 
     def submitEmailAuthorisedAgent
-    (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[String]=None)(test: Future[Result] => Any) {
+    (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[String]=None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -324,7 +324,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any) {
+    def retrieveAgentEmailFromSessionAuthorisedAgent(cachedData:  Option[AgentEmail] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

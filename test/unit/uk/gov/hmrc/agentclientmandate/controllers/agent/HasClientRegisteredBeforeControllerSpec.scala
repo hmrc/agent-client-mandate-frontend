@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -34,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.hasClientRegisteredBefore
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -41,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "HasClientRegisteredBeforeController" must {
 
@@ -92,7 +92,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
 
     "redirect agent to previous mandate ref page" when {
       "valid form is submitted and YES is selected" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("prevRegistered" -> "true")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/previous-authorisation-number/callPage")
@@ -100,10 +100,9 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
       }
     }
 
-
     "redirect agent to business-customer enter business details page" when {
       "valid form is submitted and NO" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("prevRegistered" -> "false")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"http://localhost:9923/business-customer/agent/register/non-uk-client" +
@@ -114,7 +113,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("prevRegistered" -> "")
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -131,9 +130,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceHasClientRegisteredBefore = app.injector.instanceOf[views.html.agent.hasClientRegisteredBefore]
-
-
+  val injectedViewInstanceHasClientRegisteredBefore: hasClientRegisteredBefore = app.injector.instanceOf[views.html.agent.hasClientRegisteredBefore]
 
   class Setup {
     val controller = new HasClientRegisteredBeforeController(
@@ -147,14 +144,14 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
       injectedViewInstanceHasClientRegisteredBefore
     )
 
-    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -163,7 +160,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
     }
 
     def viewWithAuthorisedAgent
-    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
+    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -178,7 +175,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec  with BeforeAndAf
     }
 
     def submitWithAuthorisedAgent
-    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any) {
+    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

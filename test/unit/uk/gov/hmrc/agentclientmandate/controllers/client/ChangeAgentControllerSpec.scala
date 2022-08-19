@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.client.ChangeAgentController
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.changeAgent
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class ChangeAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ChangeAgentController" must {
 
@@ -63,7 +63,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     "return 'change agent question' view for AUTHORISED agent" when {
       "client requests(GET) for 'change agent question' view" in new Setup {
 
-        val request = FakeRequest().withJsonBody(Json.toJson("""{}"""))
+        val request: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(Json.toJson("""{}"""))
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
@@ -81,7 +81,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
 
     "submitting form" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
@@ -94,7 +94,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       }
 
       "submitted with true will redirect to collect agent email" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/client/email")
@@ -102,7 +102,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       }
 
       "submitted with false will redirect to remove agent confirmation" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
@@ -117,7 +117,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
   val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceChangeAgent = app.injector.instanceOf[views.html.client.changeAgent]
+  val injectedViewInstanceChangeAgent: changeAgent = app.injector.instanceOf[views.html.client.changeAgent]
 
   class Setup {
     val controller = new ChangeAgentController(
@@ -130,7 +130,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       injectedViewInstanceChangeAgent
     )
 
-    def viewUnAuthenticatedClient(test: Future[Result] => Any) {
+    def viewUnAuthenticatedClient(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, mandateId).apply(SessionBuilder.buildRequestWithSessionNoUser)
@@ -138,7 +138,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
     }
 
 
-    def viewUnAuthorisedClient(test: Future[Result] => Any) {
+    def viewUnAuthorisedClient(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -147,7 +147,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       test(result)
     }
 
-    def viewAuthorisedClient(request: FakeRequest[AnyContentAsJson], test: Future[Result] => Any) {
+    def viewAuthorisedClient(request: FakeRequest[AnyContentAsJson], test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -156,7 +156,7 @@ class ChangeAgentControllerSpec extends PlaySpec  with MockitoSugar with BeforeA
       test(result)
     }
 
-    def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 

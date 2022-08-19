@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.OverseasClientQuestionCo
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasClientQuestion
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.overseasClientQuestion
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "OverseasClientQuestionController" must {
 
@@ -93,16 +93,17 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     "redirect agent to 'nrl page' on business-customer-frontend" when {
       "valid form is submitted and overseas is answered as yes" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("isOverseas" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/nrl-question")
         }
       }
     }
+
     "redirect agent to 'mandate confirmation' page" when {
       "valid form is submitted and overseas is answered as no" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("isOverseas" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include(s"/agent/details/overseas")
@@ -112,7 +113,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("isOverseas" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -122,15 +123,12 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       }
     }
 
-
   }
-
-
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceClientQuestion = app.injector.instanceOf[views.html.agent.overseasClientQuestion]
+  val injectedViewInstanceClientQuestion: overseasClientQuestion = app.injector.instanceOf[views.html.agent.overseasClientQuestion]
 
   class Setup {
     val controller = new OverseasClientQuestionController(
@@ -142,14 +140,14 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       injectedViewInstanceClientQuestion
     )
 
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -158,9 +156,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       test(result)
     }
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
@@ -169,9 +166,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       test(result)
     }
 
-    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[OverseasClientQuestion](ArgumentMatchers.any())
@@ -180,9 +176,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
@@ -194,7 +189,5 @@ class OverseasClientQuestionControllerSpec extends PlaySpec  with MockitoSugar w
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
   }
-
-
 
 }

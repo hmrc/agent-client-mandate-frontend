@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -34,13 +33,14 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.searchMandate
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach  with MockControllerSetup with GuiceOneServerPerSuite {
+class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "SearchMandateController" must {
 
@@ -80,7 +80,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
 
       "client requests(GET) for search mandate view pre-populated and the data has been cached" in new Setup {
-        val cached = ClientCache(mandate = Some(mandate1))
+        val cached: ClientCache = ClientCache(mandate = Some(mandate1))
         viewWithAuthorisedClient(searchMandateController)(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -96,12 +96,12 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
     "redirect to 'Review Mandate view' view for Authorised Client" when {
 
       "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
-        val clientParty = Some(Party("client-id", "client name",
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1 = mandate.copy(clientParty = clientParty)
-        val returnCache = cachedData.copy(mandate = Some(mandate1))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
@@ -111,12 +111,12 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
       "valid form is submitted but with mandate having spaces, mandate is found from backend," +
         "cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
-        val clientParty = Some(Party("client-id", "client name",
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1 = mandate.copy(clientParty = clientParty)
-        val returnCache = cachedData.copy(mandate = Some(mandate1))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
@@ -125,12 +125,12 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
 
       "throw an exception when cached email not found from cache" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
-        val clientParty = Some(Party("client-id", "client name",
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
           `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData = ClientCache(email = None)
-        val mandate1 = mandate.copy(clientParty = clientParty)
-        val returnCache = cachedData.copy(mandate = Some(mandate1))
+        val cachedData: ClientCache = ClientCache(email = None)
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = Some(cachedData),
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           val thrown = the[RuntimeException] thrownBy await(result)
@@ -141,8 +141,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
     "redirect to 'collect email' view for authorised client" when {
       "valid form is submitted, mandate is found from backend, but cache object doesn't exist" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
-        val returnCache = ClientCache(mandate = Some(mandate))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
+        val returnCache: ClientCache = ClientCache(mandate = Some(mandate))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None,
           mandate = Some(mandate), returnCache = returnCache) { result =>
           status(result) must be(SEE_OTHER)
@@ -151,10 +151,9 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
     }
 
-
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "")
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -169,7 +168,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
 
       "mandateRef field has more than expected length" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "a" * 11)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "a" * 11)
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -184,7 +183,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
 
       "invalid agent reference is passed" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -200,8 +199,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       }
 
       "agent reference is already used" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
-        val returnCache = ClientCache(mandate = Some(mandate1))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        val returnCache: ClientCache = ClientCache(mandate = Some(mandate1))
         submitWithAuthorisedClient(searchMandateController)(request = fakeRequest, cachedData = None,
           mandate = Some(mandate1), returnCache = returnCache) { result =>
           status(result) must be(BAD_REQUEST)
@@ -223,7 +222,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
   val mandateId: String = "ABC123"
 
-  val mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+  val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
@@ -232,7 +231,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")
 
-  val mandate1 = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+  val mandate1: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
@@ -246,7 +245,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceSearchMandate = app.injector.instanceOf[views.html.client.searchMandate]
+  val injectedViewInstanceSearchMandate: searchMandate = app.injector.instanceOf[views.html.client.searchMandate]
 
   class Setup {
     val searchMandateController = new SearchMandateController(
@@ -266,16 +265,15 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
     reset(mockAuthConnector)
   }
 
-  def viewUnAuthenticatedClient(controller: SearchMandateController)(test: Future[Result] => Any) {
+  def viewUnAuthenticatedClient(controller: SearchMandateController)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def viewWithAuthorisedClient(controller: SearchMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedClient(controller: SearchMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
@@ -287,7 +285,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
   def submitWithAuthorisedClient(controller: SearchMandateController)(request: FakeRequest[AnyContentAsFormUrlEncoded],
                                  cachedData: Option[ClientCache] = None,
                                  mandate: Option[Mandate] = None,
-                                 returnCache: ClientCache = ClientCache())(test: Future[Result] => Any) {
+                                 returnCache: ClientCache = ClientCache())(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
