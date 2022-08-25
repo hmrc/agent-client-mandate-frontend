@@ -26,24 +26,52 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+        govukBackLink: GovukBackLink)
+
 
 @(agentEmailForm: Form[AgentEmail], service: String, redirectUrl: Option[String], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+
 @implicitFormInstance = @{ Some(agentEmailForm) }
+
+@backLinkHtml = {
+@if(backLink.isDefined) {
+    @govukBackLink(BackLink(
+        href = backLink.get,
+        content = Text("Back")
+    ))
+}
+}
 
 @main_template(title = titleBuilder(messages("agent.enter-email.title"), Some(agentEmailForm))) {
 
-@pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.enter-email.header"),
-    Some(mandateErrorSummary(agentEmailForm, "agent.enter-email.error.general")))
+    @backLinkHtml
 
-  <p class="govuk-body" id="info">
+    @if(agentEmailForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentEmailForm))
+    }
+
+    <header>
+        <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                <span class="govuk-visually-hidden">
+                @messages("ated.screen-reader.section")
+                </span>
+                @messages("agent.add-a-client.sub-header")
+            </span>
+            @messages("agent.enter-email.header")
+        </h1>
+    </header>
+
+    <p class="govuk-body" id="info">
     @messages("agent.enter-email.info.text")
   </p>
 

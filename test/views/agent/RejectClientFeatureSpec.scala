@@ -45,9 +45,9 @@ class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       Then("The title should match - Are you sure you want to reject the request from this client? - GOV.UK")
       assert(document.title() === "agent.reject-client.title - GOV.UK")
       And("The pre-header text is - Manage your ATED service")
-      assert(document.getElementById("pre-heading").text() === "ated.screen-reader.section agent.edit-mandate-details.pre-header")
+      assert(document.getElementsByTag("h1").text().contains("ated.screen-reader.section agent.edit-mandate-details.pre-header"))
       And("The header text is - Are you sure you want to reject the request from ACME Limited?")
-      assert(document.getElementById("heading").text() === "agent.reject-client.header")
+      assert(document.getElementsByTag("h1").text() contains "agent.reject-client.header")
 
       And("The reject text is - Rejecting a client request means you will not be able to act on their behalf unless they submit another request.")
       assert(document.getElementById("reject-text").text() === "agent.reject-client.text")

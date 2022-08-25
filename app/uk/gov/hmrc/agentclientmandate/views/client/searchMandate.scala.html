@@ -22,17 +22,45 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+        govukBackLink: GovukBackLink)
 
 @(service: String, mandateRefForm: Form[MandateReference], backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
+@backLinkHtml = {
+@if(backLink.isDefined) {
+    @govukBackLink(BackLink(
+        href = backLink.get,
+        content = Text("Back")
+    ))
+}
+}
+
 @main_template(title = titleBuilder(messages("client.search-mandate.title"), Some(mandateRefForm))) {
-  @pageHeadersAndError(backLink, "pre-heading", Messages("client.search-mandate.preheader"), "header", Messages("client.search-mandate.header"),
-    Some(mandateErrorSummary(mandateRefForm, "client.search-mandate.error.general")))
+
+    @backLinkHtml
+
+    @if(mandateRefForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(mandateRefForm))
+    }
+
+    <header>
+        <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                <span class="govuk-visually-hidden">
+                @messages("ated.screen-reader.section")
+                </span>
+                @messages("client.search-mandate.preheader")
+            </span>
+            @messages("client.search-mandate.header")
+        </h1>
+    </header>
 
   <p class="govuk-body" id="client.search-mandate.help">
     @messages("client.search-mandate.lede")

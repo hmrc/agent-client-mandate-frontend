@@ -22,17 +22,45 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+        govukBackLink: GovukBackLink)
 
 @(service: String, addEmailForm: Form[ClientEmail], backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
+@backLinkHtml = {
+@if(backLink.isDefined) {
+    @govukBackLink(BackLink(
+        href = backLink.get,
+        content = Text("Back")
+    ))
+}
+}
+
 @main_template(title = titleBuilder(messages("client.edit-email.title"), Some(addEmailForm))) {
-@pageHeadersAndError(backLink, "pre-heading", Messages("client.edit-email.preheader", service), "header", Messages("client.edit-email.header"),
-Some(mandateErrorSummary(addEmailForm, "client.edit-email.error.general")))
+
+    @backLinkHtml
+
+    @if(addEmailForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(addEmailForm))
+    }
+
+    <header>
+        <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                <span class="govuk-visually-hidden">
+                @messages("ated.screen-reader.section")
+                </span>
+                @messages("client.edit-email.preheader", service)
+            </span>
+            @messages("client.edit-email.header")
+        </h1>
+    </header>
 
 <div class="govuk-form-group">
     <p class="govuk-body-l">

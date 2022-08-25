@@ -22,13 +22,25 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+        govukBackLink: GovukBackLink)
 
 @(clientPermissionForm: Form[ClientPermission], service: String, callingPage: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@backLinkHtml = {
+@if(backLink.isDefined) {
+    @govukBackLink(BackLink(
+        href = backLink.get,
+        content = Text("Back")
+    ))
+}
+}
 
 @implicitFormInstance = @{ Some(clientPermissionForm) }
 
@@ -50,9 +62,23 @@
 
 @main_template(title = titleBuilder(messages("agent.client-permission.title"), Some(clientPermissionForm)), scriptElem = Some(pageScripts)) {
 
-  @pageHeadersAndError(backLink,"pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.client-permission.header"),
+    @backLinkHtml
 
-  Some(mandateErrorSummary(clientPermissionForm, "agent.client-permission.error.general")))
+    @if(clientPermissionForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(clientPermissionForm))
+    }
+
+    <header>
+        <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                <span class="govuk-visually-hidden">
+                @messages("ated.screen-reader.section")
+                </span>
+                @messages("agent.add-a-client.sub-header")
+            </span>
+            @messages("agent.client-permission.header")
+        </h1>
+    </header>
 
   <p class="govuk-body" id="permission-text">
       @messages("agent.client-permission.hasPermission.selected.ated.yes.notice.start")

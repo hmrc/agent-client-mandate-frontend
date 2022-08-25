@@ -58,13 +58,13 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.check-client-details.header - GOV.UK")
-          document.getElementById("pre-header").text must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("header").text must be("agent.check-client-details.header")
+          document.getElementsByTag("header").text must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByTag("header").text must include("agent.check-client-details.header")
           document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
-          document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -82,13 +82,13 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.check-client-details.header - GOV.UK")
-          document.getElementById("pre-header").text must be("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementById("header").text must be("agent.check-client-details.header")
+          document.getElementsByTag("header").text must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByTag("header").text must include("agent.check-client-details.header")
           document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")
           document.getElementById("submit").text must be("agent.check-client-details.confirm")
 
-          document.getElementById("backLinkHref").text() must be("mandate.back")
-          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/overseas-client-question")
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/overseas-client-question")
         }
       }
     }

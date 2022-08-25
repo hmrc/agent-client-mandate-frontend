@@ -49,8 +49,8 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.edit-mandate-details.title - GOV.UK")
-          document.getElementById("header").text() must include("agent.edit-mandate-details.header")
-          document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementsByTag("header").text() must include("agent.edit-mandate-details.header")
+          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementById("sub-heading").text() must be("agent.edit-mandate-details.sub-heading")
           document.getElementsByClass("govuk-label").text() must include("agent.edit-mandate-details.displayName")
           document.getElementById("displayName-hint").text() must include("agent.edit-mandate-details.hint")
@@ -78,7 +78,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
+          document.getElementsByClass("govuk-list").text() must include("agent.edit-client.error.dispName client.email.error.email.empty")
           document.getElementsByClass("govuk-error-message").text() must
             include("govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName govukErrorMessage.visuallyHiddenText: client.email.error.email.empty")
         }
@@ -89,7 +89,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
+          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
           document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
         }
       }
@@ -100,7 +100,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.edit-client.error.general.email")
+          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
           document.getElementsByClass("govuk-error-message").text() must
             include("client.email.error.email.too.long")
         }

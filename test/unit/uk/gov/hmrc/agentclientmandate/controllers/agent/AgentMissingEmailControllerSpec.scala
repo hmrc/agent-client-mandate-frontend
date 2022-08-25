@@ -66,8 +66,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.missing-email.title - GOV.UK")
-          document.getElementById("header").text() must include("agent.missing-email.header")
-          document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementsByTag("header").text() must include("agent.missing-email.header")
+          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementById("info").text() must be("agent.missing-email.text")
           assert(document.getElementById("useEmailAddress") != null)
           assert(document.getElementById("useEmailAddress-2") != null)
@@ -89,8 +89,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.useEmailAddress")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.missing-email.must_answer")
+          document.getElementsByClass("govuk-list").text() must include("agent.missing-email.must_answer")
+          document.getElementById("useEmailAddress-error").text() must include("agent.missing-email.must_answer")
         }
       }
 
@@ -99,8 +99,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.empty")
+          document.getElementById("email-error").text() must include("client.email.error.email.empty")
         }
       }
 
@@ -110,8 +110,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.too.long")
+          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
+          document.getElementById("email-error").text() must include("client.email.error.email.too.long")
         }
       }
 
@@ -120,8 +120,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
+          document.getElementById("email-error").text() must include("client.email.error.email.invalid")
         }
       }
     }

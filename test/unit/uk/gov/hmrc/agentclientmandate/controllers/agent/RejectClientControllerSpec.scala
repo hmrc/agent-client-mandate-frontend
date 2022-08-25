@@ -74,7 +74,7 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.reject-client.title - GOV.UK")
-          document.getElementById("heading").text() must include("agent.reject-client.header")
+          document.getElementsByTag("h1").text() must include("agent.reject-client.header")
         }
       }
     }
@@ -88,7 +88,7 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+          document.getElementsByClass("govuk-list").text() must include("yes-no.error.mandatory.clientReject")
           document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.clientReject")
         }
       }
