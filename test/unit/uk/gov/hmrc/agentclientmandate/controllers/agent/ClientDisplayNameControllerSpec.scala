@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientDisplayNameControl
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.clientDisplayName
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "ClientDisplayNameController" must {
 
@@ -116,7 +116,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     "redirect when valid form is submitted with valid data" when {
       "to 'mandate details' when we have no redirectUrl" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("clientDisplayName" -> "client display name")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/overseas-client-question"))
@@ -126,7 +127,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       }
 
       "to redirectUrl if we have one" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("clientDisplayName" -> "client display name")
         submitClientDisplayNameAuthorisedAgent(fakeRequest, Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
@@ -136,7 +138,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       }
 
       "return url is invalid format" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
         submitClientDisplayNameAuthorisedAgent(fakeRequest, Some("http://website.com")) { result =>
           status(result) must be(BAD_REQUEST)
         }
@@ -145,7 +147,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
     "returns BAD_REQUEST" when {
       "empty form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("clientDisplayName" -> "")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -155,7 +157,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       }
 
       "clientDisplayName field value is too long" in new Setup {
-        val fakeRequest = FakeRequest()
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest()
+          .withMethod("POST")
           .withFormUrlEncodedBody("clientDisplayName" -> "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEEFFFFFFFFFFGGGGGGGGGGHHHHHHHHHHIIIIIIIIIIJJJJJJJJJJ")
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -180,7 +183,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
 
   val service: String = "ated".toUpperCase
   val clientDisplayName: ClientDisplayName = ClientDisplayName("client display name")
-  val injectedViewInstanceClientDisplayName = app.injector.instanceOf[views.html.agent.clientDisplayName]
+  val injectedViewInstanceClientDisplayName: clientDisplayName = app.injector.instanceOf[views.html.agent.clientDisplayName]
 
 
 
@@ -199,14 +202,14 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       injectedViewInstanceClientDisplayName
     )
 
-    def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any) {
+    def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, None).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewClientDisplayNameUnAuthorisedAgent()(test: Future[Result] => Any) {
+    def viewClientDisplayNameUnAuthorisedAgent()(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -214,7 +217,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def viewClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+    def viewClientDisplayNameAuthorisedAgent(
+      cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -224,7 +228,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def editClientDisplayNameAuthorisedAgent(cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+    def editClientDisplayNameAuthorisedAgent(
+      cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -236,8 +241,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def submitClientDisplayNameAuthorisedAgent
-    (request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[String] = None)(test: Future[Result] => Any) {
+    def submitClientDisplayNameAuthorisedAgent(
+      request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -249,7 +254,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec  with MockitoSugar with B
       test(result)
     }
 
-    def retrieveClientDisplayNameFromSessionAuthorisedAgent(cachedData: Option[ClientDisplayName] = None)(test: Future[Result] => Any) {
+    def retrieveClientDisplayNameFromSessionAuthorisedAgent(
+      cachedData: Option[ClientDisplayName] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

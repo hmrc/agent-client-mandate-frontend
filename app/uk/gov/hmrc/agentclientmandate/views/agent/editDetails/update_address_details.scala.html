@@ -37,12 +37,17 @@
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-<script src='@controllers.routes.Assets.versioned("javascript/mandate-country-auto-complete.js")'></script>
-<script>
+    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
+    <script>
     $(document).ready(function() {
-      countryCodeAutoComplete("#address\\.countryCode");
+
+      accessibleAutocomplete.enhanceSelectElement({
+            defaultValue: '',
+            selectElement: document.querySelector('#address\\.countryCode')
+      })
+
     });
-</script>
+    </script>
 }
 
 @backLinkHtml = {
@@ -133,7 +138,7 @@
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.country"))
           ),
-          items = Seq(SelectItem(Some(""), "")) ++ displayDetails.listOfIsoCode.map {
+          items = Seq(SelectItem(Some(""), "Select a country")) ++ displayDetails.listOfIsoCode.map {
               case (code, country) => SelectItem(
                   value = Some(code),
                   text = country

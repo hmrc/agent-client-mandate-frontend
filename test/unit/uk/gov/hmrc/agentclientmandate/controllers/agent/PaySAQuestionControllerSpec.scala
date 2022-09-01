@@ -31,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.paySAQuestion
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "PaySAQuestionController" must {
 
@@ -88,7 +89,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     "redirect agent to 'mandate details' page" when {
       "valid form is submitted and YES is selected as client pays self-assessment" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("paySA" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include(s"/agent/details/paySA")
@@ -98,7 +99,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     "redirect agent to 'client permission' page" when {
       "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("paySA" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include(s"/agent/client-permission/paySA")
@@ -108,7 +109,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("paySA" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("paySA" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -123,7 +124,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstancePaySAQuestion = app.injector.instanceOf[views.html.agent.paySAQuestion]
+  val injectedViewInstancePaySAQuestion: paySAQuestion = app.injector.instanceOf[views.html.agent.paySAQuestion]
 
 
 
@@ -137,14 +138,14 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
       injectedViewInstancePaySAQuestion
     )
 
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -153,7 +154,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
       test(result)
     }
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -164,7 +165,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
       test(result)
     }
 
-    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -175,7 +176,7 @@ class PaySAQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 

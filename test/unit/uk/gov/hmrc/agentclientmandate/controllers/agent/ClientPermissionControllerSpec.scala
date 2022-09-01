@@ -135,7 +135,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "redirect agent to 'enter client non-uk details' page in business-customer-frontend application" when {
       "valid form is submitted and YES is selected" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "true")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/client-registered-previously")
@@ -145,7 +145,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "redirect agent to 'mandate summary' page" when {
       "valid form is submitted and NO" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
@@ -185,14 +185,14 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       injectedViewInstanceClientPermission
     )
 
-    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -200,7 +200,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       test(result)
     }
 
-    def viewWithAuthorisedAgent(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       when(mockBusinessCustomerConnector.clearCache(
@@ -214,7 +214,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       test(result)
     }
 
-    def viewWithAuthorisedAgentWithSomeData(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgentWithSomeData(serviceUsed: String = service, callingPage: String)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       when(mockBusinessCustomerConnector.clearCache(
@@ -228,7 +228,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       test(result)
     }
 
-    def submitWithAuthorisedAgent(callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

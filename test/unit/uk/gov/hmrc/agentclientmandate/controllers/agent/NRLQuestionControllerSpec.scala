@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -32,13 +31,14 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.NRLQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.nrl_question
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   "NRLQuestionController" must {
 
@@ -90,7 +90,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
 
     "redirect agent to 'mandate details' page" when {
       "valid form is submitted and YES is selected as client pays self-assessment" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "true")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include(s"/agent/paySA-question")
@@ -100,7 +100,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
 
     "redirect agent to 'client permission' page" when {
       "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include(s"/agent/client-permission/nrl")
@@ -110,7 +110,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("nrl" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("nrl" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -125,9 +125,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceNrlQuestion = app.injector.instanceOf[views.html.agent.nrl_question]
-
-
+  val injectedViewInstanceNrlQuestion: nrl_question = app.injector.instanceOf[views.html.agent.nrl_question]
 
   class Setup {
     val controller = new NRLQuestionController(
@@ -139,14 +137,14 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
       injectedViewInstanceNrlQuestion
     )
 
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -155,7 +153,7 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
       test(result)
     }
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
 
@@ -166,9 +164,8 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
       test(result)
     }
 
-    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgentWithSomeData(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[NRLQuestion](ArgumentMatchers.any())
@@ -177,9 +174,8 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
@@ -190,7 +186,5 @@ class NRLQuestionControllerSpec extends PlaySpec  with BeforeAndAfterEach with M
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
   }
-
-
 
 }

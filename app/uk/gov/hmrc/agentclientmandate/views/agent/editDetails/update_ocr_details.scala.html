@@ -42,11 +42,16 @@
 
 @pageScripts = {
 
-    <script src='@controllers.routes.Assets.versioned("javascript/mandate-country-auto-complete.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
     <script>
-        $(document).ready(function() {
-          countryCodeAutoComplete("#issuingCountryCode");
-        });
+    $(document).ready(function() {
+
+      accessibleAutocomplete.enhanceSelectElement({
+            defaultValue: '',
+            selectElement: document.querySelector('#issuingCountryCode')
+      })
+
+    });
     </script>
 }
 
@@ -76,7 +81,7 @@
                 label = Label(
                     content = Text(Messages("agent.edit-mandate-details.issuingCountry"))
                 ),
-                items = Seq(SelectItem(Some(""), "")) ++ displayDetails.listOfIsoCode.map {
+                items = Seq(SelectItem(Some(""), "Select a country")) ++ displayDetails.listOfIsoCode.map {
                     case (code, country) => SelectItem(
                         value = Some(code),
                         text = country

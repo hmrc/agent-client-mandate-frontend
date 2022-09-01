@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -33,6 +32,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.RejectClientController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.{rejectClient, rejectClientConfirmation}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -40,7 +40,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class RejectClientControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   "RejectClientController" must {
 
@@ -84,7 +84,7 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
         when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(mandate))
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
@@ -96,7 +96,7 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
 
     "submitting form " when {
       "submitted with false will redirect to agent summary" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "false")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
         when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(mandate))
@@ -109,7 +109,7 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       "submitted with true will redirect to confirmation" in new Setup {
         when(mockAgentClientMandateService.rejectClient(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
         when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(mandate))
@@ -124,13 +124,12 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
         val userId = s"user-${UUID.randomUUID}"
 
-
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody("yesNo" -> "true")
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
         when(mockAgentClientMandateService.fetchClientMandateClientName(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(mandate))
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-        val thrown = the[RuntimeException] thrownBy await(controller.submit(service, "ABC123")
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.submit(service, "ABC123")
           .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
 
         thrown.getMessage must include("Client Rejection Failed")
@@ -159,16 +158,14 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
   val mandateId: String = "1"
   val agentName: String = "Acme"
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val injectedViewInstanceRejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
-  val injectedViewInstanceRejectClientConfirmation = app.injector.instanceOf[views.html.agent.rejectClientConfirmation]
+  val injectedViewInstanceRejectClient: rejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
+  val injectedViewInstanceRejectClientConfirmation: rejectClientConfirmation = app.injector.instanceOf[views.html.agent.rejectClientConfirmation]
 
-  val mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation,
     ContactDetails("client@client.com", None))), currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"),
     statusHistory = Nil, Subscription(None, Service("ated", "ATED")), clientDisplayName = "ACME Limited")
-
-
 
   class Setup {
     val controller = new RejectClientController(
@@ -181,43 +178,39 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
       injectedViewInstanceRejectClientConfirmation
     )
 
-    def viewWithAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
-    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithUnAuthorisedAgent(test: Future[Result] => Any) {
+    def viewWithUnAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
-    def confirmationWithAuthorisedAgent(test: Future[Result] => Any) {
+    def confirmationWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       val result = controller.confirmation(service, "Acme Ltd").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
-    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+    def submitWithAuthorisedAgent(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
@@ -230,7 +223,5 @@ class RejectClientControllerSpec extends PlaySpec  with MockitoSugar with Before
     reset(mockAgentClientMandateService)
     reset(mockAuthConnector)
   }
-
-
 
 }
