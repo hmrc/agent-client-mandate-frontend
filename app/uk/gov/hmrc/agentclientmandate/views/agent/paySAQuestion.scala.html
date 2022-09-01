@@ -22,21 +22,49 @@
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
-    govukButton: GovukButton)
+    govukButton: GovukButton,
+        govukErrorSummary: GovukErrorSummary,
+        govukBackLink: GovukBackLink)
 
 @(paySAQuestionForm: Form[PaySAQuestion], service: String, backLink:Option[String]=None)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+
+@backLinkHtml = {
+@if(backLink.isDefined) {
+    @govukBackLink(BackLink(
+        href = backLink.get,
+        content = Text("Back")
+    ))
+}
+}
 
 @implicitFormInstance = @{ Some(paySAQuestionForm) }
 
 @main_template(title = titleBuilder(messages("agent.paySA-question.title"), Some(paySAQuestionForm))) {
-    @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.paySA-question.header"),
-        Some(mandateErrorSummary(paySAQuestionForm, "agent.paySA-question.error.general")))
 
-@formHelper(action = routes.PaySAQuestionController.submit()) {
+    @backLinkHtml
+
+    @if(paySAQuestionForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(paySAQuestionForm))
+    }
+
+    <header>
+        <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                <span class="govuk-visually-hidden">
+                @messages("ated.screen-reader.section")
+                </span>
+                @messages("agent.add-a-client.sub-header")
+            </span>
+            @messages("agent.paySA-question.header")
+        </h1>
+    </header>
+
+    @formHelper(action = routes.PaySAQuestionController.submit()) {
 
     @govukRadios(
         Radios(

@@ -142,8 +142,8 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
         document.title() must be("agent.remove-client.header - GOV.UK")
-        document.getElementById("pre-header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
-        document.getElementById("header").text() must include("agent.remove-client.header")
+        document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+        document.getElementsByTag("header").text() must include("agent.remove-client.header")
         document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.remove-client.header")
         document.getElementById("submit").text() must be("confirm-button")
       }
@@ -160,7 +160,7 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(BAD_REQUEST)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
+        document.getElementsByClass("govuk-list").text() must include("yes-no.error.mandatory.removeClient")
         document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.removeClient")
       }
     }

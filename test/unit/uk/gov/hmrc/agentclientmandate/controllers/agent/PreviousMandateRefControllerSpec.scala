@@ -82,7 +82,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.search-previous-mandate.title - GOV.UK")
-          document.getElementById("header").text() must include("agent.search-previous-mandate.header")
+          document.getElementsByTag("header").text() must include("agent.search-previous-mandate.header")
           document.getElementById("mandateRef").`val`() must be("ABC123")
           document.getElementById("submit").text() must be("continue-button")
         }
@@ -129,7 +129,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
+          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.clientAuthNum")
           document.getElementsByClass("govuk-error-message").text() must include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -144,7 +144,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
+          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.clientAuthNum")
           document.getElementsByClass("govuk-error-message").text() must include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -159,7 +159,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("error-list").text() must include("agent.search-previous-mandate.error.mandateRef")
+          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.clientAuthNum")
           document.getElementsByClass("govuk-error-message").text() must
             include("client.search-mandate.error.clientAuthNum")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
