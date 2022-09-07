@@ -82,7 +82,7 @@ object AgentClientMandateUtils {
 
   private def isRelativeUrl(url: String): Boolean = url.matches("^[/][^/].*")
 
-  def isRelativeOrDev(url: String)(implicit runMode: AppConfig): Boolean = isRelativeUrl(url) || runMode.environment.mode == Mode.Dev
+  def isRelativeOrDev(url: String)(implicit appConfig: AppConfig): Boolean = isRelativeUrl(url) || appConfig.isAllowedRedirectUrl(url)
 
   def isNonUkClient(mandate: Mandate): Boolean =
     !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
