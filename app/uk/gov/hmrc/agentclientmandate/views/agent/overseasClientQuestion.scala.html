@@ -17,52 +17,25 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
-    govukButton: GovukButton,
-        govukErrorSummary: GovukErrorSummary,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(overseasClientQuestionForm: Form[OverseasClientQuestion], service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
 
 @implicitFormInstance = @{ Some(overseasClientQuestionForm) }
 
 @main_template(title = titleBuilder(messages("agent.overseas-client-question.title"), Some(overseasClientQuestionForm))) {
-
-    @backLinkHtml
-
-    @if(overseasClientQuestionForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(overseasClientQuestionForm))
-    }
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.overseas-client-question.header")
-        </h1>
-    </header>
+  @pageHeadersAndError(backLink, "pre-header", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.overseas-client-question.header"),
+    Some(mandateErrorSummary(overseasClientQuestionForm, "agent.overseas-client-question.error.general")))
 
   @formHelper(action = routes.OverseasClientQuestionController.submit()) {
     @govukRadios(

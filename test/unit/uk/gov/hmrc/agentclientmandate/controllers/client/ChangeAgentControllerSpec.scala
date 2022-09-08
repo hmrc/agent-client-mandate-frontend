@@ -71,8 +71,8 @@ class ChangeAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("client.change-agent.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("client.change-agent.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.getElementById("header").text() must include("client.change-agent.header")
+          document.getElementById("pre-heading").text() must be("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("client.change-agent.header")
           document.getElementById("submit").text() must be("confirm-button")
         })
@@ -88,7 +88,7 @@ class ChangeAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("yes-no.error.mandatory.changeAgent")
+          document.getElementsByClass("error-list").text() must include("yes-no.error.general.yesNo")
           document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.changeAgent")
         }
       }

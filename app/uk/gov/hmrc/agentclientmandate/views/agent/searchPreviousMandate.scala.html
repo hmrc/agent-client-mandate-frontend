@@ -22,45 +22,17 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
-    govukButton: GovukButton,
-        govukErrorSummary: GovukErrorSummary,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(service: String, mandateRefForm: Form[MandateReference], callingPage: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
-
 @main_template(title = titleBuilder(messages("agent.search-previous-mandate.title"), Some(mandateRefForm))) {
-
-    @backLinkHtml
-
-    @if(mandateRefForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(mandateRefForm))
-    }
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.search-previous-mandate.header")
-        </h1>
-    </header>
+  @pageHeadersAndError(backLink, "pre-heading", Messages("agent.add-a-client.sub-header"), "header", Messages("agent.search-previous-mandate.header"),
+    Some(mandateErrorSummary(mandateRefForm, "agent.search-previous-mandate.error")))
 
     <p class="govuk-body">@messages("agent.search-previous-mandate.header.lede")</p>
 

@@ -60,8 +60,8 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         document.title() must be("client.edit-email.title - GOV.UK")
         document.getElementById("email").`val`() must be("client@client.com")
 
-        document.getElementsByClass("govuk-back-link").text() must be("Back")
-        document.getElementsByClass("govuk-back-link").attr("href") must be("/api/anywhere")
+        document.getElementById("backLinkHref").text() must be("mandate.back")
+        document.getElementById("backLinkHref").attr("href") must be("/api/anywhere")
       }
     }
 
@@ -113,7 +113,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -130,7 +130,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("govuk-error-message").text() must
             include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
@@ -147,7 +147,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("error-list").text() must include("client.edit-email.error.general.email")
           document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())

@@ -15,42 +15,21 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
+@import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
-    govukButton: GovukButton,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
-
 @main_template(title = titleBuilder(messages("agent.inform-hmrc.title"))) {
-
-    @backLinkHtml
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.inform-hmrc.header")
-        </h1>
-    </header>
+    @pageHeadersAndError(backLink, "pre-header", messages("agent.add-a-client.sub-header"), "header", messages("agent.inform-hmrc.header"),None)
 
     <p class="govuk-body" id="paragraph1">@messages("agent.inform-hmrc.p.1")</p>
     <p class="govuk-body" id="paragraph2">@messages("agent.inform-hmrc.p.2")</p>

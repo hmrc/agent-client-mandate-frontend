@@ -69,8 +69,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-permission.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
@@ -82,8 +82,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           document.getElementById("continue").text() must be("continue-button")
           assert(document.select("#submit").text() === "agent.all-my-clients.button")
 
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -92,16 +92,16 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-permission.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           document.getElementById("permission-text").text() must
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
           document.getElementById("hasPermission").attr("checked") must be("")
           document.getElementById("continue").text() must be("continue-button")
 
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
@@ -110,8 +110,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-permission.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.client-permission.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           assert(document.getElementById("hasPermission") != null)
           assert(document.getElementById("hasPermission-2") != null)
@@ -119,8 +119,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
           assert(document.select("#continue").text() === "continue-button")
           assert(document.select("#submit").text() === "agent.all-my-clients.button")
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/nrl-question")
+          document.getElementById("backLinkHref").text() must be("mandate.back")
+          document.getElementById("backLinkHref").attr("href") must be("/mandate/agent/nrl-question")
         }
       }
 
@@ -159,8 +159,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-permission.hasPermission.not-selected.error")
-          document.getElementById("hasPermission-error").text() must include("agent.client-permission.hasPermission.not-selected.error")
+          document.getElementsByClass("error-list").text() must include("agent.client-permission.error.general.hasPermission")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-permission.hasPermission.not-selected.error")
         }
       }
     }

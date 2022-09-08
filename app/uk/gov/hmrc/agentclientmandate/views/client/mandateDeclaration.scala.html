@@ -14,44 +14,23 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.models._
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
-    govukButton: GovukButton,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(mandate: Mandate, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
-
 @main_template(title = titleBuilder(messages("Declaration and consent"))) {
-
-    @backLinkHtml
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("client.agent-declaration.pre-heading")
-            </span>
-            @messages("client.agent-declaration.header")
-        </h1>
-    </header>
+  @pageHeadersAndError(backLink, "pre-heading", Messages("client.agent-declaration.pre-heading"), "header", Messages("client.agent-declaration.header"))
 
   <p class="govuk-body" id="declaration-info-1">@messages("client.agent-declaration.declaration-info-1", mandate.subscription.service.name.toUpperCase)</p>
   <p class="govuk-body" id="declaration-info-2">@messages("client.agent-declaration.declaration-info-2", mandate.subscription.service.name.toUpperCase)</p>

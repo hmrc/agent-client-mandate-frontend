@@ -22,26 +22,14 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
     govukButton: GovukButton,
-    govukDetails : GovukDetails,
-        govukErrorSummary: GovukErrorSummary,
-        govukBackLink: GovukBackLink)
+    govukDetails : GovukDetails)
 
 @(prevUniqueAuthNumForm: Form[PrevUniqueAuthNum], callingPage: String, service: String, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
 
 @implicitFormInstance = @{ Some(prevUniqueAuthNumForm) }
 
@@ -51,24 +39,8 @@
 }
 
 @main_template(title = titleBuilder(messages("agent.prev-auth-num.title"), Some(prevUniqueAuthNumForm))) {
-
-    @backLinkHtml
-
-    @if(prevUniqueAuthNumForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(prevUniqueAuthNumForm))
-    }
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.prev-auth-num.header")
-        </h1>
-    </header>
+    @pageHeadersAndError(backLink, "pre-header", messages("agent.add-a-client.sub-header"), "header", messages("agent.prev-auth-num.header"),
+        Some(mandateErrorSummary(prevUniqueAuthNumForm, "agent.prev-auth-num.not-selected.field-error")))
 
     <p class="govuk-body">@messages("agent.prev-auth-num.p")</p>
 

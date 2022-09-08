@@ -26,6 +26,7 @@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
 @import uk.gov.hmrc.govukfrontend.views.html.components.GovukRadios
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.hint.Hint
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichInput
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
@@ -35,15 +36,13 @@
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
     govukInput: GovukInput,
     govukButton: GovukButton,
-    govukInsetText : GovukInsetText,
-        govukErrorSummary: GovukErrorSummary)
+    govukInsetText : GovukInsetText)
 
 @(agentMissingEmailForm: Form[AgentMissingEmail], service: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -61,7 +60,6 @@
           ).withFormField(agentMissingEmailForm("email"))
         )
 }
-
 @textInsert = {
     <p>@messages("agent.missing-email.answer-no.start")
         <a href="@routes.AgentSummaryController.view().url" class="govuk-link">@messages("agent.missing-email.answer-no.link-text")</a>
@@ -73,22 +71,9 @@
 
 @main_template(title = titleBuilder(messages("agent.missing-email.title"), Some(agentMissingEmailForm)), scriptElem = Some(pageScripts)) {
 
-    @if(agentMissingEmailForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentMissingEmailForm))
-    }
+    @pageHeadersAndError(None, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.missing-email.header"),
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
-            </span>
-            @messages("agent.missing-email.header")
-        </h1>
-    </header>
-
+    Some(mandateErrorSummary(agentMissingEmailForm, "agent.enter-email.error.general")))
 
     <p id="info" class="govuk-body">
       @messages("agent.missing-email.text", service.toUpperCase)

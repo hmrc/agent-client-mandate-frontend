@@ -24,15 +24,12 @@
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
     govukSelect: GovukSelect,
-    govukButton: GovukButton,
-        govukErrorSummary: GovukErrorSummary,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
@@ -50,36 +47,13 @@
     </script>
 }
 
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
-
 @implicitFormInstance = @{ Some(agentDetailsForm) }
 
 @main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), scriptElem = Some(pageScripts)) {
 
-    @backLinkHtml
+@pageHeadersAndError(backLink, "pre-header", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "header", Messages("agent.edit-mandate-details.address.header"))
 
-    @if(agentDetailsForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentDetailsForm))
-    }
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
-            </span>
-            @messages("agent.edit-mandate-details.address.header")
-        </h1>
-    </header>
+@mandateErrorSummary(agentDetailsForm, "agent.edit-mandate-details-error.general")
 
 @formHelper(action = routes.UpdateAddressDetailsController.submit()) {
 

@@ -40,8 +40,6 @@ import scala.concurrent.Future
 
 class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
-
-
   "CollectAgentEmailController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
@@ -93,8 +91,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.enter-email.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.enter-email.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.enter-email.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
           document.getElementsByClass("govuk-label").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
@@ -108,8 +106,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.enter-email.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.enter-email.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.enter-email.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
           document.getElementsByClass("govuk-label").text() must be("agent.enter-email.field.email.label")
           document.getElementById("email").`val`() must be("")
@@ -190,8 +188,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include ("client.email.error.email.empty")
-          document.getElementById("email-error").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
@@ -205,8 +203,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
-          document.getElementById("email-error").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
             ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
@@ -220,8 +218,8 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
-          document.getElementById("email-error").text() must
+          document.getElementsByClass("error-list").text() must include("agent.enter-email.error.general.email")
+          document.getElementsByClass("govuk-error-message").text() must
             include("client.email.error.email.too.long")
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),

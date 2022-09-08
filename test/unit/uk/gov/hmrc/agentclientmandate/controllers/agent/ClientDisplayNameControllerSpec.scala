@@ -69,7 +69,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-display-name.header")
+          document.getElementById("header").text() must include("agent.client-display-name.header")
         }
       }
 
@@ -94,7 +94,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-display-name.header")
+          document.getElementById("header").text() must include("agent.client-display-name.header")
         }
       }
 
@@ -151,8 +151,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-display-name.error.not-selected")
-          document.getElementById("clientDisplayName-error").text() must include("agent.client-display-name.error.not-selected")
+          document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-display-name.error.not-selected")
         }
       }
 
@@ -163,8 +163,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-display-name.error.length")
-          document.getElementById("clientDisplayName-error").text() must include("agent.client-display-name.error.length")
+          document.getElementsByClass("error-list").text() must include("agent.client-display-name.error.general.clientDisplayName")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.client-display-name.error.length")
         }
       }
     }

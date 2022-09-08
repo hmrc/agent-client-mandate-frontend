@@ -16,51 +16,23 @@
 
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
+@import uk.gov.hmrc.agentclientmandate.views.html.helpers._
 @import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichRadios
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
-    govukButton: GovukButton,
-        govukErrorSummary: GovukErrorSummary,
-        govukBackLink: GovukBackLink)
+    govukButton: GovukButton)
 
 @(service: String, rejectClientForm: Form[YesNoQuestion], clientName: String, mandateId: String, backLink:Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@backLinkHtml = {
-@if(backLink.isDefined) {
-    @govukBackLink(BackLink(
-        href = backLink.get,
-        content = Text("Back")
-    ))
-}
-}
-
 @main_template(title = titleBuilder(messages("agent.reject-client.title"), Some(rejectClientForm))) {
-
-    @backLinkHtml
-
-    @if(rejectClientForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(rejectClientForm))
-    }
-
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
-            </span>
-            @messages("agent.reject-client.header", clientName)
-        </h1>
-    </header>
-
+  @pageHeadersAndError(backLink, "pre-heading", Messages("agent.edit-mandate-details.pre-header", service.toUpperCase), "heading", Messages("agent.reject-client.header", clientName),
+        Some(mandateErrorSummary(rejectClientForm, "yes-no.error.general", Some("agent.reject-client.error"))))
 
     <p class="govuk-body" id="reject-text">
         @messages("agent.reject-client.text")

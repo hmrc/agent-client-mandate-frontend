@@ -45,9 +45,9 @@ class AgentDetailsFeatureSpec extends FeatureSpec  with MockitoSugar with Before
       assert(document.title() === "agent.edit-details.title - GOV.UK")
 
       And("The pre-header text is - Edit details")
-      assert(document.getElementsByTag("header").text() contains "ated.screen-reader.section agent.edit-details.sub-header")
+      assert(document.getElementById("pre-header").text() === "ated.screen-reader.section agent.edit-details.sub-header")
       And("The header text is - Your details")
-      assert(document.getElementsByTag("header").text() contains "agent.edit-details.header")
+      assert(document.getElementById("agency-details-header").text() === "agent.edit-details.header")
 
       When("The user views the table of information")
 

@@ -71,8 +71,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.overseas-client-question.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.overseas-client-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -82,8 +82,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.overseas-client-question.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.overseas-client-question.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("isOverseas").attr("checked") must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
@@ -117,7 +117,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.overseas-client-question.error.isOverseas")
+          document.getElementsByClass("error-list").text() must include("agent.overseas-client-question.error.general.isOverseas")
           document.getElementsByClass("govuk-error-message").text() must include("agent.overseas-client-question.error.isOverseas")
         }
       }

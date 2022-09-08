@@ -74,8 +74,8 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.select-service.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.select-service.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementById("header").text() must include("agent.select-service.header")
+          document.getElementById("pre-header").text() must be("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.select-service.header")
           document.getElementById("submit").text() must be("submit-button")
         }
@@ -135,7 +135,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.select-service.error.service")
+          document.getElementsByClass("error-list").text() must include("agent.select-service.error.general.service")
           document.getElementsByClass("govuk-error-message").text() must include("agent.select-service.error.service")
         }
       }
