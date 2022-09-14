@@ -382,10 +382,10 @@ agent.remove-client-confirmation.view-all-clients = View all your clients
 
 ##### CLIENT BANNER PARTIAL
 
-client.banner.text.approved = You have requested <strong class="govuk-!-font-weight-bold">{0}</strong> to act as your agent
-client.banner.text.active = <strong class="govuk-!-font-weight-bold">{0}</strong> is now your appointed agent
-client.banner.text.rejected = <strong class="govuk-!-font-weight-bold">{0}</strong> has rejected your request to act as your agent
-client.banner.text.cancelled = The <strong class="govuk-!-font-weight-bold">{1}</strong> agent can no longer act for the client
+client.banner.text.approved = You have requested <span class="heading-small">{0}</span> to act as your agent
+client.banner.text.active = <span class="heading-small">{0}</span> is now your appointed agent
+client.banner.text.rejected = <span class="heading-small">{0}</span> has rejected your request to act as your agent
+client.banner.text.cancelled = The {1} agent can no longer act for the client
 client.banner.link-text.approved_active = Cancel
 client.banner.link-text.cancelled_rejected = Appoint an agent
 

@@ -16,13 +16,17 @@
 
 @(service: String, agentName: String, url: String, bannerStyling: String, textKey: String, linkKey: String)(implicit messages: Messages)
 
-    <div class="govuk-grid-row grid-wrapper attorneyContainer">
-        <div class="grid @bannerStyling">
-            <div class="govuk-grid-column-two-thirds" id="client-banner-text">
+<div class=" grid-wrapper attorneyContainer">
+    <div class="attorneyBanner grid @bannerStyling">
+        <div class="grid grid-2-3">
+            <div class="inner-block" id="client-banner-text">
                 @Html(Messages("client.banner.text."+textKey, agentName, service.toUpperCase))
             </div>
-            <div class="govuk-grid-column-one-third">
+        </div>
+        <div class="grid grid-1-3">
+            <div class="inner-block">
                 <a href="@url" id="client-banner-text-link" class="banner-links">@Messages("client.banner.link-text."+linkKey)</a>
             </div>
         </div>
     </div>
+</div>
