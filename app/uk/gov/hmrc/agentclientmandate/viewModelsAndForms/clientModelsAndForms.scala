@@ -34,7 +34,7 @@ object ClientEmailForm extends Constraints {
     Form(
       mapping(
         "email" -> text
-          .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
+          .verifying(regexp(emailRegex, "agent.edit-client.error.general.agent-enter-email-form"))
           .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
           .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
       )(ClientEmail.apply)(ClientEmail.unapply)

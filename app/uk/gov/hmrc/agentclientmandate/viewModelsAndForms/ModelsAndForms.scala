@@ -27,7 +27,7 @@ object YesNoQuestion {
   implicit val formats: OFormat[YesNoQuestion] = Json.format[YesNoQuestion]
 }
 
-class YesNoQuestionForm(errorMessage: String) {
+class YesNoQuestionForm(errorMessage: String, args: Seq[String] = Seq()) {
 
   def yesNoQuestionForm =
     Form(
@@ -41,7 +41,7 @@ class YesNoQuestionForm(errorMessage: String) {
       Right(data.getOrElse(key,"")).right.flatMap {
         case "true"   => Right(true)
         case "false"  => Right(false)
-        case _        => Left(Seq(FormError(key, errorMessage)))
+        case _        => Left(Seq(FormError(key, errorMessage, args)))
       }
     }
 

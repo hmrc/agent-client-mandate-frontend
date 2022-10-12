@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import javax.inject.{Inject, Singleton}
+import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
@@ -43,7 +44,7 @@ class RejectClientController @Inject()(
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
         mandate => Ok(templateRejectClient(service,
-          new YesNoQuestionForm("yes-no.error.mandatory.clientReject").yesNoQuestionForm,
+          new YesNoQuestionForm("yes-no.error.mandatory.clientReject", Seq(mandate.clientDisplayName)).yesNoQuestionForm,
           mandate.clientDisplayName, mandateId, getBackLink(service)))
       )
     }
@@ -51,27 +52,26 @@ class RejectClientController @Inject()(
 
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
-      val form = new YesNoQuestionForm("yes-no.error.mandatory.clientReject")
-      form.yesNoQuestionForm.bindFromRequest.fold(
-        formWithError =>
-          acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-            mandate => BadRequest(templateRejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))
-          ),
-        data => {
-          if (data.yesNo) {
-            acmService.rejectClient(mandateId, authRetrievals).map { rejectedClient =>
-              if (rejectedClient) {
-                Redirect(routes.RejectClientController.confirmation(mandateId))
-              }
-              else {
-                throw new RuntimeException(s"Client Rejection Failed with id $mandateId for service $service")
+      acmService.fetchClientMandateClientName(mandateId, authRetrievals).flatMap(
+        mandate => new YesNoQuestionForm("yes-no.error.mandatory.clientReject", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest.fold(
+          formWithError =>
+            Future.successful(BadRequest(templateRejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))),
+          data => {
+            if (data.yesNo) {
+              acmService.rejectClient(mandateId, authRetrievals).map { rejectedClient =>
+                if (rejectedClient) {
+                  Redirect(routes.RejectClientController.confirmation(mandateId))
+                }
+                else {
+                  throw new RuntimeException(s"Client Rejection Failed with id $mandateId for service $service")
+                }
               }
             }
+            else {
+              Future.successful(Redirect(routes.AgentSummaryController.view()))
+            }
           }
-          else {
-            Future.successful(Redirect(routes.AgentSummaryController.view()))
-          }
-        }
+        )
       )
     }
   }
