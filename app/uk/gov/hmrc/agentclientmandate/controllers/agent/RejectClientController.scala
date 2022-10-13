@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
