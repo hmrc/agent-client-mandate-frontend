@@ -359,7 +359,7 @@ agent.reject-client.error.mandatory = You must answer the question
 yes-no.error.mandatory = The {0} question must be answered
 yes-no.error.general.yesNo = There is a problem with {0} question
 
-yes-no.error.mandatory.clientReject = Enter yes if you are sure you want to reject the request from {0}
+yes-no.error.mandatory.clientReject = Select yes if you are sure you want to reject the request from {0}
 yes-no.error.mandatory.removeClient = Select yes if you are sure you want to remove {0}
 yes-no.error.mandatory.changeAgent = Select yes if you want to appoint another agent to act for you
 yes-no.error.mandatory.removeAgent = Select yes if you are sure you want to cancel the authority for {0} to act on your behalf for ATED
