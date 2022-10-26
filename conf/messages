@@ -27,9 +27,9 @@ mandate.sign-out = Sign out
 ated.screen-reader.section = This section is:
 ated.screen-reader.name = this is for:
 
-client.email.error.email.empty = Enter the email address you want to use for this client
-client.email.error.email.invalid = Enter an email address in the correct format, like name@example.com
-client.email.error.email.too.long = The email address you want to use for this client must be 241 characters or less
+client.email.error.email.empty = Enter your email address
+client.email.error.email.invalid = Enter an email address in a valid format, like name@example.com
+client.email.error.email.too.long = Email address must be 241 characters or fewer
 
 
 ##### AGENT CLIENT SUMMARY
@@ -105,13 +105,13 @@ client.search-mandate.hint = For example, GG123456
 client.search-mandate.help.question = What is a unique authorisation number?
 client.search-mandate.lede =  You must get this from your agent.
 client.search-mandate.error.general.mandateRef = There is a problem with the unique authorisation number question
-client.search-mandate.error.mandateRef = You must answer unique authorisation number question
-client.search-mandate.error.clientAuthNum = Enter the unique authorisation number for the client
-client.search-mandate.error.clientAuthNum.length = A unique authorisation number cannot be more than 8 characters
-client.search-mandate.error.mandateRef.length = A unique authorisation number cannot be more than 8 characters
+client.search-mandate.error.mandateRef = Enter your unique authorisation number
+client.search-mandate.error.clientAuthNum = Enter the unique authorisation number for this client
+client.search-mandate.error.clientAuthNum.length = Unique authorisation number must be 8 characters or fewer
+client.search-mandate.error.mandateRef.length = Unique authorisation number must be 8 characters or fewer
 client.search-mandate.error.general.mandate-ref-form = The unique authorisation number you entered was not found. Please check and try again.
-client.search-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation number you entered cannot be found. Check the number, or enter a different number.
-client.search-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation number you entered has already been used. Check the number, or enter a different number.
+client.search-mandate.error.mandateRef.not-found-by-mandate-service = The unique authorisation reference number cannot be found. Check the number or enter a different number.
+client.search-mandate.error.mandateRef.already-used-by-mandate-service = The unique authorisation reference number you entered has already been used. Check the number or enter a different number.
 
 ##### CLIENT REVIEW AGENT
 
@@ -175,7 +175,7 @@ client.agent-change.error = change agent
 agent.select-service.title = Select a service
 agent.select-service.header = Select a service
 agent.select-service.error.general.service = There is a problem with the select service question
-agent.select-service.error.service = You must select one service
+agent.select-service.error.service = Select a service
 
 ##### SERVICE
 
@@ -205,15 +205,15 @@ client.enter-email.error.email.max.length = The email address can not be more th
 agent.overseas-client-question.title = Does your client have an overseas company without a UK Unique Taxpayer Reference?
 agent.overseas-client-question.header = Does your client have an overseas company without a UK Unique Taxpayer Reference?
 agent.overseas-client-question.error.general.isOverseas = There is a problem with the overseas client question
-agent.overseas-client-question.error.isOverseas = You must answer the overseas client question
+agent.overseas-client-question.error.isOverseas = Select yes if your client has an overseas company without a UK Unique Taxpayer Reference
 
 ##### AGENT CLIENT DISPLAY NAME QUESTION 
 
 agent.client-display-name.title = What display name do you want to use for this client?
 agent.client-display-name.header = What display name do you want to use for this client?
 agent.client-display-name.text = This will only be displayed on your screens and does not change your client’s official company name.
-agent.client-display-name.error.not-selected = You must answer the client display name question
-agent.client-display-name.error.length = A client display name cannot be more than 99 characters
+agent.client-display-name.error.not-selected = Enter the display name you want to use for this client
+agent.client-display-name.error.length = Display name must be 99 characters or fewer
 agent.client-display-name.error.general.clientDisplayName = There is a problem with the client display name question
 agent.client-display-name.change = What display name do you want to use for this client?
 
@@ -222,21 +222,21 @@ agent.client-display-name.change = What display name do you want to use for this
 agent.nrl-question.title = Is your client a non-resident landlord?
 agent.nrl-question.header = Is your client a non-resident landlord?
 agent.nrl-question.error.general.nrl = There is a problem with the non-resident landlord question
-agent.nrl-question.nrl.not-selected.error = You must answer the non-resident landlord question
+agent.nrl-question.nrl.not-selected.error = Select yes if your client is a non-resident landlord
 
 ##### AGENT PAY SA QUESTION PAGE
 
 agent.paySA-question.title = Does your client pay tax in the UK through Self Assessment?
 agent.paySA-question.header = Does your client pay tax in the UK through Self Assessment?
 agent.paySA-question.error.general.paySA = There is a problem with the do you pay Self Assessment question
-agent.paySA-question.paySA.not-selected.error = You must answer the Self Assessment question
+agent.paySA-question.paySA.not-selected.error = Select yes if your client pays tax in the UK through Self Assessment
 
 ##### AGENT CLIENT PERMISSION PAGE
 
 agent.client-permission.title = Do you have permission to register on behalf of your client?
 agent.client-permission.header = Do you have permission to register on behalf of your client?
 agent.client-permission.error.general.hasPermission = There is a problem with the client permission question
-agent.client-permission.hasPermission.not-selected.error = You must answer the client permission question
+agent.client-permission.hasPermission.not-selected.error = Select yes if you have permission to register on behalf of your client
 
 agent.client-permission.hasPermission.selected.ated.no.notice = You must have permission from your client before you can continue.
 agent.client-permission.hasPermission.selected.ated.yes.notice.start = Your client must complete an
@@ -250,7 +250,7 @@ agent.client-prev-registered.header = Has this client submitted ATED returns bef
 agent.client-prev-registered.p = This means returns submitted online by them or by an agent on their behalf (it does not include paper returns).
 agent.client-prev-registered.error.general.hasPermission = There is a problem with the client permission question
 agent.client-prev-registered.not-selected.error = You must answer the client permission question
-agent.client-prev-registered.not-selected.field-error = Select yes if your client has submitted ATED returns before
+agent.client-prev-registered.not-selected.field-error = Select yes if this client has submitted ATED returns before
 agent.client-permission.error.general.prevRegistered = Select yes if your client has submitted ATED returns before
 
 ##### AGENT PREVIOUS UNIQUE AUTHORISATION NUMBER PAGE
@@ -261,7 +261,7 @@ agent.prev-auth-num.p = To access the client’s ATED account, you need the uniq
 agent.prev-auth-num.accordion = How an agent can find the UAN for a client
 agent.prev-auth-num.accordion.p = The UAN is shown on the client record on the agent’s ATED account. The agent needs to select ‘Edit’ link next to the client’s name, which shows the number at the top.
 agent.prev-auth-num.accordion.p2 = The agent also needs to click ‘Remove this client’ to allow the transfer to the new agent to take place.
-agent.prev-auth-num.not-selected.field-error = Select yes if you have the previous unique authorisation number
+agent.prev-auth-num.not-selected.field-error = Select yes if you have the previous unique authorisation number for this client
 agent.prev-auth-num.not-selected.field-error.authNum = Select yes if you have the previous unique authorisation number
 
 ##### AGENT INFORM HMRC PAGE
@@ -332,10 +332,10 @@ agent.edit-client.error.general.email = There is a problem with the email questi
 agent.edit-client.error.general.displayName = There is a problem with the display name question
 agent.edit-mandate-details.email = Your email address
 agent.edit-mandate-details.submit = Save changes
-agent.edit-client.error.dispName = You must answer the client display name question
-agent.edit-client.error.dispName.length = The client display name cannot be more than 99 characters
-agent.edit-client.error.email = You must answer the email address question
-agent.edit-client.error.general.agent-enter-email-form = There is a problem with the email address
+agent.edit-client.error.dispName = Enter the display name you want to use for this client
+agent.edit-client.error.dispName.length = Display name must be 99 characters or fewer
+agent.edit-client.error.email = Enter the email address you want to use for this client
+agent.edit-client.error.general.agent-enter-email-form = Enter your email address in a valid format, like name@example.com
 
 ##### AGENT REJECT CLIENT
 
@@ -359,10 +359,10 @@ agent.reject-client.error.mandatory = You must answer the question
 yes-no.error.mandatory = The {0} question must be answered
 yes-no.error.general.yesNo = There is a problem with {0} question
 
-yes-no.error.mandatory.clientReject = The client reject question must be answered
-yes-no.error.mandatory.removeClient = The remove client question must be answered
-yes-no.error.mandatory.changeAgent = The change agent question must be answered
-yes-no.error.mandatory.removeAgent = The remove agent question must be answered
+yes-no.error.mandatory.clientReject = Select yes if you are sure you want to reject the request from {0}
+yes-no.error.mandatory.removeClient = Select yes if you are sure you want to remove {0}
+yes-no.error.mandatory.changeAgent = Select yes if you want to appoint another agent to act for you
+yes-no.error.mandatory.removeAgent = Select yes if you are sure you want to cancel the authority for {0} to act on your behalf for ATED
 
 ##### AGENT REMOVE CLIENT
 
@@ -400,7 +400,7 @@ agent.missing-email.answer-no.link-text = your ATED clients
 agent.missing-email.answer-no.end = page.
 agent.missing-email.trapdoor = Enter my email at a later date
 agent.missing-email.email_address = Email address
-agent.missing-email.must_answer = You must answer the question
+agent.missing-email.must_answer = Select yes if you want to receive email notifications when a client accepts or rejects your requests in the ATED service
 agent.enter-email.error.general.useEmailAddress = There is a problem with the question
 
 ##### EDIT AGENT DETAILS
@@ -442,9 +442,9 @@ agent.edit-mandate-details-error.general.hasBusinessUniqueId = Select Yes if you
 agent.edit-mandate-details-error.general.idNumber = There is a problem with the Overseas company registration number
 agent.edit-mandate-details-error.general.issuingCountryCode = There is a problem with the Country that issued the number
 agent.edit-mandate-details-error.general.issuingInstitution = There is a problem with the Institution that issued the number
-agent.edit-mandate-details-error.businessUniqueId.select = You must enter an overseas company registration number
-agent.edit-mandate-details-error.issuingInstitution.select = You must enter an institution that issued the overseas company registration number
-agent.edit-mandate-details-error.issuingCountry.select = You must enter a country that issued the overseas company registration number
+agent.edit-mandate-details-error.businessUniqueId.select = Enter an overseas company registration number
+agent.edit-mandate-details-error.issuingInstitution.select = Enter the name of the institution that issued the number
+agent.edit-mandate-details-error.issuingCountry.select = Enter the country that issued the number
 agent.edit-mandate-details-error.non-uk = You cannot select United Kingdom when entering an overseas address
 
 agent.edit-mandate-detail.save.error = Failed to update
@@ -453,21 +453,21 @@ agent.edit-mandate-details.idNumber = Overseas company registration number
 agent.edit-mandate-details.issuingCountry = Country that issued the number
 agent.edit-mandate-details.issuingInstitution = Institution that issued the number
 
-agent.edit-details-error.businessName = You must enter a business name
-agent.edit-details-error.line_1 = You must enter an address into Address line 1
-agent.edit-details-error.line_2 = You must enter an address into Address line 2
-agent.edit-details-error.country = You must enter a country
-agent.edit-details-error.businessName.length = The business name cannot be more than 105 characters
-agent.edit-details-error.line_1.length = Address line 1 cannot be more than 35 characters
-agent.edit-details-error.line_2.length = Address line 2 cannot be more than 35 characters
-agent.edit-details-error.line_3.length = Address line 3 cannot be more than 35 characters
-agent.edit-details-error.line_4.length = Address line 4 cannot be more than 35 characters
+agent.edit-details-error.businessName = Enter a business name
+agent.edit-details-error.line_1 = Enter an address line 1
+agent.edit-details-error.line_2 = Enter an address line 2
+agent.edit-details-error.country = Enter a country
+agent.edit-details-error.businessName.length = Business name must be 105 characters or fewer
+agent.edit-details-error.line_1.length = Address line 1 must be 35 characters or fewer
+agent.edit-details-error.line_2.length = Address line 2 must be 35 characters or fewer
+agent.edit-details-error.line_3.length = Address line 3 must be 35 characters or fewer
+agent.edit-details-error.line_4.length = Address line 4 must be 35 characters or fewer
 agent.edit-details-error.postcode.length = The postcode cannot be more than 10 characters
-agent.edit-details-error.businessUniqueId.length = The overseas company registration number cannot be more than 60 characters
+agent.edit-details-error.businessUniqueId.length = Overseas company registration number must be 60 characters or fewer
 agent.edit-details-error.utr.length = The Unique Taxpayer Reference cannot be more than {0} characters
-agent.edit-details-error.issuingInstitution.length = The institution that issued the overseas company registration number cannot be more than 40 characters
+agent.edit-details-error.issuingInstitution.length = Institution name must be 40 characters or fewer
 agent.edit-details-error.non-uk = You cannot select United Kingdom when entering an overseas address
-agent.edit-details-error.hasBusinessUniqueId.not-selected = You must select one option
+agent.edit-details-error.hasBusinessUniqueId.not-selected = Select yes if you want to edit overseas company registration details
 
 agent.edit-details.agent.non-uk.header = What is the registered business name and address of your overseas agency?
 agent.edit-details.text.agent= {0} agency set up

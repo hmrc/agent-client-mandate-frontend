@@ -117,6 +117,9 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
       }
 
       "submitted with true will redirect to change agent" in new Setup {
+        when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful("Agent Limited"))
         when(mockAgentClientMandateService.removeAgent(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(true)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
@@ -128,10 +131,13 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
 
       "submitted with true but agent removal fails" in new Setup {
 
+        AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+        when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful("Agent Limited"))
         when(mockAgentClientMandateService.removeAgent(ArgumentMatchers.any(),
           ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(false)
         val userId = s"user-${UUID.randomUUID}"
-        AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "true")
         val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.submit(service, "1")
           .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))
@@ -140,6 +146,9 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
       }
 
       "submitted with false will redirect to cached return url" in new Setup {
+        when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful("Agent Limited"))
         when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some("/api/anywhere")))
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
@@ -150,10 +159,14 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
       }
 
       "submitted with false but retrieval of returnUrl from cache fails" in new Setup {
+        AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+        when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
+          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful("Agent Limited"))
         when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
           ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
         val userId = s"user-${UUID.randomUUID}"
-        AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
         val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.submit(service, "1")
           .apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId)))

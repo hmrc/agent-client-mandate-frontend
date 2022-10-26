@@ -217,8 +217,8 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-list").text() must include("agent.edit-client.error.general.agent-enter-email-form")
+          document.getElementsByClass("govuk-error-message").text() must include("agent.edit-client.error.general.agent-enter-email-form")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))

@@ -21,6 +21,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
+import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.MandateAuthRetrievals
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
@@ -61,7 +62,7 @@ class RemoveAgentController @Inject()(
     acmService.fetchClientMandate(mandateId, authRetrievals).map {
       case Some(mandate) => Ok(templateRemoveAgent(
         service = service,
-        removeAgentForm = new YesNoQuestionForm("yes-no.error.mandatory.removeAgent").yesNoQuestionForm,
+        removeAgentForm = new YesNoQuestionForm("yes-no.error.mandatory.removeAgent", Seq(mandate.agentParty.name)).yesNoQuestionForm,
         agentName = mandate.agentParty.name,
         mandateId = mandateId,
         backLink = backLink))
@@ -72,29 +73,27 @@ class RemoveAgentController @Inject()(
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        val form = new YesNoQuestionForm("yes-no.error.mandatory.removeAgent")
-        form.yesNoQuestionForm.bindFromRequest.fold(
-          formWithError =>
-            acmService.fetchClientMandateAgentName(mandateId, authRetrievals).flatMap(
-              agentName =>
-                dataCacheService.fetchAndGetFormData[String]("RETURN_URL").map { returnUrl =>
-                  BadRequest(templateRemoveAgent(service, formWithError, agentName, mandateId, returnUrl))
+        acmService.fetchClientMandateAgentName(mandateId, authRetrievals).flatMap(
+          agentName => new YesNoQuestionForm("yes-no.error.mandatory.removeAgent", Seq(agentName)).yesNoQuestionForm.bindFromRequest.fold(
+            formWithError =>
+              dataCacheService.fetchAndGetFormData[String]("RETURN_URL").map { returnUrl =>
+                BadRequest(templateRemoveAgent(service, formWithError, agentName, mandateId, returnUrl))
+              },
+            data => {
+              if (data.yesNo) {
+                acmService.removeAgent(mandateId, authRetrievals).map { removedAgent =>
+                  if (removedAgent) Redirect(routes.ChangeAgentController.view(mandateId))
+                  else throw new RuntimeException("Agent Removal Failed")
                 }
-            ),
-          data => {
-            if (data.yesNo) {
-              acmService.removeAgent(mandateId, authRetrievals).map { removedAgent =>
-                if (removedAgent) Redirect(routes.ChangeAgentController.view(mandateId))
-                else throw new RuntimeException("Agent Removal Failed")
+              }
+              else {
+                dataCacheService.fetchAndGetFormData[String]("RETURN_URL").map {
+                  case Some(x) => Redirect(x)
+                  case _ => throw new RuntimeException(s"Cache Retrieval Failed with id $mandateId")
+                }
               }
             }
-            else {
-              dataCacheService.fetchAndGetFormData[String]("RETURN_URL").map {
-                case Some(x) => Redirect(x)
-                case _ => throw new RuntimeException(s"Cache Retrieval Failed with id $mandateId")
-              }
-            }
-          }
+          )
         )
       }
   }

@@ -44,21 +44,18 @@ class RemoveClientController @Inject()(
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
         acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-          mandate => Ok(templateRemoveClient(new YesNoQuestionForm("yes-no.error.mandatory.removeClient").yesNoQuestionForm,
+          mandate => Ok(templateRemoveClient(new YesNoQuestionForm("yes-no.error.mandatory.removeClient", Seq(mandate.clientDisplayName)).yesNoQuestionForm,
             service, mandate.clientDisplayName, mandateId, getBackLink(service)))
         )
       }
   }
 
-  def confirm(service: String, mandateId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      withAgentRefNumber(Some(service)) { authRetrievals =>
-        val form = new YesNoQuestionForm("yes-no.error.mandatory.removeClient")
-        form.yesNoQuestionForm.bindFromRequest.fold(
+  def confirm(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
+    withAgentRefNumber(Some(service)) { authRetrievals =>
+      acmService.fetchClientMandateClientName(mandateId, authRetrievals).flatMap(
+        mandate => new YesNoQuestionForm("yes-no.error.mandatory.removeClient", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest.fold(
           formWithError =>
-            acmService.fetchClientMandateClientName(mandateId, authRetrievals).map(
-              mandate => BadRequest(templateRemoveClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))
-            ),
+            Future.successful(BadRequest(templateRemoveClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))),
           data => {
             if (data.yesNo) {
               acmService.removeClient(mandateId, authRetrievals).map { removedClient =>
@@ -75,7 +72,8 @@ class RemoveClientController @Inject()(
             }
           }
         )
-      }
+      )
+    }
   }
 
   def showConfirmation(service: String, mandateId: String): Action[AnyContent] = Action.async {

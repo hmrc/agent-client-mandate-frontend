@@ -62,7 +62,7 @@ object AgentEmailForm extends Constraints {
       mapping(
         "email" -> text
           .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
-          .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+          .verifying(minLength(minimumEmailLength, "agent.edit-client.error.email"))
           .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
       )(AgentEmail.apply)(AgentEmail.unapply)
     )
@@ -145,7 +145,7 @@ object EditMandateDetailsForm extends Constraints {
 
     "email" -> text
       .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
-      .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
+      .verifying(minLength(minimumEmailLength, "agent.edit-client.error.email"))
       .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
   )(EditMandateDetails.apply)(EditMandateDetails.unapply))
 
