@@ -66,7 +66,7 @@ object AgentClientMandateUtils {
   }
 
   def isPendingStatus(status: Status): Boolean = {
-    val pendingStates = Seq(Status.PendingCancellation, Status.New, Status.Approved, Status.PendingActivation, Status.PendingCancellation)
+    val pendingStates = Seq(Status.PendingCancellation, Status.New, Status.Approved, Status.PendingActivation)
     pendingStates.contains(status)
   }
 
@@ -74,6 +74,7 @@ object AgentClientMandateUtils {
     status match {
       case Status.New => "Await"
       case Status.PendingActivation | Status.PendingCancellation => "Pending"
+      case Status.Approved => "Accept"
       case _ => ""
     }
   }

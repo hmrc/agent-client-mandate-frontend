@@ -50,9 +50,13 @@
 
 @clientsCancelledPartial(clientsCancelled, service)
 
-<div class="govuk-form-group">
-  <a href="@routes.CollectAgentEmailController.addClient()" id="add-client-link" class="govuk-link govuk-!-font-size-19" tabindex="0">@messages("client.summary.add-client")</a>
-</div>
+  <div class="govuk-form-group">
+    @govukButton(Button(
+      href = Some(routes.CollectAgentEmailController.addClient().url),
+      content = Text(messages("client.summary.add-client")),
+      attributes  = Map("id" -> "add-client-link")
+    ))
+  </div>
 
   <section id="clients-tab" tabindex="-1">
 
@@ -130,90 +134,123 @@
             @messages("client.summary.client-pending.title", mandates.pendingMandates.size)
           </a>
         </li>
+        <li class="govuk-tabs__list-item">
+          <a class="govuk-tabs__tab" href="#accept-clients" id="accept-clients-tab">
+            @messages("client.summary.client-accept.title", mandates.pendingMandates.size)
+          </a>
+        </li>
       </ul>
+
+      <!--**********************************       CURRENT CLIENTS TAB       *******************************************************-->
+
       <div class="govuk-tabs__panel" id="active-mandates">
-        <h2 class="govuk-heading-l">Current</h2>
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header">Client name</th>
-              <th scope="col" class="govuk-table__header"></th>
-              <th scope="col" class="govuk-table__header"></th>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
+        <h2 class="govuk-heading-l">@messages("client.summary.current.clients")</h2>
+        <dl class="govuk-summary-list" id="active-mandates-list">
           @if(mandates.activeMandates.size > 0) {
             @for((active, index) <- mandates.activeMandates.zipWithIndex) {
-              <tr class="govuk-table__row">
-                <td class="govuk-table__cell" id="client-name-@index">@active.clientDisplayName</td>
-                <td class="govuk-table__cell">
-                  <a class="govuk-body govuk-link" id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)">
-                  @messages("client.summary.client-change")
-                  <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
-                  </a>
-                </td>
-                <td class="govuk-table__cell">
-                  <a class="govuk-body govuk-link" id="client-link-@index" href='@routes.AgentSummaryController.doDelegation(active.id)'>
-                  @messages("client.summary.client-view")
-                  <span class="govuk-visually-hidden">@messages("client.summary.client-details-for") @active.clientDisplayName</span>
-                  </a>
-                </td>
-              </tr>
-            }
-          }
-          </tbody>
-        </table>
+              <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key govuk-!-width-one-half govuk-!-font-weight-regular" id="client-name-@index">@active.clientDisplayName</dt>
 
+                  <dd class="govuk-summary-list__actions govuk-!-width-one-quarter">
+                    <a class="govuk-body govuk-link" id="edit-client-link-@index" href="@routes.EditMandateDetailsController.view(active.id)">
+                      @messages("client.summary.client-change")
+                      <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for") @active.clientDisplayName</span>
+                    </a>
+                  </dd>
+
+                  <dd class="govuk-summary-list__actions govuk-!-width-one-quarter">
+                    <a class="govuk-body govuk-link" id="client-link-@index" href='@routes.AgentSummaryController.doDelegation(active.id)'>
+                      @messages("client.summary.client-view")
+                      <span class="govuk-visually-hidden">@messages("client.summary.client-details-for") @active.clientDisplayName</span>
+                    </a>
+                  </dd>
+              </div>
+            }
+          } else {
+            <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                @messages("client.summary.no.current.clients")
+              </dt>
+            </div>
+          }
+        </dl>
       </div>
+
+      <!--**********************************       PENDING CLIENTS TAB       *******************************************************-->
+
       <div class="govuk-tabs__panel" id="pending-mandates">
-        <h2 class="govuk-heading-l">Requests</h2>
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header">Client name</th>
-              <th scope="col" class="govuk-table__header"></th>
-              <th scope="col" class="govuk-table__header"></th>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
+        <h2 class="govuk-heading-l">@messages("client.summary.pending.clients")</h2>
+        <dl class="govuk-summary-list" id="pending-mandates-list">
           @if(mandates.pendingMandates.size > 0) {
             @for((pending, index) <- mandates.pendingMandates.zipWithIndex) {
-              <tr class="govuk-table__row">
-                <td class="govuk-table__cell" id="pending-client-data-@index">@pending.clientDisplayName</td>
-                <td class="govuk-table__cell">
-                @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
-                    <a id="edit-pending-client-link-@index" class="govuk-body govuk-link" href="@routes.EditMandateDetailsController.view(pending.id)">
-                      @messages("client.summary.client-change")
-                      <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
-                    </a>
-                } else {
-                    <a id="reject-client-link-@index" class="govuk-body govuk-link" href="@routes.RejectClientController.view(pending.id)">
-                      @messages("client.summary.client-reject")
-                      <span class="govuk-visually-hidden">@pending.clientDisplayName</span>
-                    </a>
-                }
-                </td>
-                <td class="govuk-table__cell">
-                @checkStatus(pending.currentStatus.status) match {
-                  case "Await" => {
-                    <span class="govuk-body">@messages("client.summary.client.pending-status")</span>
-                  }
-                  case "Pending" => {
-                    <span class="govuk-body">@messages("client.summary.client-pending")</span>
-                  }
-                  case _ => {
-                    <a href="@routes.AgentSummaryController.activate(pending.id)" id="accept-@(index + 1)" class="govuk-body govuk-link">
-                      @messages("client.summary.client-accept") <span class="govuk-visually-hidden"> @pending.clientDisplayName</span>
-                    </a>
-                  }
-                }
-                </td>
-              </tr>
-            }
-          }
-          </tbody>
-        </table>
+              @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular" id="pending-client-data-@index">@pending.clientDisplayName</dt>
 
+                    <dd class="govuk-summary-list__actions govuk-!-text-align-left" id="pending-client-status-@index">
+                      @checkStatus(pending.currentStatus.status) match {
+                        case "Await" => {
+                          <span class="govuk-body">@messages("client.summary.client.pending-status")</span>
+                        }
+                        case "Pending" => {
+                          <span class="govuk-body">@messages("client.summary.client-pending")</span>
+                        }
+                      }
+                    </dd>
+
+                    <dd class="govuk-summary-list__actions">
+                      <a id="edit-pending-client-link-@index" class="govuk-body govuk-link" href="@routes.EditMandateDetailsController.view(pending.id)">
+                        @messages("client.summary.client-change")
+                        <span class="govuk-visually-hidden">@messages("client.summary.client-edit-details-for")@pending.clientDisplayName</span>
+                      </a>
+                    </dd>
+                </div>
+              }
+            }
+          } else {
+            <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                @messages("client.summary.no.pending.clients")
+              </dt>
+            </div>
+          }
+        </dl>
+      </div>
+
+      <!--**********************************       ACCEPT CLIENTS TAB       *******************************************************-->
+
+      <div class="govuk-tabs__panel" id="accept-clients">
+        <h2 class="govuk-heading-l">@messages("client.summary.accept.clients")</h2>
+        <dl class="govuk-summary-list" id="accept-mandates-list">
+          @if(mandates.pendingMandates.size > 0) {
+            @for((pending, index) <- mandates.pendingMandates.zipWithIndex) {
+              @if(checkStatus(pending.currentStatus.status) == "Accept"){
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key govuk-!-width-one-half govuk-!-font-weight-regular" id="accept-client-data-@index">@pending.clientDisplayName</dt>
+
+                    <dd class="govuk-summary-list__actions govuk-!-width-one-quarter">
+                      <a id="accept-client-link-@index" class="govuk-body govuk-link" href="@routes.AgentSummaryController.activate(pending.id)" >
+                        @messages("client.summary.client-accept") <span class="govuk-visually-hidden"> @pending.clientDisplayName</span>
+                      </a>
+                    </dd>
+
+                    <dd class="govuk-summary-list__actions govuk-!-width-one-quarter">
+                      <a id="reject-client-link-@index" class="govuk-body govuk-link" href="@routes.RejectClientController.view(pending.id)">
+                        @messages("client.summary.client-reject")
+                        <span class="govuk-visually-hidden">@pending.clientDisplayName</span>
+                      </a>
+                    </dd>
+                </div>
+              }
+            }
+          } else {
+            <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                @messages("client.summary.no.accept.clients")
+              </dt>
+            </div>
+          }
+        </dl>
       </div>
     </div>
 
