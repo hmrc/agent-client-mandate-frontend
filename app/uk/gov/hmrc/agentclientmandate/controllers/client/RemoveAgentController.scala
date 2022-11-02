@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.client
 
-import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
-import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.MandateAuthRetrievals
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
@@ -30,6 +28,7 @@ import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

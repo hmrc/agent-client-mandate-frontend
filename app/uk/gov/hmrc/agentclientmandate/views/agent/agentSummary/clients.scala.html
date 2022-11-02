@@ -39,6 +39,10 @@
 
 @implicitFormInstance = @{ Some(filterClientsForm) }
 
+@pendingClientsTab = @{mandates.pendingMandates.filter(m => (checkStatus(m.currentStatus.status) == "Await") || (checkStatus(m.currentStatus.status) == "Pending"))}
+
+@acceptClientsTab = @{mandates.pendingMandates.filterNot(m => (checkStatus(m.currentStatus.status) == "Await") || (checkStatus(m.currentStatus.status) == "Pending"))}
+
 @main_template(title = titleBuilder(messages("client.summary.title", service.toUpperCase), Some(filterClientsForm)), sideBar = if( isUkAgent(agentDetails)) None else Some(_agentSummary_sidebar(agentDetails, service))){
 
 <span class="govuk-visually-hidden">@messages("client.summary.hidden.client_activated", screenReaderText)</span>
@@ -58,7 +62,7 @@
     ))
   </div>
 
-  <section id="clients-tab" tabindex="-1">
+  <section id="clients-tab">
 
 @if(mandates.activeMandates.size >= 15 || isUpdate) {
   <div class="govuk-form-group">
@@ -131,17 +135,15 @@
         </li>
         <li class="govuk-tabs__list-item">
           <a class="govuk-tabs__tab" href="#pending-mandates" id="pending-mandate-tab">
-            @messages("client.summary.client-pending.title", mandates.pendingMandates.size)
+            @messages("client.summary.client-pending.title", pendingClientsTab.size)
           </a>
         </li>
         <li class="govuk-tabs__list-item">
           <a class="govuk-tabs__tab" href="#accept-clients" id="accept-clients-tab">
-            @messages("client.summary.client-accept.title", mandates.pendingMandates.size)
+            @messages("client.summary.client-accept.title", acceptClientsTab.size)
           </a>
         </li>
       </ul>
-
-      <!--**********************************       CURRENT CLIENTS TAB       *******************************************************-->
 
       <div class="govuk-tabs__panel" id="active-mandates">
         <h2 class="govuk-heading-l">@messages("client.summary.current.clients")</h2>
@@ -168,7 +170,7 @@
             }
           } else {
             <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
-              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular" id="no-active-clients">
                 @messages("client.summary.no.current.clients")
               </dt>
             </div>
@@ -176,14 +178,11 @@
         </dl>
       </div>
 
-      <!--**********************************       PENDING CLIENTS TAB       *******************************************************-->
-
       <div class="govuk-tabs__panel" id="pending-mandates">
         <h2 class="govuk-heading-l">@messages("client.summary.pending.clients")</h2>
         <dl class="govuk-summary-list" id="pending-mandates-list">
-          @if(mandates.pendingMandates.size > 0) {
-            @for((pending, index) <- mandates.pendingMandates.zipWithIndex) {
-              @if(checkStatus(pending.currentStatus.status) == "Await" || checkStatus(pending.currentStatus.status) == "Pending"){
+          @if(pendingClientsTab.size > 0) {
+            @for((pending, index) <- pendingClientsTab.zipWithIndex) {
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular" id="pending-client-data-@index">@pending.clientDisplayName</dt>
 
@@ -205,11 +204,10 @@
                       </a>
                     </dd>
                 </div>
-              }
             }
           } else {
             <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
-              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular" id="no-pending-clients">
                 @messages("client.summary.no.pending.clients")
               </dt>
             </div>
@@ -217,14 +215,11 @@
         </dl>
       </div>
 
-      <!--**********************************       ACCEPT CLIENTS TAB       *******************************************************-->
-
       <div class="govuk-tabs__panel" id="accept-clients">
         <h2 class="govuk-heading-l">@messages("client.summary.accept.clients")</h2>
         <dl class="govuk-summary-list" id="accept-mandates-list">
-          @if(mandates.pendingMandates.size > 0) {
-            @for((pending, index) <- mandates.pendingMandates.zipWithIndex) {
-              @if(checkStatus(pending.currentStatus.status) == "Accept"){
+          @if(acceptClientsTab.size > 0) {
+            @for((pending, index) <- acceptClientsTab.zipWithIndex) {
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key govuk-!-width-one-half govuk-!-font-weight-regular" id="accept-client-data-@index">@pending.clientDisplayName</dt>
 
@@ -241,11 +236,10 @@
                       </a>
                     </dd>
                 </div>
-              }
             }
           } else {
             <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
-              <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+              <dt class="govuk-summary-list__key govuk-!-font-weight-regular" id="no-accept-clients">
                 @messages("client.summary.no.accept.clients")
               </dt>
             </div>

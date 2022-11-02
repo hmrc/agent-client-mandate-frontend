@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import play.api.Mode
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
@@ -74,7 +73,6 @@ object AgentClientMandateUtils {
     status match {
       case Status.New => "Await"
       case Status.PendingActivation | Status.PendingCancellation => "Pending"
-      case Status.Approved => "Accept"
       case _ => ""
     }
   }
