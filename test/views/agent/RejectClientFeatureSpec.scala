@@ -17,23 +17,26 @@
 package views.agent
 
 import org.jsoup.Jsoup
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.agentclientmandate.views.html.agent.rejectClient
 
-class RejectClientFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class RejectClientFeatureSpec extends AnyFeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
-  implicit val request = FakeRequest()
-  val injectedViewInstanceRejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  val injectedViewInstanceRejectClient: rejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
 
-  feature("The user can view the reject client page") {
+  Feature("The user can view the reject client page") {
 
     info("as a user I want to view the correct page content")
 
-    scenario("user has visited the page") {
+    Scenario("user has visited the page") {
 
       Given("A user visits the page")
       When("The user views the page")
