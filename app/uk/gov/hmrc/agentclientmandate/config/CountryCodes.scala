@@ -18,13 +18,17 @@ package uk.gov.hmrc.agentclientmandate.config
 
 import java.util.PropertyResourceBundle
 import play.api.Environment
+import play.api.libs.json.{JsValue, Json}
 
-import java.io.InputStreamReader
+import java.io.{InputStream, InputStreamReader}
 import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
 import scala.util.{Success, Try}
 
 trait CountryCodes {
   val environment: Environment
+  val countryJs: JsValue = Json.parse(getClass.getResourceAsStream( "location-autocomplete-canonical-list.json"))
+
+  val countryMap: Map[String, String] = countryJs.as[Map[String, String]]
 
   lazy val resourceStream: PropertyResourceBundle =
     (environment.resourceAsStream("country-code.properties") flatMap { stream =>
