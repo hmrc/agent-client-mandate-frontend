@@ -27,7 +27,8 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.rejectClient
 
-class RejectClientFeatureSpec extends AnyFeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class RejectClientFeatureSpec extends AnyFeatureSpec
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceRejectClient: rejectClient = app.injector.instanceOf[views.html.agent.rejectClient]

@@ -30,7 +30,8 @@ import uk.gov.hmrc.agentclientmandate.views.html.agent.agentSummary.noClientsNoP
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class noClientsNoPendingViewSpec extends AnyFeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class noClientsNoPendingViewSpec extends AnyFeatureSpec
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   val registeredAddressDetails: RegisteredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails

@@ -27,7 +27,8 @@ import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.agentDetails
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
-class AgentDetailsFeatureSpec extends AnyFeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class AgentDetailsFeatureSpec extends AnyFeatureSpec
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceAgentDetails: agentDetails = app.injector.instanceOf[views.html.agent.agentDetails]
