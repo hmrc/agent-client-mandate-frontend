@@ -53,6 +53,7 @@ class UpdateAddressDetailsController @Inject()(
         agentDetails match {
           case Some(agentDetail) =>
             val agentAddress = EditAgentAddressDetails(agentDetail.agentName, agentDetail.addressDetails)
+           println(appConfig.countryMap)
             Ok(templateUpdateAddressDetails(editAgentAddressDetailsForm
               .fill(agentAddress), service, displayDetails(service), getBackLink(service)))
           case None =>

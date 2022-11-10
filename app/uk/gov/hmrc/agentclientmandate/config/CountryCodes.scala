@@ -22,13 +22,17 @@ import play.api.libs.json.{JsValue, Json}
 
 import java.io.{InputStream, InputStreamReader}
 import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
+import scala.io.Source
 import scala.util.{Success, Try}
 
 trait CountryCodes {
   val environment: Environment
-  val countryJs: JsValue = Json.parse(getClass.getResourceAsStream( "location-autocomplete-canonical-list.json"))
+  val countryString: InputStream = environment.resourceAsStream("location-autocomplete-canonical-list.json")
+    .getOrElse(throw new Exception("no countries file found"))
+  val countryJs: JsValue = Json.parse(Source.fromInputStream(countryString).mkString)
 
   val countryMap: Map[String, String] = countryJs.as[Map[String, String]]
+
 
   lazy val resourceStream: PropertyResourceBundle =
     (environment.resourceAsStream("country-code.properties") flatMap { stream =>
