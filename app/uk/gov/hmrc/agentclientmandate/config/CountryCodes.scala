@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentclientmandate.config
 
 import java.util.PropertyResourceBundle
 import play.api.Environment
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, Reads}
 
 import java.io.{InputStream, InputStreamReader}
 import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
@@ -29,7 +29,7 @@ trait CountryCodes {
   val environment: Environment
   val countryString: InputStream = environment.resourceAsStream("location-autocomplete-canonical-list.json")
     .getOrElse(throw new Exception("no countries file found"))
-  val countryJs: JsValue = Json.parse(Source.fromInputStream(countryString).mkString)
+  val countryJs: JsValue = Json.parse(Source.fromInputStream(countryString, "UTF-8").mkString)
 
   val countryMap: Map[String, String] = countryJs.as[Map[String, String]]
 
@@ -48,5 +48,16 @@ trait CountryCodes {
 
   def getIsoCodeTupleList: List[(String, String)] = {
     resourceStream.getKeys.asScala.toList.map(key => (key, resourceStream.getString(key))).sortBy{case (_,v) => v}
+  }
+
+  implicit lazy val reads: Reads[Map[String, String]] = {
+
+    import play.api.libs.functional.syntax._
+    import play.api.libs.json._
+
+    __.read(Reads.seq((
+      (__ \ 1).read[String] and
+        (__ \ 0).read[String]
+      ).tupled)).map(_.toMap)
   }
 }

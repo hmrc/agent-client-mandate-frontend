@@ -37,17 +37,25 @@
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @pageScripts = {
-    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
-    <script>
-    $(document).ready(function() {
+<!--    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>-->
+<!--    <script>-->
+<!--    $(document).ready(function() {-->
 
-      accessibleAutocomplete.enhanceSelectElement({
-            defaultValue: '',
-            selectElement: document.querySelector('#address\\.countryCode')
-      })
+<!--      accessibleAutocomplete.enhanceSelectElement({-->
+<!--            defaultValue: '',-->
+<!--            selectElement: document.querySelector('#address\\.countryCode')-->
+<!--      })-->
 
-    });
-    </script>
+<!--    });-->
+<!--    </script>-->
+
+        <script type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
+        <script type="text/javascript">
+          openregisterLocationPicker({
+            selectElement: document.getElementById('address.countryCode'),
+            url: '@controllers.routes.Assets.versioned("assets/location-autocomplete-graph.json")'
+          })
+        </script>
 }
 
 @backLinkHtml = {
