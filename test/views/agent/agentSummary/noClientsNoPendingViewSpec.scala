@@ -18,18 +18,22 @@ package views.agent.agentSummary
 
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.agentSummary.noClientsNoPending
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class noClientsNoPendingViewSpec extends AnyFeatureSpec
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
-  val registeredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
+  val registeredAddressDetails: RegisteredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateId = "12345678"
@@ -37,14 +41,14 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
   val service: String = "ATED"
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
-  implicit val request = FakeRequest()
-  val injectedViewInstanceNoClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  val injectedViewInstanceNoClientsNoPending: noClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
 
-  feature("The agent can view the agent summary page but they have no clients and no pending clients") {
+  Feature("The agent can view the agent summary page but they have no clients and no pending clients") {
 
     info("as an agent I want to view the correct page content")
 
-    scenario("agent has visited the page but has no clients or pending clients") {
+    Scenario("agent has visited the page but has no clients or pending clients") {
 
       Given("An agent visits the page and has no mandates")
       When("The agent views the empty page")
@@ -71,7 +75,7 @@ class noClientsNoPendingViewSpec extends FeatureSpec  with MockitoSugar with Bef
       assert(document.getElementsByClass("hmrc-sign-out-nav__link").attr("href") === ("http://localhost:9916/ated/logout"))
     }
 
-    scenario("agent visits summary page with clients cancelled in last 28 days") {
+    Scenario("agent visits summary page with clients cancelled in last 28 days") {
       Given("agent visits page and client has cancelled mandate")
       When("agent views the mandates")
 

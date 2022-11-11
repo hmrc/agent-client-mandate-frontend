@@ -17,24 +17,28 @@
 package views.agent
 
 import org.jsoup.Jsoup
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, FeatureSpec, GivenWhenThen}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.agentclientmandate.views.html.agent.uniqueAgentReference
 
 
-class UniqueAgentReferenceFeatureSpec extends FeatureSpec  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+class UniqueAgentReferenceFeatureSpec extends AnyFeatureSpec
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 
-  implicit val request = FakeRequest()
-  val injectedViewInstanceUniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  val injectedViewInstanceUniqueAgentReference: uniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
 
-  feature("The user can view the reject client page") {
+  Feature("The user can view the reject client page") {
 
     info("as a user I want to view the correct page content")
 
-    scenario("user has visited the page from ated") {
+    Scenario("user has visited the page from ated") {
 
       Given("A user visits the page from ated")
       When("The user views the page from ated")

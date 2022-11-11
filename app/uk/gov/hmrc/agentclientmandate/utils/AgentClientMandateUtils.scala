@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import play.api.Mode
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
@@ -66,7 +65,7 @@ object AgentClientMandateUtils {
   }
 
   def isPendingStatus(status: Status): Boolean = {
-    val pendingStates = Seq(Status.PendingCancellation, Status.New, Status.Approved, Status.PendingActivation, Status.PendingCancellation)
+    val pendingStates = Seq(Status.PendingCancellation, Status.New, Status.Approved, Status.PendingActivation)
     pendingStates.contains(status)
   }
 
