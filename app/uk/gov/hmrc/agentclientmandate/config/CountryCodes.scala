@@ -16,23 +16,14 @@
 
 package uk.gov.hmrc.agentclientmandate.config
 
-import java.util.PropertyResourceBundle
 import play.api.Environment
-import play.api.libs.json.{JsValue, Json, Reads}
-
-import java.io.{InputStream, InputStreamReader}
+import java.io.InputStreamReader
+import java.util.PropertyResourceBundle
 import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
-import scala.io.Source
 import scala.util.{Success, Try}
 
 trait CountryCodes {
   val environment: Environment
-  val countryString: InputStream = environment.resourceAsStream("location-autocomplete-canonical-list.json")
-    .getOrElse(throw new Exception("no countries file found"))
-  val countryJs: JsValue = Json.parse(Source.fromInputStream(countryString, "UTF-8").mkString)
-
-  val countryMap: Map[String, String] = countryJs.as[Map[String, String]]
-
 
   lazy val resourceStream: PropertyResourceBundle =
     (environment.resourceAsStream("country-code.properties") flatMap { stream =>
@@ -50,14 +41,4 @@ trait CountryCodes {
     resourceStream.getKeys.asScala.toList.map(key => (key, resourceStream.getString(key))).sortBy{case (_,v) => v}
   }
 
-  implicit lazy val reads: Reads[Map[String, String]] = {
-
-    import play.api.libs.functional.syntax._
-    import play.api.libs.json._
-
-    __.read(Reads.seq((
-      (__ \ 1).read[String] and
-        (__ \ 0).read[String]
-      ).tupled)).map(_.toMap)
-  }
 }
