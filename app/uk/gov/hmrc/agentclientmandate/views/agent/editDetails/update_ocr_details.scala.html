@@ -42,16 +42,13 @@
 
 @pageScripts = {
 
-    <script src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
-    <script>
-    $(document).ready(function() {
-
-      accessibleAutocomplete.enhanceSelectElement({
-            defaultValue: '',
-            selectElement: document.querySelector('#issuingCountryCode')
+    <script type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
+    <script type="text/javascript">
+      openregisterLocationPicker({
+        defaultValue: '',
+        selectElement: document.getElementById('issuingCountryCode'),
+        url: '@controllers.routes.Assets.versioned("location-autocomplete-graph.json")'
       })
-
-    });
     </script>
 }
 
