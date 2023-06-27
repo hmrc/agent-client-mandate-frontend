@@ -78,20 +78,62 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.edit-client.error.dispName agent.edit-client.error.email")
-          document.getElementsByClass("govuk-error-message").text() must
-            include("govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName govukErrorMessage.visuallyHiddenText: agent.edit-client.error.email")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.dispName agent.edit-client.error.email"
+          document.getElementsByClass("govuk-error-message").text() mustBe
+            "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName govukErrorMessage.visuallyHiddenText: agent.edit-client.error.email"
         }
       }
 
-      "valid form is submitted with invalid email" in new Setup {
+      "invalid form is submitted - empty email field" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "")
+        submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.email"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.email"
+        }
+      }
+
+      "invalid form is submitted - empty display name field" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "", "email" -> "gandalf@mordor.com")
+        submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.dispName"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName"
+        }
+      }
+
+      "valid form is submitted with invalid email - missing '@'" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
-          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "aaa@aaaaaaam")
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "gandalf.test.com")
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
+        }
+      }
+
+      "valid form is submitted with invalid email - missing '.com'" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "gandalf@mordor")
+        submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
+        }
+      }
+
+      "valid form is submitted with invalid email - incomplete" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> "disp-name", "email" -> "gandalf@.com")
+        submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
         }
       }
 
@@ -102,9 +144,20 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
-          document.getElementsByClass("govuk-error-message").text() must
-            include("client.email.error.email.too.long")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
+        }
+      }
+
+      "valid form is submitted but display name provided is too long" in new Setup {
+        val tooLongDisplayName: String = "a"*237
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
+          FakeRequest().withMethod("POST").withFormUrlEncodedBody("displayName" -> tooLongDisplayName, "email" -> "gandalf@mordor.com")
+        submitEditMandateDetails(fakeRequest, emailValid = false, getMandate = Some(mandate), editMandate = Some(mandate)) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.dispName.length"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.dispName.length"
         }
       }
     }

@@ -160,8 +160,8 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       submitWithAuthorisedAgent(fakeRequest) { result =>
         status(result) must be(BAD_REQUEST)
         val document = Jsoup.parse(contentAsString(result))
-        document.getElementsByClass("govuk-list").text() must include("yes-no.error.mandatory.removeClient")
-        document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.removeClient")
+        document.getElementsByClass("govuk-error-summary__body").text() mustBe "yes-no.error.mandatory.removeClient"
+        document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: yes-no.error.mandatory.removeClient"
       }
     }
   }

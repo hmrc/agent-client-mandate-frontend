@@ -135,8 +135,8 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.select-service.error.service")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.select-service.error.service")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.select-service.error.service"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.select-service.error.service"
         }
       }
     }

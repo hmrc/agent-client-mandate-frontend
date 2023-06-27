@@ -111,8 +111,8 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("yes-no.error.mandatory.removeAgent")
-          document.getElementsByClass("govuk-error-message").text() must include("yes-no.error.mandatory.removeAgent")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "yes-no.error.mandatory.removeAgent"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: yes-no.error.mandatory.removeAgent"
         }
       }
 

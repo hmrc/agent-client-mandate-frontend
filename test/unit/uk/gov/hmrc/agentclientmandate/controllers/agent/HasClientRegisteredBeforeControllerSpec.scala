@@ -117,8 +117,8 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-prev-registered.not-selected.field-error")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.client-prev-registered.not-selected.field-error")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.client-prev-registered.not-selected.field-error"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-prev-registered.not-selected.field-error"
         }
       }
     }

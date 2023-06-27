@@ -183,8 +183,8 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.empty")
-          document.getElementsByClass("govuk-error-message").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.empty"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.empty"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
@@ -200,9 +200,8 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
-          document.getElementsByClass("govuk-error-message").text() must
-            include("client.email.error.email.too.long")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
@@ -212,13 +211,45 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         }
       }
 
-      "invalid email id is passed" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "aainvalid.com")
+      "invalid email id is passed - missing '@'" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "gandalf.test.com")
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.edit-client.error.general.agent-enter-email-form")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.edit-client.error.general.agent-enter-email-form")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        }
+      }
+
+      "invalid email id is passed - missing '.com'" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "gandalf@mordor")
+        submitWithAuthorisedClient(fakeRequest) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
+          verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+        }
+      }
+
+      "invalid email id is passed - incomplete" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("email" -> "gandalf@.com")
+        submitWithAuthorisedClient(fakeRequest) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
             ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))

@@ -151,8 +151,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-display-name.error.not-selected")
-          document.getElementById("clientDisplayName-error").text() must include("agent.client-display-name.error.not-selected")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.client-display-name.error.not-selected"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-display-name.error.not-selected"
         }
       }
 
@@ -163,8 +163,8 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-display-name.error.length")
-          document.getElementById("clientDisplayName-error").text() must include("agent.client-display-name.error.length")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.client-display-name.error.length"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-display-name.error.length"
         }
       }
     }

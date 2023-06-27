@@ -113,8 +113,8 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
         submitWithAuthorisedAgent("callPage", fakeRequest, Some(PrevUniqueAuthNum(Some(true)))) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.prev-auth-num.not-selected.field-error")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.prev-auth-num.not-selected.field-error")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.prev-auth-num.not-selected.field-error"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.prev-auth-num.not-selected.field-error"
         }
       }
     }

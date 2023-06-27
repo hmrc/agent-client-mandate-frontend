@@ -157,8 +157,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.mandateRef")
-          document.getElementsByClass("govuk-error-message").text() must include("client.search-mandate.error.mandateRef")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -172,8 +172,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.mandateRef.length")
-          document.getElementsByClass("govuk-error-message").text() must include("client.search-mandate.error.mandateRef.length")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef.length"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.length"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -187,9 +187,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         submitWithAuthorisedClient(searchMandateController)(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
-          document.getElementsByClass("govuk-error-message").text() must
-            include("client.search-mandate.error.mandateRef.not-found-by-mandate-service")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef.not-found-by-mandate-service"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.not-found-by-mandate-service"
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())

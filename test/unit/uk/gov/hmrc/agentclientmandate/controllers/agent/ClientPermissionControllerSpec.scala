@@ -159,8 +159,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.client-permission.hasPermission.not-selected.error")
-          document.getElementById("hasPermission-error").text() must include("agent.client-permission.hasPermission.not-selected.error")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.client-permission.hasPermission.not-selected.error"
+          document.getElementById("hasPermission-error").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-permission.hasPermission.not-selected.error"
         }
       }
     }
