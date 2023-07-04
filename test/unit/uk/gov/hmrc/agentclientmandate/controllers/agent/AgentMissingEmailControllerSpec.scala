@@ -89,8 +89,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.missing-email.must_answer")
-          document.getElementById("useEmailAddress-error").text() must include("agent.missing-email.must_answer")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.missing-email.must_answer"
+          document.getElementById("useEmailAddress-error").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.missing-email.must_answer"
         }
       }
 
@@ -101,8 +101,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.empty")
-          document.getElementById("email-error").text() must include("client.email.error.email.empty")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.empty"
+          document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.empty"
         }
       }
 
@@ -114,8 +114,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.too.long")
-          document.getElementById("email-error").text() must include("client.email.error.email.too.long")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
+          document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
         }
       }
 
@@ -126,8 +126,8 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("client.email.error.email.invalid")
-          document.getElementById("email-error").text() must include("client.email.error.email.invalid")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
+          document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
         }
       }
     }

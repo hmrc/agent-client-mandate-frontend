@@ -114,8 +114,8 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.nrl-question.nrl.not-selected.error")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.nrl-question.nrl.not-selected.error")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.nrl-question.nrl.not-selected.error"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.nrl-question.nrl.not-selected.error"
         }
       }
     }

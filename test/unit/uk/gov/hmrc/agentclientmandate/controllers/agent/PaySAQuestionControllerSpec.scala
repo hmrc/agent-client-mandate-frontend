@@ -113,8 +113,8 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.paySA-question.paySA.not-selected.error")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.paySA-question.paySA.not-selected.error")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.paySA-question.paySA.not-selected.error"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.paySA-question.paySA.not-selected.error"
         }
       }
     }

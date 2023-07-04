@@ -117,8 +117,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-list").text() must include("agent.overseas-client-question.error.isOverseas")
-          document.getElementsByClass("govuk-error-message").text() must include("agent.overseas-client-question.error.isOverseas")
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.overseas-client-question.error.isOverseas"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.overseas-client-question.error.isOverseas"
         }
       }
     }
