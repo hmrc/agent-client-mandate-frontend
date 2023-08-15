@@ -1,6 +1,5 @@
 import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName: String = "agent-client-mandate-frontend"
 
@@ -38,7 +37,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(playSettings ++ scoverageSettings : _*)
   .settings(majorVersion := 1)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(
     TwirlKeys.templateImports ++= Seq(
