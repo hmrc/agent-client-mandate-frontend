@@ -62,7 +62,7 @@ class HasClientRegisteredBeforeController @Inject()(
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        prevRegisteredForm.bindFromRequest.fold(
+        prevRegisteredForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templateHasClientRegisteredBefore(
               formWithErrors, callingPage, service, getBackLink(service, callingPage))

@@ -46,7 +46,7 @@ class AgentMissingEmailController @Inject()(
 
   def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
-      agentMissingEmailForm.bindFromRequest.fold(
+      agentMissingEmailForm.bindFromRequest().fold(
         formWithError => Future.successful(BadRequest(templateAgentMissingEmail(formWithError, service))),
         data => {
           agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)

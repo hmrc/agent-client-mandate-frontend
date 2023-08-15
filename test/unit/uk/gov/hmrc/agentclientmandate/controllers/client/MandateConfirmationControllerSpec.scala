@@ -40,6 +40,53 @@ import scala.concurrent.Future
 
 class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val service: String = "ATED"
+  val injectedViewInstanceMandateConfirmation: mandateConfirmation = app.injector.instanceOf[views.html.client.mandateConfirmation]
+
+  class Setup {
+    val controller = new MandateConfirmationController(
+      stubbedMessagesControllerComponents,
+      implicitly,
+      mockAppConfig,
+      mockDataCacheService,
+      mockAuthConnector,
+      injectedViewInstanceMandateConfirmation
+    )
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+  }
+
+  def viewUnAuthenticatedClient(controller: MandateConfirmationController)(test: Future[Result] => Any): Unit = {
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
+
+  def viewUnAuthorisedClient(controller: MandateConfirmationController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def viewAuthorisedClient(controller: MandateConfirmationController)(cachedData: Option[Mandate] = None)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[Mandate]
+      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
   "MandateConfirmationController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
@@ -50,7 +97,6 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
           redirectLocation(result).get must include("/gg/sign-in")
         }
       }
-
     }
 
     "redirect to unauthorised page for UNAUTHORISED client" when {
@@ -61,7 +107,6 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
           redirectLocation(result).get must include("/gg/sign-in")
         }
       }
-
     }
 
     "return search mandate view for AUTHORISED client" when {
@@ -86,7 +131,6 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
           document.getElementById("finish_btn").text() must be("client.agent-confirmation.finish-signout")
         }
       }
-
     }
 
     "redirect client to review page" when {
@@ -97,57 +141,6 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
         }
       }
     }
-
   }
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val service: String = "ATED"
-  val injectedViewInstanceMandateConfirmation: mandateConfirmation = app.injector.instanceOf[views.html.client.mandateConfirmation]
-
-  class Setup {
-    val controller = new MandateConfirmationController(
-      stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
-      mockDataCacheService,
-      mockAuthConnector,
-      injectedViewInstanceMandateConfirmation
-    )
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-  }
-
-  def viewUnAuthenticatedClient(controller: MandateConfirmationController)(test: Future[Result] => Any) {
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
-
-
-  def viewUnAuthorisedClient(controller: MandateConfirmationController)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewAuthorisedClient(controller: MandateConfirmationController)(cachedData: Option[Mandate] = None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[Mandate]
-      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(cachedData))
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
 
 }

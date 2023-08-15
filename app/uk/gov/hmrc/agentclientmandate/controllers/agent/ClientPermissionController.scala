@@ -63,7 +63,7 @@ class ClientPermissionController @Inject()(
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        clientPermissionForm.bindFromRequest.fold(
+        clientPermissionForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templateClientPermission(formWithErrors, service, callingPage, getBackLink(callingPage)))
             Future.successful(result)

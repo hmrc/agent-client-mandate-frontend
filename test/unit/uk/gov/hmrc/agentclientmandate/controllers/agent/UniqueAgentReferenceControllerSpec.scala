@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -31,6 +30,7 @@ import uk.gov.hmrc.agentclientmandate.controllers.agent.UniqueAgentReferenceCont
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.uniqueAgentReference
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
@@ -39,7 +39,7 @@ import scala.concurrent.Future
 
 class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
-  val injectedViewInstanceUniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
+  val injectedViewInstanceUniqueAgentReference: uniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
 
   class Setup {
     val controller = new UniqueAgentReferenceController(
@@ -50,53 +50,6 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
       mockAppConfig,
       injectedViewInstanceUniqueAgentReference
     )
-  }
-
-  "UniqueAgentReferenceController" must {
-
-    "redirect to login page for UNAUTHENTICATED agent" when {
-
-      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
-        viewWithUnAuthenticatedAgent(controller) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/gg/sign-in")
-        }
-      }
-
-    }
-
-    "redirect to unauthorised page for UNAUTHORISED agent" when {
-
-      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
-        viewWithUnAuthorisedAgent(controller) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/gg/sign-in")
-        }
-      }
-
-    }
-
-    "return 'what is your email address' for AUTHORISED agent" when {
-
-      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
-        viewWithAuthorisedAgent(controller)(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
-          status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.unique-reference.title - GOV.UK")
-        }
-      }
-
-    }
-
-    "redirect agent to select service page" when {
-      "mandate ID is not found in cache" in new Setup {
-        viewWithAuthorisedAgent(controller)() { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some("/mandate/agent/service"))
-        }
-      }
-    }
-
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -110,16 +63,15 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
     reset(mockDataCacheService)
   }
 
-  def viewWithUnAuthenticatedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
+  def viewWithUnAuthenticatedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def viewWithUnAuthorisedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any) {
+  def viewWithUnAuthorisedAgent(controller: UniqueAgentReferenceController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
@@ -127,9 +79,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
   }
 
   def viewWithAuthorisedAgent(controller: UniqueAgentReferenceController)(
-    clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any) {
+    clientDisplayDetails: Option[ClientMandateDisplayDetails] = None)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-
 
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
@@ -138,6 +89,49 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
 
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
+  }
+
+  "UniqueAgentReferenceController" must {
+
+    "redirect to login page for UNAUTHENTICATED agent" when {
+
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithUnAuthenticatedAgent(controller) { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result).get must include("/gg/sign-in")
+        }
+      }
+    }
+
+    "redirect to unauthorised page for UNAUTHORISED agent" when {
+
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithUnAuthorisedAgent(controller) { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result).get must include("/gg/sign-in")
+        }
+      }
+    }
+
+    "return 'what is your email address' for AUTHORISED agent" when {
+
+      "agent requests(GET) for 'Your unique agent reference' view" in new Setup {
+        viewWithAuthorisedAgent(controller)(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.title() must be("agent.unique-reference.title - GOV.UK")
+        }
+      }
+    }
+
+    "redirect agent to select service page" when {
+      "mandate ID is not found in cache" in new Setup {
+        viewWithAuthorisedAgent(controller)() { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result) must be(Some("/mandate/agent/service"))
+        }
+      }
+    }
   }
 
 }

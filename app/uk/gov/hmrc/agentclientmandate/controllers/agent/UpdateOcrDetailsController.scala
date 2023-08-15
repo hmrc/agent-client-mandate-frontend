@@ -68,7 +68,7 @@ class UpdateOcrDetailsController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
-        NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest).fold(
+        NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest()).fold(
           formWithErrors => Future.successful(
             BadRequest(templateUpdateOcrDetails(
               formWithErrors, service, displayDetails(service), getBackLink(service)

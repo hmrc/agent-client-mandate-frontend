@@ -59,7 +59,7 @@ class PreviousMandateRefController @Inject()(
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
-        clientAuthNumForm.bindFromRequest.fold(
+        clientAuthNumForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templateSearchPreviousMandate(service, formWithErrors, callingPage, getBackLink(service, callingPage)))
             Future.successful(result)

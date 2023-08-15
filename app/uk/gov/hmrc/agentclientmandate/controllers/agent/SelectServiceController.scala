@@ -57,7 +57,7 @@ class SelectServiceController @Inject()(
 
   def submit: Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { authRetrievals =>
-      selectServiceForm.bindFromRequest.fold(
+      selectServiceForm.bindFromRequest().fold(
         formWithError => Future.successful(BadRequest(templateSelectServices(formWithError))),
         selectedService => {
           val service = selectedService.service.get

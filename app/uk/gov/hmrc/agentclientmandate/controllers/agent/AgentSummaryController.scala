@@ -125,7 +125,7 @@ class AgentSummaryController @Inject()(
 
   def update(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
-      filterClientsForm.bindFromRequest.fold(
+      filterClientsForm.bindFromRequest().fold(
         _ => {
           for {
             agentDetails      <- agentClientMandateService.fetchAgentDetails(agentAuthRetrievals)

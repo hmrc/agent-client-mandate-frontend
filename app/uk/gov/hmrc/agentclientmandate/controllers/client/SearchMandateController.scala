@@ -57,7 +57,7 @@ class SearchMandateController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        mandateRefForm.bindFromRequest.fold(
+        mandateRefForm.bindFromRequest().fold(
           formWithErrors => Future.successful(BadRequest(templateSearchMandate(service, formWithErrors, getBackLink(service)))),
           data => mandateService.fetchClientMandate(data.mandateRef.toUpperCase, authRetrievals) flatMap {
             case Some(x) =>

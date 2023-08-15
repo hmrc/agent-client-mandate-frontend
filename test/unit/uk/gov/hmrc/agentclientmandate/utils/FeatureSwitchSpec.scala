@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     System.clearProperty("feature.test")
   }
 
@@ -70,7 +70,6 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
       MandateFeatureSwitches.byName("single_service") must be(Some(MandateFeatureSwitches.singleService))
       MandateFeatureSwitches.byName("xyz") must be(None)
     }
-
   }
 
 }

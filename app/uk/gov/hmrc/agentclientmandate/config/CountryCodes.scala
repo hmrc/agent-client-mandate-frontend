@@ -17,9 +17,10 @@
 package uk.gov.hmrc.agentclientmandate.config
 
 import play.api.Environment
+
 import java.io.InputStreamReader
 import java.util.PropertyResourceBundle
-import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
+import scala.jdk.CollectionConverters.EnumerationHasAsScala
 import scala.util.{Success, Try}
 
 trait CountryCodes {

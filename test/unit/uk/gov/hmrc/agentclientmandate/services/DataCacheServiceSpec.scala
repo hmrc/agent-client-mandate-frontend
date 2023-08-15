@@ -47,7 +47,7 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
   val mockSessionCache: SessionCache = mock[SessionCache]
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     reset(mockSessionCache)
   }
 
@@ -128,7 +128,6 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
         await(testDataCacheService.clearCache()).status must be(OK)
       }
     }
-
   }
 
 }

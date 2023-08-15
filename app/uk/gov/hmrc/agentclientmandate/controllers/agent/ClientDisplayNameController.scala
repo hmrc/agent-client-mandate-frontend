@@ -83,7 +83,7 @@ class ClientDisplayNameController @Inject()(
       redirectUrl match {
         case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
         case _ =>
-          clientDisplayNameForm.bindFromRequest.fold(
+          clientDisplayNameForm.bindFromRequest().fold(
             formWithError => Future.successful(BadRequest(templateClientDisplayName(
               formWithError, service, redirectUrl, getBackLink(service, redirectUrl)))),
             data =>

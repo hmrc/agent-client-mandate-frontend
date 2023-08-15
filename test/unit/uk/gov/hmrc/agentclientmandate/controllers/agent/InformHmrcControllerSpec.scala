@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -33,6 +32,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.informHmrc
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -90,7 +90,7 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
   val service: String = "ATED"
   val serviceAWRS: String = "AWRS"
   val callingPage: String = "callPage"
-  val injectedViewInstanceInformHMRC = app.injector.instanceOf[views.html.agent.informHmrc]
+  val injectedViewInstanceInformHMRC: informHmrc = app.injector.instanceOf[views.html.agent.informHmrc]
 
 
   class Setup {
@@ -105,14 +105,14 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
       injectedViewInstanceInformHMRC
     )
 
-    def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
+    def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
-    def viewWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
+    def viewWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
       val prevReg: Option[PrevRegistered] = None
 
@@ -125,7 +125,7 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
       test(result)
     }
 
-    def continueWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
+    def continueWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)

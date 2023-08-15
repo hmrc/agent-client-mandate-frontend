@@ -38,7 +38,7 @@ object FormHelpers {
    * This function finds all errors on a form which are either keyed for the field or contain the fields full path in their arguments
    */
   def getErrors(field: Field, form: Form[_]): Seq[FormError] = {
-    form.errors.filter { error => error.key == field.name || error.args.contains(field.name) || field.name == error.args.fold(error.key){_ + "." + _}}
+    form.errors.filter { error => error.key == field.name || error.args.contains(field.name) || field.name == error.args.fold(error.key){_.toString + "." + _.toString}}
   }
 
   /*

@@ -25,7 +25,7 @@ import play.api.mvc.Request
 import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class AgentClientMandateFrontendErrorHandler @Inject()(

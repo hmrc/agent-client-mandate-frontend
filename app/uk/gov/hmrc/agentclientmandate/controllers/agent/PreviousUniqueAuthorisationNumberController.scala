@@ -62,7 +62,7 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        prevUniqueAuthNumForm.bindFromRequest.fold(
+        prevUniqueAuthNumForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templatePreviousUniqueAuthorisationNumber(formWithErrors, callingPage, service, getBackLink(service, callingPage)))
             Future.successful(result)

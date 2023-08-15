@@ -65,7 +65,7 @@ class UpdateAddressDetailsController @Inject()(
 
   def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
-      editAgentAddressDetailsForm.bindFromRequest.fold(
+      editAgentAddressDetailsForm.bindFromRequest().fold(
         formWithErrors =>
           Future.successful(BadRequest(templateUpdateAddressDetails(formWithErrors,
             service, displayDetails(service), getBackLink(service)))),

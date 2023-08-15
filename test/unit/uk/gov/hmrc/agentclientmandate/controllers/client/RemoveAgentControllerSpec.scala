@@ -44,6 +44,93 @@ import scala.concurrent.Future
 
 class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
+
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceRemoveAgent: removeAgent = app.injector.instanceOf[views.html.client.removeAgent]
+  val injectedViewInstanceRemoveAgentConfirmation: removeAgentConfirmation = app.injector.instanceOf[views.html.client.removeAgentConfirmation]
+
+  class Setup {
+    val controller = new RemoveAgentController(
+      mockAgentClientMandateService,
+      mockDataCacheService,
+      mockDelegationConnector,
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceRemoveAgent,
+      injectedViewInstanceRemoveAgentConfirmation
+    )
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAgentClientMandateService)
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+  }
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name")
+
+  val service: String = "ATED"
+
+  def viewUnAuthenticatedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
+
+  def viewUnAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def viewAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsJson], continueUrl: String)
+                          (test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    val result = controller.view(service, "1", continueUrl).apply(SessionBuilder.updateRequestWithSession(request, userId))
+    test(result)
+  }
+
+  def submitWithAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+
+    val result = controller.submit(service, "1").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    test(result)
+  }
+
+  def returnToServiceWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    val result = controller.returnToService().apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def confirmationWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    val result = controller.confirmation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
   "RemoveAgentController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
@@ -63,7 +150,6 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         }
       }
     }
-
 
     "return 'remove agent question' view for AUTHORISED agent" when {
       "client requests(GET) for 'remove agent question' view" in new Setup {
@@ -215,95 +301,6 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         }
       }
     }
-
-  }
-
-  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
-
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceRemoveAgent: removeAgent = app.injector.instanceOf[views.html.client.removeAgent]
-  val injectedViewInstanceRemoveAgentConfirmation: removeAgentConfirmation = app.injector.instanceOf[views.html.client.removeAgentConfirmation]
-
-  class Setup {
-    val controller = new RemoveAgentController(
-      mockAgentClientMandateService,
-      mockDataCacheService,
-      mockDelegationConnector,
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceRemoveAgent,
-      injectedViewInstanceRemoveAgentConfirmation
-    )
-  }
-
-  override def beforeEach: Unit = {
-    reset(mockAgentClientMandateService)
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-  }
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
-    clientDisplayName = "client display name")
-
-  val service: String = "ATED"
-
-  def viewUnAuthenticatedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
-
-
-  def viewUnAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsJson], continueUrl: String)
-                          (test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      val result = controller.view(service, "1", continueUrl).apply(SessionBuilder.updateRequestWithSession(request, userId))
-      test(result)
-  }
-
-  def submitWithAuthorisedClient(controller: RemoveAgentController)(request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-
-    val result = controller.submit(service, "1").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
-  }
-
-  def returnToServiceWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    val result = controller.returnToService().apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def confirmationWithAuthorisedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    val result = controller.confirmation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
   }
 
 }

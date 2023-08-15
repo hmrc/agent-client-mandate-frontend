@@ -89,7 +89,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
   def submit(service: String, mode: Option[String]): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-        clientEmailForm.bindFromRequest.fold(
+        clientEmailForm.bindFromRequest().fold(
           formWithError =>
             getBackLink(service, mode).map {
               backLink =>

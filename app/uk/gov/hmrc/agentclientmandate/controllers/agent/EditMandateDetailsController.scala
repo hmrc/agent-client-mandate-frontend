@@ -57,7 +57,7 @@ class EditMandateDetailsController @Inject()(
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { authRetrievals =>
-        editMandateDetailsForm.bindFromRequest.fold(
+        editMandateDetailsForm.bindFromRequest().fold(
           formWithError => {
             acmService.fetchClientMandate(mandateId, authRetrievals) map {
               case Some(mandate) =>

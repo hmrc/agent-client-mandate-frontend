@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -34,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.reviewMandate
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
@@ -57,7 +57,7 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
     "return review mandate view for AUTHORISED client" when {
 
       "client requests(GET) for review mandate view, and mandate has been cached on search mandate submit" in new Setup {
-        val mandate = Mandate(id = "ABC123", createdBy = User("cerdId", "Joe Bloggs"),
+        val mandate: Mandate = Mandate(id = "ABC123", createdBy = User("cerdId", "Joe Bloggs"),
           agentParty = Party("ated-ref-no", "name",
             `type` = PartyType.Organisation,
             contactDetails = ContactDetails("aa@aa.com", None)),
@@ -66,7 +66,7 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
           currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
           statusHistory = Nil, subscription = Subscription(referenceNumber = None, service = Service(id = "ated-ref-no", name = "")),
           clientDisplayName = "client display name")
-        val returnData = ClientCache(mandate = Some(mandate))
+        val returnData: ClientCache = ClientCache(mandate = Some(mandate))
         viewWithAuthorisedClient(reviewMandateController)(Some(returnData)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -79,7 +79,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
           document.getElementById("submit").text() must be("client.review-agent.submit")
         }
       }
-
     }
 
 
@@ -91,7 +90,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
           redirectLocation(result) must be(Some("/mandate/client/search"))
         }
       }
-
     }
 
     "redirect to collect eamil view for AUTHORISED client" when {
@@ -102,7 +100,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
           redirectLocation(result) must be(Some("/mandate/client/email"))
         }
       }
-
     }
 
     "redirect Authorised Client to 'Mandate declaration' page" when {
@@ -113,12 +110,11 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
         }
       }
     }
-
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceReviewMandate = app.injector.instanceOf[views.html.client.reviewMandate]
+  val injectedViewInstanceReviewMandate: reviewMandate = app.injector.instanceOf[views.html.client.reviewMandate]
 
   class Setup {
     val reviewMandateController = new ReviewMandateController(
@@ -138,14 +134,14 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   val service: String = "ATED"
 
-  def viewWithUnAuthenticatedClient(controller: ReviewMandateController)(test: Future[Result] => Any) {
+  def viewWithUnAuthenticatedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
-  def viewWithAuthorisedClient(controller: ReviewMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
+  def viewWithAuthorisedClient(controller: ReviewMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
 
 
@@ -161,7 +157,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
 
   def submitWithAuthorisedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
     val userId = s"user-${UUID.randomUUID}"
-
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(FakeRequest().withFormUrlEncodedBody(), userId))
