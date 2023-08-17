@@ -40,7 +40,59 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class ReviewMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceReviewMandate: reviewMandate = app.injector.instanceOf[views.html.client.reviewMandate]
+
+  class Setup {
+    val reviewMandateController = new ReviewMandateController(
+      mockDataCacheService,
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceReviewMandate
+    )
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+  }
+
+  val service: String = "ATED"
+
+  def viewWithUnAuthenticatedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
+
+  def viewWithAuthorisedClient(controller: ReviewMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(ClientCache()))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def submitWithAuthorisedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(FakeRequest().withFormUrlEncodedBody(), userId))
+    test(result)
+  }
 
   "ReviewMandateController" must {
 
@@ -81,7 +133,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
       }
     }
 
-
     "redirect to search mandate view for AUTHORISED client" when {
 
       "client requests(GET) for review mandate view, but mandate has not been cached on search mandate submit" in new Setup {
@@ -110,57 +161,6 @@ class ReviewMandateControllerSpec extends PlaySpec  with MockitoSugar with Befor
         }
       }
     }
-  }
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceReviewMandate: reviewMandate = app.injector.instanceOf[views.html.client.reviewMandate]
-
-  class Setup {
-    val reviewMandateController = new ReviewMandateController(
-      mockDataCacheService,
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceReviewMandate
-    )
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-  }
-
-  val service: String = "ATED"
-
-  def viewWithUnAuthenticatedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
-
-  def viewWithAuthorisedClient(controller: ReviewMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(cachedData))
-    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(ClientCache()))
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedClient(controller: ReviewMandateController)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(FakeRequest().withFormUrlEncodedBody(), userId))
-    test(result)
   }
 
 }

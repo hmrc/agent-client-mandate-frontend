@@ -39,7 +39,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   val mandateId: String = "ABC123"
 
@@ -84,7 +84,8 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -99,7 +100,8 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
 
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(clientCache))
 
     when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),

@@ -43,6 +43,73 @@ import scala.concurrent.Future
 
 class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
+  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val service: String = "ATED"
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceHasClientRegisteredBefore: hasClientRegisteredBefore = app.injector.instanceOf[views.html.agent.hasClientRegisteredBefore]
+
+  class Setup {
+    val controller = new HasClientRegisteredBeforeController(
+      stubbedMessagesControllerComponents,
+      mockDataCacheService,
+      mockBusinessCustomerConnector,
+      mockAtedSubscriptionConnector,
+      implicitly,
+      mockAppConfig,
+      mockAuthConnector,
+      injectedViewInstanceHasClientRegisteredBefore
+    )
+
+    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent
+    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      val result = controller.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent
+    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      val result = controller.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockBusinessCustomerConnector)
+    reset(mockAtedSubscriptionConnector)
+  }
+
   "HasClientRegisteredBeforeController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
@@ -62,6 +129,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
         }
       }
     }
+
     "redirect to 'has client registered page'" when {
       "agent requests(GET) for 'has client registered page', with service = ATED" in new Setup {
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevRegistered(Some(true)))) { result =>
@@ -118,77 +186,11 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.client-prev-registered.not-selected.field-error"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-prev-registered.not-selected.field-error"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.client-prev-registered.not-selected.field-error"
         }
       }
     }
-
   }
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
-  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
-  val service: String = "ATED"
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceHasClientRegisteredBefore: hasClientRegisteredBefore = app.injector.instanceOf[views.html.agent.hasClientRegisteredBefore]
-
-  class Setup {
-    val controller = new HasClientRegisteredBeforeController(
-      stubbedMessagesControllerComponents,
-      mockDataCacheService,
-      mockBusinessCustomerConnector,
-      mockAtedSubscriptionConnector,
-      implicitly,
-      mockAppConfig,
-      mockAuthConnector,
-      injectedViewInstanceHasClientRegisteredBefore
-    )
-
-    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def viewWithAuthorisedAgent
-    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK, "")))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK, "")))
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
-      val result = controller.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def submitWithAuthorisedAgent
-    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
-      val result = controller.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockBusinessCustomerConnector)
-    reset(mockAtedSubscriptionConnector)
-  }
 }

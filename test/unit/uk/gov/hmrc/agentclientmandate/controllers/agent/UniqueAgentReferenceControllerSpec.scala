@@ -37,7 +37,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class UniqueAgentReferenceControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   val injectedViewInstanceUniqueAgentReference: uniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
 
@@ -85,7 +85,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec  with MockitoSugar wit
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(controller.agentRefCacheId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(clientDisplayDetails))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(clientDisplayDetails))
 
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

@@ -38,7 +38,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class MandateConfirmationControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
@@ -81,7 +81,7 @@ class MandateConfirmationControllerSpec extends PlaySpec  with MockitoSugar with
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[Mandate]
-      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

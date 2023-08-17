@@ -24,8 +24,7 @@ import uk.gov.hmrc.http.cache.client.SessionCache
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DataCacheService @Inject()(val http: DefaultHttpClient,
@@ -35,15 +34,15 @@ class DataCacheService @Inject()(val http: DefaultHttpClient,
   val defaultSource: String = config.dataCacheDefaultSource
   val domain: String = config.dataCacheDomain
 
-  def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, formats: Format[T]): Future[Option[T]] = {
+  def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[Option[T]] = {
     fetchAndGetEntry[T](key = formId)
   }
 
-  def cacheFormData[T](formId: String, formData: T)(implicit hc: HeaderCarrier, formats: Format[T]): Future[T] = {
+  def cacheFormData[T](formId: String, formData: T)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[T] = {
     cache[T](formId, formData).map(_ => formData)
   }
 
-  def clearCache()(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def clearCache()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     remove()
   }
 }

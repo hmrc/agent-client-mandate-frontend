@@ -28,6 +28,18 @@ class AgentClientMandateUtilsSpec extends PlaySpec with MockitoSugar {
 
   val appConfig: AppConfig = mock[AppConfig]
 
+  val mandate: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "updatedby"),
+      MandateStatus(Status.Active, DateTime.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+
+  val mandate1: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
+    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    clientDisplayName = "client display name")
+
   "AgentClientMandateUtils" must {
     "validateUTR" must {
       "given valid UTR return true" in {
@@ -71,7 +83,6 @@ class AgentClientMandateUtilsSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-
   "isNonUkClient" must {
     "return false, when mandate history has status = ACTIVE/NEW" in {
       AgentClientMandateUtils.isNonUkClient(mandate) must be(false)
@@ -82,15 +93,4 @@ class AgentClientMandateUtilsSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  val mandate: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "updatedby"),
-    MandateStatus(Status.Active, DateTime.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
-
-  val mandate1: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
-    clientDisplayName = "client display name")
 }
