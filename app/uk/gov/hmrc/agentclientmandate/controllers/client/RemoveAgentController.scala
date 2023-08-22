@@ -73,7 +73,7 @@ class RemoveAgentController @Inject()(
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
         acmService.fetchClientMandateAgentName(mandateId, authRetrievals).flatMap(
-          agentName => new YesNoQuestionForm("yes-no.error.mandatory.removeAgent", Seq(agentName)).yesNoQuestionForm.bindFromRequest.fold(
+          agentName => new YesNoQuestionForm("yes-no.error.mandatory.removeAgent", Seq(agentName)).yesNoQuestionForm.bindFromRequest().fold(
             formWithError =>
               dataCacheService.fetchAndGetFormData[String]("RETURN_URL").map { returnUrl =>
                 BadRequest(templateRemoveAgent(service, formWithError, agentName, mandateId, returnUrl))

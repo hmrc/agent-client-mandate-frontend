@@ -55,7 +55,7 @@ class PaySAQuestionController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        paySAQuestionForm.bindFromRequest.fold(
+        paySAQuestionForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templatePaySAQuestion(formWithErrors, service, getBackLink(service)))
             Future.successful(result)

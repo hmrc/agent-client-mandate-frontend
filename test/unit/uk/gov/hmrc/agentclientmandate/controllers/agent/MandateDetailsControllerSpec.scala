@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -33,13 +32,68 @@ import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCa
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientDisplayName}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.mandateDetails
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+class MandateDetailsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceMandateDetails: mandateDetails = app.injector.instanceOf[views.html.agent.mandateDetails]
+
+  class Setup {
+    val controller = new MandateDetailsController(
+      stubbedMessagesControllerComponents,
+      mockDataCacheService,
+      mockMandateService,
+      implicitly,
+      mockAppConfig,
+      mockAuthConnector,
+      injectedViewInstanceMandateDetails
+    )
+
+    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockMandateService.createMandate(ArgumentMatchers.eq(service), ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any())).thenReturn(Future.successful(mandateId))
+      val fakeRequest = FakeRequest().withFormUrlEncodedBody()
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+    reset(mockMandateService)
+  }
+
+  val service: String = "ated"
+  val agentEmail: AgentEmail = AgentEmail("aa@mail.com")
+  val mandateId: String = "AS12345678"
 
   "MandateDetailsController" must {
 
@@ -47,12 +101,12 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
       "agent requests(GET) for check client details view and email has been cached previously and it's from PaySA" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(controller.agentEmailFormId))
-          (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
-          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
         when(mockDataCacheService.cacheFormData[String]
-          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent(ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
@@ -71,12 +125,12 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
       "agent requests(GET) for check client details view and email has been cached previously and it's from Overseas" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
           (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(),
-          ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
+          ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(AgentEmail(""))))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
-          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
         when(mockDataCacheService.cacheFormData[String]
-          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent(ControllerPageIdConstants.overseasClientQuestionControllerId) { result =>
           status(result) must be(OK)
@@ -97,12 +151,13 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
       "agent requests(GET) for check client details view and email has NOT been cached previously" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
-          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(None))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
-          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(ClientDisplayName("client display name"))))
         when(mockDataCacheService.cacheFormData[String]
-          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
@@ -115,12 +170,13 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
 
       "agent requests(GET) for check client details view and display name has NOT been cached previously" in new Setup {
         when(mockDataCacheService.fetchAndGetFormData[AgentEmail]
-          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.agentEmailFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(AgentEmail(""))))
         when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName]
-          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+          (ArgumentMatchers.eq(controller.clientDisplayNameFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(None))
         when(mockDataCacheService.cacheFormData[String]
-          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.callingPageCacheId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("callingPage"))
         viewWithAuthorisedAgent("") { result =>
           status(result) must be(SEE_OTHER)
@@ -147,65 +203,6 @@ class MandateDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befo
         }
       }
     }
-
   }
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceMandateDetails = app.injector.instanceOf[views.html.agent.mandateDetails]
-
-
-
-  class Setup {
-    val controller = new MandateDetailsController(
-      stubbedMessagesControllerComponents,
-      mockDataCacheService,
-      mockMandateService,
-      implicitly,
-      mockAppConfig,
-      mockAuthConnector,
-      injectedViewInstanceMandateDetails
-    )
-
-    def viewWithUnAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def viewWithAuthorisedAgent(callingPage: String)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def submitWithAuthorisedAgent(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockMandateService.createMandate(ArgumentMatchers.eq(service), ArgumentMatchers.any())(ArgumentMatchers.any(),
-        ArgumentMatchers.any())).thenReturn(Future.successful(mandateId))
-      val fakeRequest = FakeRequest().withFormUrlEncodedBody()
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-    reset(mockMandateService)
-  }
-
-  val service: String = "ated"
-  val agentEmail: AgentEmail = AgentEmail("aa@mail.com")
-  val mandateId: String = "AS12345678"
 }

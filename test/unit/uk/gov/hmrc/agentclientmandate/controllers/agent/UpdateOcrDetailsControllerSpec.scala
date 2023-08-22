@@ -41,6 +41,78 @@ import scala.concurrent.Future
 
 class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
+  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
+  val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+    Some(Organisation("Org name", Some(true), Some("org_type"))),
+    RegisteredAddressDetails("address1", "address2", None, None, None, "FR"), EtmpContactDetails(None, None, None, None),
+    isAnAgent = true, isAGroup = true,
+    identification = Some(Identification("IdNumber", "issuingCountry", "FR"))))
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceUpdateOcrDetails: update_ocr_details = app.injector.instanceOf[views.html.agent.editDetails.update_ocr_details]
+
+  class Setup {
+    val controller = new UpdateOcrDetailsController(
+      mockAgentClientMandateService,
+      mockDataCacheService,
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceUpdateOcrDetails
+    )
+
+    def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(
+        ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(cachedData))
+      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(agentDetails))
+      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
+                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(updatedRegDetails))
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+    reset(mockAgentClientMandateService)
+  }
+
   "UpdateOcrDetailsController" should {
 
     "redirect to unathorised page" when {
@@ -111,75 +183,4 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
     }
   }
 
-  val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-  val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-  val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-    Some(Organisation("Org name", Some(true), Some("org_type"))),
-    RegisteredAddressDetails("address1", "address2", None, None, None, "FR"), EtmpContactDetails(None, None, None, None),
-    isAnAgent = true, isAGroup = true,
-    identification = Some(Identification("IdNumber", "issuingCountry", "FR"))))
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockAgentClientMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceUpdateOcrDetails: update_ocr_details = app.injector.instanceOf[views.html.agent.editDetails.update_ocr_details]
-
-  class Setup {
-    val controller = new UpdateOcrDetailsController(
-      mockAgentClientMandateService,
-      mockDataCacheService,
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceUpdateOcrDetails
-    )
-
-    def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def getWithAuthorisedUser(cachedData: Option[AgentDetails] = None, service: String)(test: Future[Result] => Any): Any = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(
-        ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(cachedData))
-      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(agentDetails))
-      val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def saveWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.submit(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
-                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(updatedRegDetails))
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-    reset(mockAgentClientMandateService)
-  }
 }

@@ -37,7 +37,7 @@ object PartyType extends Enumeration {
   implicit val enumFormat: Format[PartyType] = new Format[PartyType] {
     def reads(json: JsValue) = JsSuccess(PartyType.withName(json.as[String]))
 
-    def writes(enum: PartyType) = JsString(enum.toString)
+    def writes(`enum`: PartyType) = JsString(enum.toString)
   }
 }
 
@@ -62,7 +62,7 @@ object Status extends Enumeration {
   implicit val enumFormat: Format[Status] = new Format[Status] {
     def reads(json: JsValue) = JsSuccess(Status.withName(json.as[String]))
 
-    def writes(enum: Status) = JsString(enum.toString)
+    def writes(`enum`: Status) = JsString(enum.toString)
   }
 }
 
@@ -88,7 +88,7 @@ object MandateStatus {
       val status = (json \ "status").asOpt[Status]
       val updatedBy = (json \ "updatedBy").asOpt[String]
       val timestamp = (json \ "timestamp").asOpt[JsNumber] map { number =>
-        new DateTime(number.value.longValue())
+        new DateTime(number.value.longValue)
       }
 
       (status, updatedBy, timestamp) match {

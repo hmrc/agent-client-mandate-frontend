@@ -29,7 +29,7 @@ object YesNoQuestion {
 
 class YesNoQuestionForm(errorMessage: String, args: Seq[String] = Seq()) {
 
-  def yesNoQuestionForm =
+  def yesNoQuestionForm: Form[YesNoQuestion] =
     Form(
       mapping(
         "yesNo" -> Forms.of[Boolean](requiredBooleanFormatter)
@@ -38,7 +38,7 @@ class YesNoQuestionForm(errorMessage: String, args: Seq[String] = Seq()) {
 
   def requiredBooleanFormatter: Formatter[Boolean] = new Formatter[Boolean] {
     def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Boolean] = {
-      Right(data.getOrElse(key,"")).right.flatMap {
+      Right(data.getOrElse(key,"")).flatMap {
         case "true"   => Right(true)
         case "false"  => Right(false)
         case _        => Left(Seq(FormError(key, errorMessage, args)))

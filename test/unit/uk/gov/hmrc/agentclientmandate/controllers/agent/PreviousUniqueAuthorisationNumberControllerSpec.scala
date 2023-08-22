@@ -47,6 +47,66 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
   with MockControllerSetup
   with GuiceOneServerPerSuite {
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
+  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val service: String = "ATED"
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstancePreviousUniqueAuthorisationNumber: previousUniqueAuthorisationNumber =
+    app.injector.instanceOf[views.html.agent.previousUniqueAuthorisationNumber]
+
+  class Setup {
+    val controller = new PreviousUniqueAuthorisationNumberController(
+      stubbedMessagesControllerComponents,
+      mockDataCacheService,
+      mockBusinessCustomerConnector,
+      mockAtedSubscriptionConnector,
+      implicitly,
+      mockAppConfig,
+      mockAuthConnector,
+      injectedViewInstancePreviousUniqueAuthorisationNumber
+    )
+
+    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent
+    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn (Future.successful(HttpResponse(OK, "")))
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      val result = controller.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedAgent
+    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      val result = controller.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockBusinessCustomerConnector)
+    reset(mockAtedSubscriptionConnector)
+  }
+
   "PreviousUniqueAuthorisationNumberController" must {
 
     "redirect to login page for UNAUTHENTICATED agent" when {
@@ -96,7 +156,6 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
       }
     }
 
-
     "redirect agent to business-customer enter business details page" when {
       "valid form is submitted and NO" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("authNum" -> "false")
@@ -118,68 +177,6 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
         }
       }
     }
-
   }
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
-  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
-  val service: String = "ATED"
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstancePreviousUniqueAuthorisationNumber: previousUniqueAuthorisationNumber =
-    app.injector.instanceOf[views.html.agent.previousUniqueAuthorisationNumber]
-
-
-
-  class Setup {
-    val controller = new PreviousUniqueAuthorisationNumberController(
-      stubbedMessagesControllerComponents,
-      mockDataCacheService,
-      mockBusinessCustomerConnector,
-      mockAtedSubscriptionConnector,
-      implicitly,
-      mockAppConfig,
-      mockAuthConnector,
-      injectedViewInstancePreviousUniqueAuthorisationNumber
-    )
-
-    def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewWithAuthorisedAgent
-    (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK, "")))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK, "")))
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
-      val result = controller.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def submitWithAuthorisedAgent
-    (callingPage: String, request: FakeRequest[AnyContentAsFormUrlEncoded], prevReg: Option[PrevUniqueAuthNum] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevUniqueAuthNum](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
-      val result = controller.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockBusinessCustomerConnector)
-    reset(mockAtedSubscriptionConnector)
-  }
 }

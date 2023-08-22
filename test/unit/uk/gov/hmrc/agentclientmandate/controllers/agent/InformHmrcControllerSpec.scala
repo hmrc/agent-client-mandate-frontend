@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -33,6 +32,7 @@ import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PrevRegistered
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.agent.informHmrc
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -40,7 +40,67 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants with GuiceOneServerPerSuite {
+class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants with GuiceOneServerPerSuite {
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
+  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val service: String = "ATED"
+  val serviceAWRS: String = "AWRS"
+  val callingPage: String = "callPage"
+  val injectedViewInstanceInformHMRC: informHmrc = app.injector.instanceOf[views.html.agent.informHmrc]
+
+  class Setup {
+    val informHmrcController = new InformHmrcController(
+      stubbedMessagesControllerComponents,
+      mockDataCacheService,
+      mockBusinessCustomerConnector,
+      mockAtedSubscriptionConnector,
+      implicitly,
+      mockAppConfig,
+      mockAuthConnector,
+      injectedViewInstanceInformHMRC
+    )
+
+    def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+      val prevReg: Option[PrevRegistered] = None
+
+      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
+        ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def continueWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
+      when(mockAppConfig.nonUkUri(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(
+          "http://localhost:9923/business-customer/agent/register/non-uk-client/ated?backLinkUrl=http://localhost:9959/mandate/agent/inform-HMRC/callPage")
+      val result = controller.continue(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockBusinessCustomerConnector)
+    reset(mockAtedSubscriptionConnector)
+    reset(mockDataCacheService)
+  }
 
   "InformHmrcController" must {
 
@@ -83,64 +143,4 @@ class InformHmrcControllerSpec extends PlaySpec  with MockitoSugar with BeforeAn
     }
   }
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
-  val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
-  val service: String = "ATED"
-  val serviceAWRS: String = "AWRS"
-  val callingPage: String = "callPage"
-  val injectedViewInstanceInformHMRC = app.injector.instanceOf[views.html.agent.informHmrc]
-
-
-  class Setup {
-    val informHmrcController = new InformHmrcController(
-      stubbedMessagesControllerComponents,
-      mockDataCacheService,
-      mockBusinessCustomerConnector,
-      mockAtedSubscriptionConnector,
-      implicitly,
-      mockAppConfig,
-      mockAuthConnector,
-      injectedViewInstanceInformHMRC
-    )
-
-    def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-      val prevReg: Option[PrevRegistered] = None
-
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
-        ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
-      val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def continueWithAuthorisedAgent(controller: InformHmrcController)(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAppConfig.nonUkUri(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(
-            "http://localhost:9923/business-customer/agent/register/non-uk-client/ated?backLinkUrl=http://localhost:9959/mandate/agent/inform-HMRC/callPage")
-      val result = controller.continue(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockBusinessCustomerConnector)
-    reset(mockAtedSubscriptionConnector)
-    reset(mockDataCacheService)
-  }
 }

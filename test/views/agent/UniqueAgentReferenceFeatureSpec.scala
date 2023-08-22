@@ -27,7 +27,6 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDet
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.uniqueAgentReference
 
-
 class UniqueAgentReferenceFeatureSpec extends AnyFeatureSpec
   with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
 

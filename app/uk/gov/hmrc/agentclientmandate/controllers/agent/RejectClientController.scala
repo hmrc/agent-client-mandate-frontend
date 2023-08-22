@@ -52,7 +52,7 @@ class RejectClientController @Inject()(
   def submit(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).flatMap(
-        mandate => new YesNoQuestionForm("yes-no.error.mandatory.clientReject", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest.fold(
+        mandate => new YesNoQuestionForm("yes-no.error.mandatory.clientReject", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest().fold(
           formWithError =>
             Future.successful(BadRequest(templateRejectClient(service, formWithError, mandate.clientDisplayName, mandateId, getBackLink(service)))),
           data => {

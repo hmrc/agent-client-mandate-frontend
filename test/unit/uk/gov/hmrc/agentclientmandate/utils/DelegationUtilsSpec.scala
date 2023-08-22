@@ -27,13 +27,12 @@ import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class DelegationUtilsSpec extends PlaySpec  with MockitoSugar {
+class DelegationUtilsSpec extends PlaySpec with MockitoSugar {
 
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
   implicit val appConfig: AppConfig = mock[AppConfig]
   implicit val messages: Messages = mock[Messages]
-
 
   implicit val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
 

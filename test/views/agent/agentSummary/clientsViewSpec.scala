@@ -111,11 +111,13 @@ class clientsViewSpec extends AnyFeatureSpec
       assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")
       assert(document.getElementById("client-name-0").text() === "client display name 2")
 
-      assert(document.getElementById("edit-client-link-0").text() === "client.summary.client-change client.summary.client-edit-details-for client display name 2")
+      assert(document.getElementById("edit-client-link-0")
+        .text() === "client.summary.client-change client.summary.client-edit-details-for client display name 2")
       assert(document.getElementById("client-link-0").text() === "client.summary.client-view client.summary.client-details-for client display name 2")
 
       assert(document.getElementById("client-name-1").text() === "client display name 6")
-      assert(document.getElementById("edit-client-link-1").text() === "client.summary.client-change client.summary.client-edit-details-for client display name 6")
+      assert(document.getElementById("edit-client-link-1")
+        .text() === "client.summary.client-change client.summary.client-edit-details-for client display name 6")
       assert(document.getElementById("client-link-1").text() === "client.summary.client-view client.summary.client-details-for client display name 6")
 
       And("The Pending Clients tab - should exist and have 3 item")
@@ -123,16 +125,18 @@ class clientsViewSpec extends AnyFeatureSpec
 
       assert(document.getElementById("pending-client-data-0").text() === "client display name 1")
       assert(document.getElementById("pending-client-status-0").text() === "client.summary.client.pending-status")
-      assert(document.getElementById("edit-pending-client-link-0").text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 1")
+      assert(document.getElementById("edit-pending-client-link-0")
+        .text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 1")
 
       assert(document.getElementById("pending-client-data-1").text() === "client display name 5")
       assert(document.getElementById("pending-client-status-1").text() === "client.summary.client-pending")
-      assert(document.getElementById("edit-pending-client-link-1").text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 5")
+      assert(document.getElementById("edit-pending-client-link-1")
+        .text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 5")
 
       assert(document.getElementById("pending-client-data-2").text() === "client display name 4")
       assert(document.getElementById("pending-client-status-2").text() === "client.summary.client-pending")
-      assert(document.getElementById("edit-pending-client-link-2").text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 4")
-
+      assert(document.getElementById("edit-pending-client-link-2")
+        .text() === "client.summary.client-change client.summary.client-edit-details-forclient display name 4")
 
       And("The Accept Clients tab - should exist and have 1 item")
       assert(document.getElementById("accept-clients-tab").text() === "client.summary.client-accept.title")

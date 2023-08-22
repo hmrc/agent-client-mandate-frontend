@@ -127,9 +127,9 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
               val pendingMandates = x.filter (a => AgentClientMandateUtils.isPendingStatus (a.currentStatus.status) )
               val activeMandates = x.filter (a => a.currentStatus.status == Status.Active)
               Some (Mandates (activeMandates, pendingMandates) )
-            case None => None
+            case _ => None
           }
-          case NOT_FOUND => None
+          case _ => None
         }
     }
   }

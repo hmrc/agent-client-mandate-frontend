@@ -106,7 +106,7 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
   }
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     reset(mockAgentClientMandateService)
   }
 

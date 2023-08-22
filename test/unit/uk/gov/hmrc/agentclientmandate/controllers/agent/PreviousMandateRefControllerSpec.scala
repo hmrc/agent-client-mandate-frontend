@@ -42,154 +42,6 @@ import scala.concurrent.Future
 
 class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
-  "PreviousMandateRefController" must {
-
-    "redirect to login page for UNAUTHENTICATED client" when {
-
-      "client requests(GET) for search mandate view" in new Setup {
-        viewUnAuthenticatedAgent { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/gg/sign-in")
-        }
-      }
-
-    }
-
-    "redirect to unauthorised page for UNAUTHORISED agent" when {
-
-      "client requests for search mandate view" in new Setup {
-        viewUnAuthenticatedAgent { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include("/gg/sign-in")
-        }
-      }
-
-    }
-
-    "return search mandate view for AUTHORISED agent" when {
-
-      "agent requests(GET) for search previous mandate view" in new Setup {
-        viewWithAuthorisedAgent() { result =>
-          status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.getElementById("mandateRef").`val`() must be("")
-        }
-      }
-
-      "agent requests(GET) for search mandate view pre-populated and the data has been cached" in new Setup {
-        val cached: ClientCache = ClientCache(mandate = Some(mandate1))
-        viewWithAuthorisedAgent(Some(cached)) { result =>
-          status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.search-previous-mandate.title - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.search-previous-mandate.header")
-          document.getElementById("mandateRef").`val`() must be("ABC123")
-          document.getElementById("submit").text() must be("continue-button")
-        }
-      }
-
-    }
-
-    "redirect to ated-subscription corresponding address page" when {
-
-      "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
-        val clientParty: Option[Party] = Some(Party("client-id", "client name",
-          `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
-        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(
-            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
-        }
-      }
-
-      "valid form is submitted but with mandate having spaces, mandate is found from backend, " +
-        "cache object exists and update of cache with mandate is successful" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
-        val clientParty: Option[Party] = Some(Party("client-id", "client name",
-          `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
-        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
-        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
-        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
-        submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(
-            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
-        }
-      }
-
-    }
-
-    "returns BAD_REQUEST" when {
-      "empty form is submitted" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "")
-        submitWithAuthorisedAgent(fakeRequest) { result =>
-          status(result) must be(BAD_REQUEST)
-          val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum"
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
-            ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-        }
-      }
-
-      "mandateRef field has more than expected length" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "a" * 11)
-        submitWithAuthorisedAgent(fakeRequest) { result =>
-          status(result) must be(BAD_REQUEST)
-          val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum.length"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum.length"
-          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
-            ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-        }
-      }
-
-      "invalid agent reference is passed" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
-        submitWithAuthorisedAgent(fakeRequest) { result =>
-          status(result) must be(BAD_REQUEST)
-          val document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum"
-          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
-            ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-        }
-      }
-    }
-
-    "throw exception" when {
-      "when client ref not found" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
-        val returnCache: ClientCache = ClientCache(mandate = Some(mandate))
-        submitWithAuthorisedAgent(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
-          val thrown = the[RuntimeException] thrownBy await(result)
-          thrown.getMessage must include("No Client Ref no. found!")
-        }
-      }
-    }
-
-    "retrieve old mandate info stored in session" when {
-      "return ok" in new Setup {
-        retrieveOldMandateFromSessionAuthorisedAgent(Some(OldMandateReference(mandateId, "ated-ref-no"))) { result =>
-          status(result) must be(OK)
-        }
-      }
-    }
-  }
-
   val mandateId = "ABC123"
   val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
@@ -238,7 +90,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       val result = controller.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -251,15 +104,16 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
       when(mockDataCacheService.cacheFormData[ClientCache]
-        (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(returnCache))
       when(mockDataCacheService.cacheFormData[OldMandateReference]
-        (ArgumentMatchers.eq(controller.oldNonUkMandate), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (ArgumentMatchers.eq(controller.oldNonUkMandate), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(oldMandateReference))
       val result = controller.submit(service, "callingPage").apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
@@ -269,7 +123,8 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[OldMandateReference](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockDataCacheService.fetchAndGetFormData[OldMandateReference](ArgumentMatchers.any())
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       val result = controller.getOldMandateFromSession(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -280,6 +135,154 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
     reset(mockMandateService)
     reset(mockDataCacheService)
     reset(mockAuthConnector)
+  }
+
+  "PreviousMandateRefController" must {
+
+    "redirect to login page for UNAUTHENTICATED client" when {
+
+      "client requests(GET) for search mandate view" in new Setup {
+        viewUnAuthenticatedAgent { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result).get must include("/gg/sign-in")
+        }
+      }
+    }
+
+    "redirect to unauthorised page for UNAUTHORISED agent" when {
+
+      "client requests for search mandate view" in new Setup {
+        viewUnAuthenticatedAgent { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result).get must include("/gg/sign-in")
+        }
+      }
+    }
+
+    "return search mandate view for AUTHORISED agent" when {
+
+      "agent requests(GET) for search previous mandate view" in new Setup {
+        viewWithAuthorisedAgent() { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementById("mandateRef").`val`() must be("")
+        }
+      }
+
+      "agent requests(GET) for search mandate view pre-populated and the data has been cached" in new Setup {
+        val cached: ClientCache = ClientCache(mandate = Some(mandate1))
+        viewWithAuthorisedAgent(Some(cached)) { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.title() must be("agent.search-previous-mandate.title - GOV.UK")
+          document.getElementsByTag("header").text() must include("agent.search-previous-mandate.header")
+          document.getElementById("mandateRef").`val`() must be("ABC123")
+          document.getElementById("submit").text() must be("continue-button")
+        }
+      }
+    }
+
+    "redirect to ated-subscription corresponding address page" when {
+
+      "valid form is submitted, mandate is found from backend, cache object exists and update of cache with mandate is successful" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"$mandateId")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
+          `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
+        submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result) must be(Some(
+            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
+        }
+      }
+
+      "valid form is submitted but with mandate having spaces, mandate is found from backend, " +
+        "cache object exists and update of cache with mandate is successful" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> s"   $mandateId   ")
+        val clientParty: Option[Party] = Some(Party("client-id", "client name",
+          `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None)))
+        val cachedData: ClientCache = ClientCache(email = Some(ClientEmail("bb@bb.com")))
+        val mandate1: Mandate = mandate.copy(clientParty = clientParty)
+        val returnCache: ClientCache = cachedData.copy(mandate = Some(mandate1))
+        submitWithAuthorisedAgent(request = fakeRequest, cachedData = Some(cachedData), mandate = Some(mandate1), returnCache = returnCache) { result =>
+          status(result) must be(SEE_OTHER)
+          redirectLocation(result) must be(Some(
+            "http://localhost:9933/ated-subscription/registered-business-address?backLinkUrl=http://localhost:9959/mandate/agent/search-previous/callingPage"))
+        }
+      }
+    }
+
+    "returns BAD_REQUEST" when {
+      "empty form is submitted" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "")
+        submitWithAuthorisedAgent(fakeRequest) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum"
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        }
+      }
+
+      "mandateRef field has more than expected length" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "a" * 11)
+        submitWithAuthorisedAgent(fakeRequest) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum.length"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum.length"
+          verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        }
+      }
+
+      "invalid agent reference is passed" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        submitWithAuthorisedAgent(fakeRequest) { result =>
+          status(result) must be(BAD_REQUEST)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.clientAuthNum"
+          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.clientAuthNum"
+          verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(
+            ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        }
+      }
+    }
+
+    "throw exception" when {
+      "when client ref not found" in new Setup {
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("mandateRef" -> "A1B2C3D4")
+        val returnCache: ClientCache = ClientCache(mandate = Some(mandate))
+        submitWithAuthorisedAgent(request = fakeRequest, cachedData = None, mandate = Some(mandate1), returnCache = returnCache) { result =>
+          val thrown = the[RuntimeException] thrownBy await(result)
+          thrown.getMessage must include("No Client Ref no. found!")
+        }
+      }
+    }
+
+    "retrieve old mandate info stored in session" when {
+      "return ok" in new Setup {
+        retrieveOldMandateFromSessionAuthorisedAgent(Some(OldMandateReference(mandateId, "ated-ref-no"))) { result =>
+          status(result) must be(OK)
+        }
+      }
+    }
   }
 
 }

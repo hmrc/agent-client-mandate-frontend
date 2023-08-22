@@ -20,7 +20,7 @@ import org.joda.time.DateTime
 
 object DateUtils {
 
-  def getDateAsText(date: DateTime):String = {
-    date.getDayOfMonth + " " + date.monthOfYear().getAsText() + " " + date.getYear
+  def getDateAsText(date: DateTime): String = {
+    s"${date.getDayOfMonth} ${date.monthOfYear().getAsText()} ${date.getYear}"
   }
 }

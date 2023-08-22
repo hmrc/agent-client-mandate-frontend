@@ -54,7 +54,7 @@ class ChangeAgentController @Inject()(
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
         val form = new YesNoQuestionForm("yes-no.error.mandatory.changeAgent")
-        form.yesNoQuestionForm.bindFromRequest.fold(
+        form.yesNoQuestionForm.bindFromRequest().fold(
           formWithError =>
             Future.successful(BadRequest(templateChangeAgent(service, formWithError,
               mandateId,

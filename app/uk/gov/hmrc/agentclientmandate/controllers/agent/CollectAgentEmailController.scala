@@ -91,7 +91,7 @@ class CollectAgentEmailController @Inject()(
         redirectUrl match {
           case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
           case _ =>
-            agentEmailForm.bindFromRequest.fold(
+            agentEmailForm.bindFromRequest().fold(
               formWithError => {
                 Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
               },

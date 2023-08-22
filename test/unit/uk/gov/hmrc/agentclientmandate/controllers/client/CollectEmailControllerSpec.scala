@@ -40,6 +40,108 @@ import scala.concurrent.Future
 
 class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val injectedViewInstanceCollectEmail: collectEmail = app.injector.instanceOf[views.html.client.collectEmail]
+
+  class Setup {
+    val controller = new CollectEmailController(
+      mockDataCacheService,
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceCollectEmail
+    )
+
+    def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Some("/api/anywhere")))
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(cachedData))
+      val result = controller.edit(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[String])(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(backLink.get))
+      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Some(backLink.get)))
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(cachedData))
+      val result = controller.back(service).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
+        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/test/test"))
+      redirectUrl match {
+        case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String]
+          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Some(x)))
+        case _ => when(mockDataCacheService.fetchAndGetFormData[String]
+          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          .thenReturn(Future.successful(Some("")))
+      }
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(cachedData))
+      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+
+    def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded],
+                                   cachedData: Option[ClientCache] = None,
+                                   isValidEmail: Boolean = false,
+                                   returnCache: ClientCache = ClientCache(),
+                                   mode: Option[String] = None)(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      when(mockDataCacheService.fetchAndGetFormData[String]
+        (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(Some("/api/anywhere")))
+      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(cachedData))
+      when(mockDataCacheService.cacheFormData[ClientCache]
+        (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.eq(returnCache))
+        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        .thenReturn(Future.successful(returnCache))
+      val result = controller.submit(service, mode).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockDataCacheService)
+  }
+
+  val service = "ATED"
+
   "CollectEmailController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
@@ -82,7 +184,6 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           document.getElementById("email").`val`() must be("aa@mail.com")
         }
       }
-
     }
 
     "return search mandate edit view for AUTHORISED client" when {
@@ -101,7 +202,6 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           document.getElementsByClass("govuk-back-link").text() must be("Back")
           document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/client/review")
         }
-
       }
 
       "client requests(GET) for collect email view pre-populated and the data and redirect have been cached" in new Setup {
@@ -157,9 +257,10 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = Some(cachedData), returnCache = returnData, mode = Some("edit")) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -169,12 +270,12 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         submitWithAuthorisedClient(fakeRequest, isValidEmail = true, cachedData = None, returnCache = returnData) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/search"))
-          verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(1))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
-
     }
 
     "returns BAD_REQUEST" when {
@@ -186,11 +287,11 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.empty"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.empty"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -203,11 +304,11 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -217,13 +318,14 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -233,13 +335,14 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -249,109 +352,17 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.general.agent-enter-email-form"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
   }
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceCollectEmail: collectEmail = app.injector.instanceOf[views.html.client.collectEmail]
-
-  class Setup {
-    val controller = new CollectEmailController(
-      mockDataCacheService,
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceCollectEmail
-    )
-
-    def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def editWithAuthorisedClient(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Some("/api/anywhere")))
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(cachedData))
-      val result = controller.edit(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def backWithAuthorisedClient(cachedData: Option[ClientCache] = None, backLink: Option[String])(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(backLink.get))
-      when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Some(backLink.get)))
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(cachedData))
-      val result = controller.back(service).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/test/test"))
-      redirectUrl match {
-        case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String]
-          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(x)))
-        case _ => when(mockDataCacheService.fetchAndGetFormData[String]
-          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some("")))
-      }
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(cachedData))
-      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-
-    def submitWithAuthorisedClient(request: FakeRequest[AnyContentAsFormUrlEncoded],
-                                   cachedData: Option[ClientCache] = None,
-                                   isValidEmail: Boolean = false,
-                                   returnCache: ClientCache = ClientCache(),
-                                   mode: Option[String] = None)(test: Future[Result] => Any): Unit = {
-      val userId = s"user-${UUID.randomUUID}"
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[String]
-        (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(Some("/api/anywhere")))
-      when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(cachedData))
-      when(mockDataCacheService.cacheFormData[ClientCache]
-        (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.eq(returnCache))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn(Future.successful(returnCache))
-      val result = controller.submit(service, mode).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockDataCacheService)
-  }
-
-  val service = "ATED"
 
 }

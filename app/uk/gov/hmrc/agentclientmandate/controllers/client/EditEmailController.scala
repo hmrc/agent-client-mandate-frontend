@@ -93,7 +93,7 @@ class EditEmailController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        clientEmailForm.bindFromRequest.fold(
+        clientEmailForm.bindFromRequest().fold(
           formWithError =>
             getBackLink.map(backLink => BadRequest(templateEditEmail(service, formWithError, backLink))),
           data => {

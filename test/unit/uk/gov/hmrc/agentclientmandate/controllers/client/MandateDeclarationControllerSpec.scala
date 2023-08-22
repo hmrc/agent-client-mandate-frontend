@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import org.joda.time.DateTime
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -33,13 +32,84 @@ import uk.gov.hmrc.agentclientmandate.models.{MandateStatus, Service, Status, Su
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEmail}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.agentclientmandate.views.html.client.mandateDeclaration
 import uk.gov.hmrc.auth.core.AuthConnector
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
+
+  val mandateId: String = "ABC123"
+
+  val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
+      contactDetails = ContactDetails("aa@aa.com", None)),
+    clientParty = None,
+    currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
+    statusHistory = Nil,
+    subscription = Subscription(referenceNumber = None,
+      service = Service(id = "ated-ref-no", name = "ATED")),
+    clientDisplayName = "client display name")
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceMandateDeclaration: mandateDeclaration = app.injector.instanceOf[views.html.client.mandateDeclaration]
+
+  class Setup {
+    val controller = new MandateDeclarationController(
+      mockDataCacheService,
+      mockMandateService,
+      mockAuthConnector,
+      stubbedMessagesControllerComponents,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceMandateDeclaration
+    )
+  }
+
+  val service: String = "ATED"
+
+  def viewUnAuthenticatedClient(controller: MandateDeclarationController)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def viewAuthorisedClient(controller: MandateDeclarationController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def submitWithAuthorisedClient(controller: MandateDeclarationController)(
+    request: FakeRequest[AnyContentAsFormUrlEncoded],
+    clientCache: Option[ClientCache] = None,
+    mandate: Option[Mandate] = None)(test: Future[Result] => Any
+                                ): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(clientCache))
+
+    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+
+    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    test(result)
+  }
 
   "MandateDeclarationController" must {
 
@@ -51,13 +121,12 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
           redirectLocation(result).get must include("/gg/sign-in")
         }
       }
-
     }
 
     "return mandate declaration view for AUTHORISED client" when {
 
       "client requests(GET) for mandate declaration view" in new Setup {
-        val cachedData = Some(ClientCache(email = Some(ClientEmail("bb@bb.com")), mandate = Some(mandate)))
+        val cachedData: Some[ClientCache] = Some(ClientCache(email = Some(ClientEmail("bb@bb.com")), mandate = Some(mandate)))
         viewAuthorisedClient(controller)(cachedData) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -84,9 +153,9 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
     "redirect to mandate confirmation page for AUTHORISED client" when {
 
       "valid form is submitted, mandate is found in cache and updated with status=accepted" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
-        val cacheReturn = Some(ClientCache(mandate = Some(mandate)))
-        val mandateReturned = Some(mandate)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody()
+        val cacheReturn: Some[ClientCache] = Some(ClientCache(mandate = Some(mandate)))
+        val mandateReturned: Some[Mandate] = Some(mandate)
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn, mandateReturned) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/confirmation"))
@@ -97,8 +166,8 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
     "redirect to mandate confirmation page for AUTHORISED client" when {
 
       "valid form is submitted, mandate is found in cache but update in backend fails" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
-        val cacheReturn = Some(ClientCache(mandate = Some(mandate)))
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody()
+        val cacheReturn: Some[ClientCache] = Some(ClientCache(mandate = Some(mandate)))
         submitWithAuthorisedClient(controller)(fakeRequest, cacheReturn) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
@@ -108,85 +177,13 @@ class MandateDeclarationControllerSpec extends PlaySpec  with MockitoSugar with 
 
     "redirect to review Mandate view" when {
       "mandate is not found in cache" in new Setup {
-        val fakeRequest = FakeRequest().withFormUrlEncodedBody()
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody()
         submitWithAuthorisedClient(controller)(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
         }
       }
     }
-
-
-  }
-
-  val mandateId: String = "ABC123"
-
-  val mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
-    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
-      contactDetails = ContactDetails("aa@aa.com", None)),
-    clientParty = None,
-    currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
-    statusHistory = Nil,
-    subscription = Subscription(referenceNumber = None,
-      service = Service(id = "ated-ref-no", name = "ATED")),
-    clientDisplayName = "client display name")
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceMandateDeclaration = app.injector.instanceOf[views.html.client.mandateDeclaration]
-
-  class Setup {
-    val controller = new MandateDeclarationController(
-      mockDataCacheService,
-      mockMandateService,
-      mockAuthConnector,
-      stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceMandateDeclaration
-    )
-  }
-
-  val service: String = "ATED"
-
-  def viewUnAuthenticatedClient(controller: MandateDeclarationController)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def viewAuthorisedClient(controller: MandateDeclarationController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any) {
-    val userId = s"user-${UUID.randomUUID}"
-
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(cachedData))
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedClient(controller: MandateDeclarationController)(
-                                  request: FakeRequest[AnyContentAsFormUrlEncoded],
-                                  clientCache: Option[ClientCache] = None,
-                                  mandate: Option[Mandate] = None)(test: Future[Result] => Any
-                                ) {
-    val userId = s"user-${UUID.randomUUID}"
-
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(clientCache))
-
-    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
-      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
-
-    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
   }
 
 }

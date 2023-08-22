@@ -24,7 +24,7 @@ import uk.gov.hmrc.auth.core.retrieve.{AgentInformation, Credentials, ~}
 import scala.concurrent.Future
 
 object AuthenticatedWrapperBuilder {
-  def mockAuthorisedClient(mockAuthConnector: AuthConnector) {
+  def mockAuthorisedClient(mockAuthConnector: AuthConnector): Unit = {
     when(mockAuthConnector.authorise[Option[Credentials]](ArgumentMatchers.any(), ArgumentMatchers.any())(
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
         Future.successful(Some(Credentials("ggCredId", "GovernmentGateway")))
@@ -33,7 +33,7 @@ object AuthenticatedWrapperBuilder {
 
   type RetrievalConstruction = Enrolments ~ Option[String] ~ Some[String] ~ AgentInformation ~ Some[Credentials]
 
-  def mockAuthorisedAgent(mockAuthConnector: AuthConnector) {
+  def mockAuthorisedAgent(mockAuthConnector: AuthConnector): Unit = {
     val fakeRefNo = "ABX123456"
     val fakeRefNumberEnrolment = Enrolments(Set(Enrolment("HMRC-AGENT-AGENT", Seq(EnrolmentIdentifier("AgentRefNumber", fakeRefNo)), "Activated")))
     val agentCode = Some("agentCode")
@@ -59,7 +59,7 @@ object AuthenticatedWrapperBuilder {
     }
   }
 
-  def mockUnAuthenticated(mockAuthConnector: AuthConnector) {
+  def mockUnAuthenticated(mockAuthConnector: AuthConnector): Unit = {
     when(mockAuthConnector.authorise[Any](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.failed(MissingBearerToken("Missing bearer token"))
     }

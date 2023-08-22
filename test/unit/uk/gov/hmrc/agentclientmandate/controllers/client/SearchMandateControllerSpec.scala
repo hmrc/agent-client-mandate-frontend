@@ -42,6 +42,88 @@ import scala.concurrent.Future
 
 class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val mandateId: String = "ABC123"
+
+  val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
+      contactDetails = ContactDetails("aa@aa.com", None)),
+    clientParty = None,
+    currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
+    statusHistory = Nil, subscription = Subscription(referenceNumber = None,
+      service = Service(id = "ated-ref-no", name = "")),
+    clientDisplayName = "client display name")
+
+  val mandate1: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
+    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
+      contactDetails = ContactDetails("aa@aa.com", None)),
+    clientParty = None,
+    currentStatus = MandateStatus(status = Status.Approved, DateTime.now(), updatedBy = ""),
+    statusHistory = Nil, subscription = Subscription(referenceNumber = None,
+      service = Service(id = "ated-ref-no", name = "")),
+    clientDisplayName = "client display name")
+
+  val service: String = "ATED"
+
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockDataCacheService: DataCacheService = mock[DataCacheService]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+  val injectedViewInstanceSearchMandate: searchMandate = app.injector.instanceOf[views.html.client.searchMandate]
+
+  class Setup {
+    val searchMandateController = new SearchMandateController(
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      mockDataCacheService,
+      mockMandateService,
+      implicitly,
+      mockAppConfig,
+      injectedViewInstanceSearchMandate
+    )
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockMandateService)
+    reset(mockDataCacheService)
+    reset(mockAuthConnector)
+  }
+
+  def viewUnAuthenticatedClient(controller: SearchMandateController)(test: Future[Result] => Any): Unit = {
+
+    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    test(result)
+  }
+
+  def viewWithAuthorisedClient(controller: SearchMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
+    test(result)
+  }
+
+  def submitWithAuthorisedClient(controller: SearchMandateController)(request: FakeRequest[AnyContentAsFormUrlEncoded],
+                                                                      cachedData: Option[ClientCache] = None,
+                                                                      mandate: Option[Mandate] = None,
+                                                                      returnCache: ClientCache = ClientCache())(test: Future[Result] => Any): Unit = {
+    val userId = s"user-${UUID.randomUUID}"
+
+    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
+      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(cachedData))
+    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
+    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
+      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(returnCache))
+    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+    test(result)
+  }
+
   "SearchMandateController" must {
 
     "redirect to login page for UNAUTHENTICATED client" when {
@@ -52,7 +134,6 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           redirectLocation(result).get must include("/gg/sign-in")
         }
       }
-
     }
 
     "redirect to unauthorised page for UNAUTHORISED client" when {
@@ -63,7 +144,6 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           redirectLocation(result).get must include("/gg/sign-in")
         }
       }
-
     }
 
     "return search mandate view for AUTHORISED client" when {
@@ -90,7 +170,6 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementById("submit").text() must be("continue-button")
         }
       }
-
     }
 
     "redirect to 'Review Mandate view' view for Authorised Client" when {
@@ -161,9 +240,10 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -176,9 +256,10 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.length"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -188,12 +269,14 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           status(result) must be(BAD_REQUEST)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef.not-found-by-mandate-service"
-          document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.not-found-by-mandate-service"
+          document.getElementsByClass("govuk-error-message")
+            .text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.not-found-by-mandate-service"
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -209,94 +292,13 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
             include("client.search-mandate.error.mandateRef.already-used-by-mandate-service")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          verify(mockDataCacheService, times(0))
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
-
     }
-
-  }
-
-  val mandateId: String = "ABC123"
-
-  val mandate: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
-    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
-      contactDetails = ContactDetails("aa@aa.com", None)),
-    clientParty = None,
-    currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
-    statusHistory = Nil, subscription = Subscription(referenceNumber = None,
-      service = Service(id = "ated-ref-no", name = "")),
-    clientDisplayName = "client display name")
-
-  val mandate1: Mandate = Mandate(id = mandateId, createdBy = User("cerdId", "Joe Bloggs"),
-    agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
-      contactDetails = ContactDetails("aa@aa.com", None)),
-    clientParty = None,
-    currentStatus = MandateStatus(status = Status.Approved, DateTime.now(), updatedBy = ""),
-    statusHistory = Nil, subscription = Subscription(referenceNumber = None,
-      service = Service(id = "ated-ref-no", name = "")),
-    clientDisplayName = "client display name")
-
-  val service: String = "ATED"
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-  val injectedViewInstanceSearchMandate: searchMandate = app.injector.instanceOf[views.html.client.searchMandate]
-
-  class Setup {
-    val searchMandateController = new SearchMandateController(
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      mockDataCacheService,
-      mockMandateService,
-      implicitly,
-      mockAppConfig,
-      injectedViewInstanceSearchMandate
-    )
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockMandateService)
-    reset(mockDataCacheService)
-    reset(mockAuthConnector)
-  }
-
-  def viewUnAuthenticatedClient(controller: SearchMandateController)(test: Future[Result] => Any): Unit = {
-
-    AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSessionNoUser)
-    test(result)
-  }
-
-  def viewWithAuthorisedClient(controller: SearchMandateController)(cachedData: Option[ClientCache] = None)(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(cachedData))
-    val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
-    test(result)
-  }
-
-  def submitWithAuthorisedClient(controller: SearchMandateController)(request: FakeRequest[AnyContentAsFormUrlEncoded],
-                                 cachedData: Option[ClientCache] = None,
-                                 mandate: Option[Mandate] = None,
-                                 returnCache: ClientCache = ClientCache())(test: Future[Result] => Any): Unit = {
-    val userId = s"user-${UUID.randomUUID}"
-
-    AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
-      ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
-    when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(returnCache))
-    val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
-    test(result)
   }
 
 }

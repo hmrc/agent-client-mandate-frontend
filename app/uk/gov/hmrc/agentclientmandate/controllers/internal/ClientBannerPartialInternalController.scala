@@ -51,6 +51,9 @@ class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerCom
         case Cancelled => Ok(client_banner(service, mandate.agentParty.name,
           mandateHost + uk.gov.hmrc.agentclientmandate.controllers.client.routes.CollectEmailController.view().url,
           "attorneyBanner--client-request-rejected", "cancelled", "cancelled_rejected"))
+        case _ =>
+          logger.warn(s"[ClientBannerPartialInternalController][getClientBannerPartial] - status not valid")
+          NotFound
       }
       case None => NotFound
     }

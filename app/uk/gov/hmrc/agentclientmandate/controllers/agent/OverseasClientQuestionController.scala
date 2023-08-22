@@ -55,7 +55,7 @@ class OverseasClientQuestionController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        overseasClientQuestionForm.bindFromRequest.fold(
+        overseasClientQuestionForm.bindFromRequest().fold(
           formWithError => {
             val result = BadRequest(templateClientQuestion(formWithError, service, getBackLink(service)))
             Future.successful(result)

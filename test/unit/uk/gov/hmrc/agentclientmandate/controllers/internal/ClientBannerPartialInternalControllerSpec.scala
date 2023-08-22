@@ -40,6 +40,63 @@ import scala.concurrent.Future
 
 class ClientBannerPartialInternalControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup {
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
+
+  class Setup {
+    val controller = new ClientBannerPartialInternalController(
+      stubbedMessagesControllerComponents,
+      mockAuthConnector,
+      mockMandateService,
+      implicitly,
+      mockAppConfig
+    )
+
+    def viewWithUnAuthenticatedClient(test: Future[Result] => Any): Unit = {
+
+      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
+      val result = controller.getClientBannerPartial("clientId", "service", "/api/anywhere")
+        .apply(SessionBuilder.buildRequestWithSessionNoUser)
+      test(result)
+    }
+
+    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, continueUrl: String = "/api/anywhere")(test: Future[Result] => Any): Unit = {
+      val userId = s"user-${UUID.randomUUID}"
+
+      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
+      val result = controller.getClientBannerPartial("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      test(result)
+    }
+  }
+
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    reset(mockMandateService)
+  }
+
+  val service = "ATED"
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val approvedMandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.Approved, DateTime.now(), "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+  val activeMandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")),clientDisplayName = "client display name")
+  val cancelledMandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.Cancelled, DateTime.now(), "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+  val rejectedMandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
+    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
+    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
+    currentStatus = MandateStatus(Status.Rejected, DateTime.now(), "credId"), statusHistory = Nil,
+    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+
   "ClientBannerPartialController" must {
 
     "return NOT_FOUND if can't find mandate" in new Setup {
@@ -94,65 +151,5 @@ class ClientBannerPartialInternalControllerSpec extends PlaySpec with MockitoSug
       }
     }
   }
-
-
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockMandateService: AgentClientMandateService = mock[AgentClientMandateService]
-
-
-  class Setup {
-    val controller = new ClientBannerPartialInternalController(
-      stubbedMessagesControllerComponents,
-      mockAuthConnector,
-      mockMandateService,
-      implicitly,
-      mockAppConfig
-    )
-
-    def viewWithUnAuthenticatedClient(test: Future[Result] => Any) {
-
-      AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.getClientBannerPartial("clientId", "service", "/api/anywhere")
-        .apply(SessionBuilder.buildRequestWithSessionNoUser)
-      test(result)
-    }
-
-    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, continueUrl: String = "/api/anywhere")(test: Future[Result] => Any) {
-      val userId = s"user-${UUID.randomUUID}"
-
-
-      AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      val result = controller.getClientBannerPartial("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
-      test(result)
-    }
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockAuthConnector)
-    reset(mockMandateService)
-  }
-
-  val service = "ATED"
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  val approvedMandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.Approved, DateTime.now(), "credId"), statusHistory = Nil,
-    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
-  val activeMandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil,
-    Subscription(None, Service("ated", "ATED")),clientDisplayName = "client display name")
-  val cancelledMandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.Cancelled, DateTime.now(), "credId"), statusHistory = Nil,
-    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
-  val rejectedMandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
-    agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
-    clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.Rejected, DateTime.now(), "credId"), statusHistory = Nil,
-    Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
 
 }

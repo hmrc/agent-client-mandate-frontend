@@ -37,29 +37,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, Authenticated
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgencyDetailsControllerSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
-
-   "AgencyDetailsController" should {
-
-     "redirect to unathorised page" when {
-       "the user is UNAUTHORISED" in new Setup {
-         getWithUnAuthorisedUser(controller)("abc") { result =>
-           status(result) must be(SEE_OTHER)
-           redirectLocation(result).get must include("/gg/sign-in")
-         }
-       }
-     }
-
-     "return status OK" when {
-       "user is AUTHORISED" in new Setup {
-         getWithAuthorisedUser(controller)(agentDetails, "abc") { result =>
-           status(result) must be(OK)
-         }
-       }
-     }
-
-
-   }
+class AgencyDetailsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
@@ -97,11 +75,32 @@ class AgencyDetailsControllerSpec extends PlaySpec  with MockitoSugar with Befor
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val cachedData = AgentBuilder.buildAgentDetails
     when(mockDataCacheService.cacheFormData[AgentDetails]
-      (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(agentDetails))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
+
+   "AgencyDetailsController" should {
+
+     "redirect to unathorised page" when {
+       "the user is UNAUTHORISED" in new Setup {
+         getWithUnAuthorisedUser(controller)("abc") { result =>
+           status(result) must be(SEE_OTHER)
+           redirectLocation(result).get must include("/gg/sign-in")
+         }
+       }
+     }
+
+     "return status OK" when {
+       "user is AUTHORISED" in new Setup {
+         getWithAuthorisedUser(controller)(agentDetails, "abc") { result =>
+           status(result) must be(OK)
+         }
+       }
+     }
+   }
+
 }

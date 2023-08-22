@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NonUkIdentificationForm
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{NonUkIdentificationForm, OverseasCompany}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.WithDefaultFormBinding
+import uk.gov.hmrc.play.bootstrap.controller.WithUnsafeDefaultFormBinding
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +43,7 @@ class UpdateOcrDetailsController @Inject()(
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig,
                                             templateUpdateOcrDetails: views.html.agent.editDetails.update_ocr_details
-                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging with WithDefaultFormBinding {
+                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging with WithUnsafeDefaultFormBinding {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -68,7 +68,7 @@ class UpdateOcrDetailsController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { agentAuthRetrievals =>
-        NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest).fold(
+        NonUkIdentificationForm.validateNonUK(nonUkIdentificationForm.bindFromRequest()).fold(
           formWithErrors => Future.successful(
             BadRequest(templateUpdateOcrDetails(
               formWithErrors, service, displayDetails(service), getBackLink(service)

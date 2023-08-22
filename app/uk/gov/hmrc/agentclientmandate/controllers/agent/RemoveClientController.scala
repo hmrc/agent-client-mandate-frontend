@@ -53,7 +53,7 @@ class RemoveClientController @Inject()(
   def confirm(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>
       acmService.fetchClientMandateClientName(mandateId, authRetrievals).flatMap(
-        mandate => new YesNoQuestionForm("yes-no.error.mandatory.removeClient", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest.fold(
+        mandate => new YesNoQuestionForm("yes-no.error.mandatory.removeClient", Seq(mandate.clientDisplayName)).yesNoQuestionForm.bindFromRequest().fold(
           formWithError =>
             Future.successful(BadRequest(templateRemoveClient(formWithError, service, mandate.clientDisplayName, mandateId, getBackLink(service)))),
           data => {

@@ -56,7 +56,7 @@ class NRLQuestionController @Inject()(
   def submit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
-        nrlQuestionForm.bindFromRequest.fold(
+        nrlQuestionForm.bindFromRequest().fold(
           formWithErrors => {
             val result = BadRequest(templateNrlQuestion(formWithErrors, service, getBackLink(service)))
             Future.successful(result)
