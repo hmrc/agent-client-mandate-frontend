@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentclientmandate.models
 
-import org.joda.time.DateTime
+import java.time.Instant
 import play.api.libs.json._
 import uk.gov.hmrc.agentclientmandate.models
 import uk.gov.hmrc.agentclientmandate.models.PartyType.PartyType
@@ -66,14 +66,14 @@ object Status extends Enumeration {
   }
 }
 
-case class MandateStatus(status: Status, timestamp: DateTime, updatedBy: String)
+case class MandateStatus(status: Status, timestamp: Instant, updatedBy: String)
 
 object MandateStatus {
   val writes: Writes[MandateStatus] = new Writes[MandateStatus] {
     override def writes(o: MandateStatus): JsValue = {
       val status: JsValue = Json.toJson(o.status)
       val updatedBy: JsValue = Json.toJson(o.updatedBy)
-      val timestamp: JsValue = Json.toJson(o.timestamp.getMillis)
+      val timestamp: JsValue = Json.toJson(o.timestamp.toEpochMilli)
 
       Json.obj(
         "status" -> status,
@@ -87,9 +87,7 @@ object MandateStatus {
     override def reads(json: JsValue): JsResult[MandateStatus] = {
       val status = (json \ "status").asOpt[Status]
       val updatedBy = (json \ "updatedBy").asOpt[String]
-      val timestamp = (json \ "timestamp").asOpt[JsNumber] map { number =>
-        new DateTime(number.value.longValue)
-      }
+      val timestamp = (json \ "timestamp").asOpt[Long].map(number => Instant.ofEpochMilli(number.longValue()))
 
       (status, updatedBy, timestamp) match {
         case (Some(st), Some(ub), Some(ts)) => JsSuccess(MandateStatus(st, ts, ub))

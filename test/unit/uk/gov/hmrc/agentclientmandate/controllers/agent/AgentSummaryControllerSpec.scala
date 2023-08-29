@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-import org.joda.time.DateTime
+import java.time.Instant
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -75,7 +75,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateId: String = "12345678"
-  val time1: DateTime = DateTime.now()
+  val time1: Instant = Instant.now()
   val service: String = "ATED"
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 

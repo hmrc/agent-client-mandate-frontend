@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-import org.joda.time.DateTime
+import java.time.Instant
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -48,7 +48,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
-    currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
+    currentStatus = MandateStatus(status = Status.New, Instant.now(), updatedBy = ""),
     statusHistory = Nil, subscription = Subscription(referenceNumber = None,
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")
@@ -57,7 +57,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
     agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation,
       contactDetails = ContactDetails("aa@aa.com", None)),
     clientParty = None,
-    currentStatus = MandateStatus(status = Status.Approved, DateTime.now(), updatedBy = ""),
+    currentStatus = MandateStatus(status = Status.Approved, Instant.now(), updatedBy = ""),
     statusHistory = Nil, subscription = Subscription(referenceNumber = None,
       service = Service(id = "ated-ref-no", name = "")),
     clientDisplayName = "client display name")

@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
-import org.joda.time.DateTime
+import java.time.Instant
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
@@ -31,13 +31,13 @@ class AgentClientMandateUtilsSpec extends PlaySpec with MockitoSugar {
   val mandate: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "updatedby"),
-      MandateStatus(Status.Active, DateTime.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
+    currentStatus = MandateStatus(Status.New, Instant.now(), "credId"), statusHistory = Seq(MandateStatus(Status.New, Instant.now(), "updatedby"),
+      MandateStatus(Status.Active, Instant.now(), "updatedby")), Subscription(None, Service("ated", "ATED")), clientDisplayName = "client display name")
 
   val mandate1: Mandate = Mandate(id = "12345678", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("X0101000000101", "client name", PartyType.Organisation, ContactDetails("agent@agent.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    currentStatus = MandateStatus(Status.New, Instant.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
     clientDisplayName = "client display name")
 
   "AgentClientMandateUtils" must {

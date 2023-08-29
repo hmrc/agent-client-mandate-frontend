@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.services
 
 import java.util.UUID
-import org.joda.time.DateTime
+import java.time.Instant
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -63,7 +63,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateDto: CreateMandateDto = CreateMandateDto("test@test.com", "ATED", "client display name")
-  val time1: DateTime = DateTime.now()
+  val time1: Instant = Instant.ofEpochSecond(Instant.now().toEpochMilli())
 
   val mockAgentClientMandateConnector: AgentClientMandateConnector = mock[AgentClientMandateConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]

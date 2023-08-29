@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import org.joda.time.DateTime
+import java.time.{Instant, LocalDateTime, ZoneId}
+import java.time.format.TextStyle
+import java.util.Locale
 
 object DateUtils {
 
-  def getDateAsText(date: DateTime): String = {
-    s"${date.getDayOfMonth} ${date.monthOfYear().getAsText()} ${date.getYear}"
+  def getDateAsText(when: Instant): String = {
+    val date: LocalDateTime = LocalDateTime.ofInstant(when, ZoneId.systemDefault())
+    s"${date.getDayOfMonth()} ${date.getMonth().getDisplayName(TextStyle.FULL, Locale.UK)} ${date.getYear()}"
   }
 }
