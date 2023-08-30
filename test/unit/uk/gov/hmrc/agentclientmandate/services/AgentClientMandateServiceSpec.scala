@@ -63,7 +63,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateDto: CreateMandateDto = CreateMandateDto("test@test.com", "ATED", "client display name")
-  val time1: Instant = Instant.ofEpochSecond(Instant.now().toEpochMilli())
+  val time1: Instant = Instant.ofEpochSecond(Instant.now().getEpochSecond())
 
   val mockAgentClientMandateConnector: AgentClientMandateConnector = mock[AgentClientMandateConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
