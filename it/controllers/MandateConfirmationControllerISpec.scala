@@ -18,7 +18,7 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import helpers.IntegrationSpec
-import org.joda.time.DateTime
+import java.time.Instant
 import play.api.http.Status.OK
 import play.api.http.{HeaderNames => HN}
 import play.api.libs.json.Json
@@ -34,7 +34,7 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
       createdBy = User("cerdId", "Joe Bloggs"),
       agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation, contactDetails = ContactDetails("aa@aa.com", None)),
       clientParty = Some(Party("client-id", "client name", `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None))),
-      currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
+      currentStatus = MandateStatus(status = Status.New, Instant.now(), updatedBy = ""),
       statusHistory = Nil,
       subscription = Subscription(referenceNumber = None, service = Service(id = "ated-ref-no", name = "ated")),
       clientDisplayName = "client display name"

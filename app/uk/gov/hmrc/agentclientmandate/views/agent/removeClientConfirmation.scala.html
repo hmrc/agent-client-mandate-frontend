@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.utils.DateUtils
-@import org.joda.time.DateTime
+@import java.time.Instant
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
@@ -31,7 +31,7 @@
 @main_template(title = titleBuilder(messages("agent.remove-client-confirmation.title"))) {
 
     @govukPanel(Panel(
-        title = Text(messages("agent.remove-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now))),
+        title = Text(messages("agent.remove-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(Instant.now))),
         attributes = Map("id" -> "banner")
     ))
 

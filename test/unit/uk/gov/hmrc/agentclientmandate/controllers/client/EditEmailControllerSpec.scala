@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-import org.joda.time.DateTime
+import java.time.Instant
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -70,7 +70,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
   val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-    currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+    currentStatus = MandateStatus(Status.New, Instant.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
     clientDisplayName = "client display name")
 
   def viewWithUnAuthenticatedClient(controller: EditEmailController)(continueUrl: String)(test: Future[Result] => Any): Unit = {
@@ -154,7 +154,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
           agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
           clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-          currentStatus = MandateStatus(Status.Active, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+          currentStatus = MandateStatus(Status.Active, Instant.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
           clientDisplayName = "client display name")
         getDetailsWithAuthorisedClient(controller)(Some(mandate), "/api/anywhere") { result =>
           status(result) must be(OK)
@@ -171,7 +171,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         val mandate: Mandate = Mandate(id = "1", createdBy = User("credId", "agentName", Some("agentCode")), None, None,
           agentParty = Party("JARN123456", "Agent Ltd", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
           clientParty = Some(Party("JARN123456", "ACME Limited", PartyType.Organisation, ContactDetails("client@client.com", None))),
-          currentStatus = MandateStatus(Status.New, DateTime.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
+          currentStatus = MandateStatus(Status.New, Instant.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
           clientDisplayName = "client display name")
         getDetailsWithAuthorisedClient(controller)(Some(mandate), "/api/anywhere") { result =>
           status(result) must be(NOT_FOUND)

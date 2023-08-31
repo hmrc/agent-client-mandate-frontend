@@ -17,7 +17,7 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
 import java.util.UUID
-import org.joda.time.DateTime
+import java.time.Instant
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -226,16 +226,16 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
   val mandate: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = Some(Party("12345671", "test client4", PartyType.Individual, ContactDetails("aa.aa@a.com", None))),
-    currentStatus = MandateStatus(Status.Approved, DateTime.now(), "credId"),
-    statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "credId")),
+    currentStatus = MandateStatus(Status.Approved, Instant.now(), "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, Instant.now(), "credId")),
     Subscription(None, Service("ated", "ATED")),
     clientDisplayName = s"$clientDisplayName")
 
   val mandate1: Mandate = Mandate(id = mandateId, createdBy = User("credId", "agentName", Some("agentCode")), None, None,
     agentParty = Party("JARN123457", "agency name", PartyType.Organisation, ContactDetails("agent@agent.com", None)),
     clientParty = None,
-    currentStatus = MandateStatus(Status.Approved, DateTime.now(), "credId"),
-    statusHistory = Seq(MandateStatus(Status.New, DateTime.now(), "credId")),
+    currentStatus = MandateStatus(Status.Approved, Instant.now(), "credId"),
+    statusHistory = Seq(MandateStatus(Status.New, Instant.now(), "credId")),
     Subscription(None, Service("ated", "ATED")),
     clientDisplayName = s"$clientDisplayName")
 

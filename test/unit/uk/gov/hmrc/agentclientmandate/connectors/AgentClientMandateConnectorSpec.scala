@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{Instant, LocalDate}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -76,7 +76,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
       createdBy = User("cerdId", "Joe Bloggs"),
       agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation, contactDetails = ContactDetails("aa@aa.com", None)),
       clientParty = Some(Party("client-id", "client name", `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None))),
-      currentStatus = MandateStatus(status = Status.New, DateTime.now(), updatedBy = ""),
+      currentStatus = MandateStatus(status = Status.New, Instant.now(), updatedBy = ""),
       statusHistory = Nil,
       subscription = Subscription(referenceNumber = None, service = Service(id = "ated-ref-no", name = "")),
       clientDisplayName = "client display name"

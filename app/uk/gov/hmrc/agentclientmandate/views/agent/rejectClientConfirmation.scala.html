@@ -15,7 +15,7 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.utils.DateUtils
-@import org.joda.time.DateTime
+@import java.time.Instant
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.controllers.agent.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
@@ -28,10 +28,10 @@
 
 @(service: String, clientName: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = titleBuilder(messages("agent.reject-client-confirmation.title", DateUtils.getDateAsText(DateTime.now)))) {
+@main_template(title = titleBuilder(messages("agent.reject-client-confirmation.title", DateUtils.getDateAsText(Instant.now)))) {
 
     @govukPanel(Panel(
-        title = Text(messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(DateTime.now))),
+        title = Text(messages("agent.reject-client-confirmation.banner-text", clientName, DateUtils.getDateAsText(Instant.now))),
         attributes = Map("id" -> "banner")
     ))
 

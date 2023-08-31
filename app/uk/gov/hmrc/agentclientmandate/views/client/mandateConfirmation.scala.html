@@ -19,8 +19,8 @@
 @import uk.gov.hmrc.agentclientmandate.controllers.client.routes
 @import uk.gov.hmrc.agentclientmandate.views.html._
 @import uk.gov.hmrc.agentclientmandate.views.html.helpers._
-@import org.joda.time.LocalDate
-@import org.joda.time.format.DateTimeFormat
+@import java.time.LocalDate
+@import java.time.format.DateTimeFormatter
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
 @import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
@@ -35,7 +35,7 @@
 @main_template(title = titleBuilder(messages("client.agent-confirmation.title"))) {
 
     @govukPanel(Panel(
-        title = Text(messages("client.agent-confirmation.banner-text", agentName, DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate()))),
+        title = Text(messages("client.agent-confirmation.banner-text", agentName, LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))),
         attributes = Map("id" -> "banner")
     ))
 

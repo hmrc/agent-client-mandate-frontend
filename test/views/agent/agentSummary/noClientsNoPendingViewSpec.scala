@@ -16,7 +16,7 @@
 
 package views.agent.agentSummary
 
-import org.joda.time.DateTime
+import java.time.Instant
 import org.jsoup.Jsoup
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
@@ -37,7 +37,7 @@ class noClientsNoPendingViewSpec extends AnyFeatureSpec
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
 
   val mandateId = "12345678"
-  val time1: DateTime = DateTime.now()
+  val time1: Instant = Instant.now()
   val service: String = "ATED"
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 

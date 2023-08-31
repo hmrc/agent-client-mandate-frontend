@@ -16,7 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
-import org.joda.time.DateTime
+import java.time.{LocalDateTime, ZoneOffset}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.agentclientmandate.utils.DateUtils
@@ -25,7 +25,7 @@ class DateUtilsSpec extends PlaySpec with MockitoSugar {
 
   "DateUtils" must {
     "return date in correct format" in {
-      val date = DateUtils.getDateAsText(new DateTime(2016, 10, 6, 12, 12, 12))
+      val date = DateUtils.getDateAsText(LocalDateTime.of(2016, 10, 6, 12, 12, 12).toInstant(ZoneOffset.UTC))
       date must be("6 October 2016")
 
     }
