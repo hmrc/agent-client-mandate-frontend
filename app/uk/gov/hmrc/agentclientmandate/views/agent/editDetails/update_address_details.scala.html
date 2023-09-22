@@ -25,6 +25,7 @@
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
+@import views.html.helper.CSPNonce
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
@@ -38,8 +39,8 @@
 
 @pageScripts = {
 
-    <script type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
-    <script type="text/javascript">
+    <script @CSPNonce.attr type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
+    <script @CSPNonce.attr type="text/javascript">
       openregisterLocationPicker({
         defaultValue: '',
         selectElement: document.getElementById('address.countryCode'),
