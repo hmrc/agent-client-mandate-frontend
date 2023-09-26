@@ -26,7 +26,7 @@ private object AppDependencies {
       override lazy val test: Seq[ModuleID] = Seq(
         "org.scalatestplus.play"       %% "scalatestplus-play"     % "5.1.0"    % scope,
         "org.jsoup"                    %  "jsoup"                  % "1.16.1"   % scope,
-        "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.16.0" % scope,
+        "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.17.0" % scope,
         "org.mockito"                  %  "mockito-core"           % "5.5.0"    % scope,
         "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2" % scope,
         "com.typesafe.play"            %% "play-test"              % current    % scope,
