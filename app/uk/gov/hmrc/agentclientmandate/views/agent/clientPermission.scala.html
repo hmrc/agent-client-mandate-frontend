@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentclientmandate.views.ViewUtils.titleBuilder
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
+@import views.html.helper.CSPNonce
 
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
@@ -44,7 +45,7 @@
 @implicitFormInstance = @{ Some(clientPermissionForm) }
 
 @pageScripts = {
-@*<script src='@controllers.routes.Assets.versioned("javascript/client-permission.js")'></script>*@
+<script @CSPNonce.attr src='@controllers.routes.Assets.versioned("javascript/client-permission.js")'></script>
 }
 
 @conditionalFalse = {
