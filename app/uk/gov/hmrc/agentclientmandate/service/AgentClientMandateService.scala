@@ -258,9 +258,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     val updateData = UpdateRegistrationDetailsRequest(isAnIndividual = false,
       individual = None,
       organisation = Some(Organisation(
-        organisationName = editAgentDetails.map(_.agentName).getOrElse(cachedData.organisation.map(_.organisationName).getOrElse("")),
-        isAGroup = cachedData.organisation.flatMap(_.isAGroup),
-        organisationType = cachedData.organisation.flatMap(_.organisationType))),
+        organisationName = editAgentDetails.map(_.agentName).getOrElse(cachedData.organisation.map(_.organisationName).getOrElse("")))),
       address = editAgentDetails.map(_.address).getOrElse(cachedData.addressDetails),
       contactDetails = cachedData.contactDetails,
       isAnAgent = true,

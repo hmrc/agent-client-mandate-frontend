@@ -39,8 +39,7 @@ object Individual {
 }
 
 case class Organisation(organisationName: String,
-                        isAGroup: Option[Boolean] = None,
-                        organisationType: Option[String] = None)
+                        isAGroup: Option[Boolean] = None)
 
 object Organisation {
   implicit val formats: OFormat[Organisation] = Json.format[Organisation]
