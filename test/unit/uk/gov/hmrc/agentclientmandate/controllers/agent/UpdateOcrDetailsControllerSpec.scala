@@ -44,7 +44,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
   val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
   val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-    Some(Organisation("Org name", Some(true), Some("org_type"))),
+    Some(Organisation("Org name", Some(true))),
     RegisteredAddressDetails("address1", "address2", None, None, None, "FR"), EtmpContactDetails(None, None, None, None),
     isAnAgent = true, isAGroup = true,
     identification = Some(Identification("IdNumber", "issuingCountry", "FR"))))

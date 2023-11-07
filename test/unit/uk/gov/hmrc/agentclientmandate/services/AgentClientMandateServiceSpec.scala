@@ -475,8 +475,8 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         val editAgentAddress: EditAgentAddressDetails =
           EditAgentAddressDetails("Org name", RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-          Some(Organisation("Org name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+          Some(Organisation("Org name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
@@ -484,14 +484,15 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,  editAgentDetails = Some(editAgentAddress))
-        await(response) must be(updateRegDetails)
+
+        await(response) must be(updatedDetails)
       }
 
       "ocr details are changed and saved" in new Setup {
         val nonUkiOcrChanges: Identification = Identification("idnumber", "FR", "issuingInstitution")
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-          Some(Organisation("Org Name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+          Some(Organisation("Org Name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, Some(Identification("idnumber", "FR", "issuingInstitution"))))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
@@ -499,30 +500,26 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges))
-        await(response) must be(updateRegDetails)
+        await(response) must be(updatedDetails)
       }
     }
 
     "fail to update the agent business details" when {
       "none of the inputs are passed" in new Setup {
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-          Some(Organisation("Org Name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+          Some(Organisation("Org Name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
         when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals)
-        await(response) must be(updateRegDetails)
+        await(response) must be(updatedDetails)
       }
 
       "no data found in cache" in new Setup {
         val nonUkiOcrChanges: Identification = Identification("idnumber", "FR", "issuingInstitution")
-//        val cachedData = Some(AgentBuilder.buildAgentDetails)
-//        val updateRegDetails = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
-//          Some(Organisation("Org Name", Some(true), Some("org_type"))), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
-//          EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, Some(Identification("idnumber", "FR", "issuingInstitution"))))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(None))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))

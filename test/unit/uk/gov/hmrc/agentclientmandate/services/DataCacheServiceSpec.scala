@@ -96,7 +96,12 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
         when(mockDefaultHttpClient.GET[CacheMap](any(), any(), any())
           (any(), any(), any()))
-          .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
+          .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.parse(
+            """{
+              |   "name":"some-data",
+              |   "other": false
+              |}
+              |""".stripMargin)))))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(Some(formData))
       }
