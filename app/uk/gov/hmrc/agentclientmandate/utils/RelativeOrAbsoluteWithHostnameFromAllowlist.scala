@@ -18,17 +18,15 @@ package uk.gov.hmrc.agentclientmandate.utils
 
 import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, OnlyRelative, PermitAllOnDev, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, PermitAllOnDev, RedirectUrl}
 
-import scala.jdk.CollectionConverters._
-class RelativeOrAbsoluteWithHostnameFromAllowlist(private val allowedHosts: java.util.List[String], private val environment: Environment) {
-  private val absoluteWithHostnameFromAllowlist = AbsoluteWithHostnameFromAllowlist(allowedHosts.asScala.toSet)
+class RelativeOrAbsoluteWithHostnameFromAllowlist(private val environment: Environment) {
   private val relativeUrlsOnly = OnlyRelative
   private val permitAllOnDev = PermitAllOnDev(environment)
 
   def url(theUrl: RedirectUrl): String = url(theUrl.unsafeValue)
   def url(theUrl: String): String = {
-    RedirectUrl(theUrl).getEither(relativeUrlsOnly | absoluteWithHostnameFromAllowlist | permitAllOnDev) match {
+    RedirectUrl(theUrl).getEither(relativeUrlsOnly | permitAllOnDev) match {
       case Right(safeRedirectUrl) => safeRedirectUrl.url
       case Left(error) => throw new IllegalArgumentException(error)
     }

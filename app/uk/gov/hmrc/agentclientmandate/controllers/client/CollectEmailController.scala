@@ -22,13 +22,13 @@ import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, DelegationUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 
@@ -46,21 +46,29 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
   def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-        val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.allowedHosts, appConfig.environment)
         redirectUrl match {
-        case Some(x) => try {
-          val safeUrl: String = policy.url(x)
-          saveBackLink(service, Some(safeUrl)).flatMap { _ =>
-            showView(service, None)
+          case Some(x) =>
+            getSafeLink(x) match {
+              case Some(safeLink) =>
+                saveBackLink(service, Some(safeLink)).flatMap { _ =>
+                  showView(service, None)
+              }
+              case None => Future.successful(BadRequest("The return url is not correctly formatted"))
           }
-        } catch {
-          case _ : Exception => Future.successful(BadRequest("The return url is not correctly formatted"))
+          case _ =>
+            saveBackLink(service, None).flatMap { _ =>
+              showView(service, None)
+          }
         }
-        case _ =>
-          saveBackLink(service, None).flatMap { _ =>
-            showView(service, None)
-          }
-      }
+     }
+  }
+
+  private def getSafeLink(theUrl: RedirectUrl) = {
+    try {
+      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
+      Some(policy.url(theUrl))
+      } catch {
+      case _: Exception => None
     }
   }
 
