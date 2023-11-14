@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{ClientCache, ClientEma
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.client.collectEmail
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,7 +55,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       injectedViewInstanceCollectEmail
     )
 
-    def viewWithUnAuthenticatedClient(redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+    def viewWithUnAuthenticatedClient(redirectUrl: Option[RedirectUrl] = None)(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
@@ -91,7 +92,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       test(result)
     }
 
-    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+    def viewWithAuthorisedClient(cachedData: Option[ClientCache] = None, redirectUrl: Option[RedirectUrl] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
@@ -100,7 +101,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       redirectUrl match {
         case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String]
           (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Some(x)))
+          .thenReturn(Future.successful(Some(x.toString)))
         case _ => when(mockDataCacheService.fetchAndGetFormData[String]
           (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some("")))
@@ -155,7 +156,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return url is invalid format" in new Setup {
-      viewWithAuthorisedClient(None, Some("http://website.com")) { result =>
+      viewWithAuthorisedClient(None, Some(RedirectUrl("http://www.tax.service.gov.uk/ated-subscription/review-business-details"))) { result =>
         status(result) must be(BAD_REQUEST)
       }
     }
@@ -207,14 +208,14 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       "client requests(GET) for collect email view pre-populated and the data and redirect have been cached" in new Setup {
 
         val cached: ClientCache = ClientCache(email = Some(ClientEmail("aa@mail.com")))
-        viewWithAuthorisedClient(Some(cached), Some("/api/anywhere")) { result =>
+        viewWithAuthorisedClient(Some(cached), Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("client.collect-email.title - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
 
           document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/api/anywhere")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("RedirectUrl(/api/anywhere)")
         }
       }
 

@@ -103,6 +103,8 @@ class AppConfig @Inject()(
 
   lazy val allowedRedirectUrls: util.List[String] = configuration.underlying.getStringList("allowedRedirectUrls")
 
+  lazy val allowedHosts: util.List[String] = configuration.underlying.getStringList("allowList")
+
   def isAllowedRedirectUrl(url: String): Boolean = {
     allowedRedirectUrls.contains(url)
   }
