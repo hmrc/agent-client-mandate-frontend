@@ -120,9 +120,16 @@ class CollectAgentEmailController @Inject()(
                     }
                   })
 
-              case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
+              case None => Future.successful(BadRequest("The return url is not correctly formatted"))
             }
-          case None => Future.successful(BadRequest("The return url is not correctly formatted"))
+          case None =>
+            agentEmailForm.bindFromRequest().fold(
+              formWithError => {
+                Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, None, getBackLink(service, None))))
+              },
+              _ => {
+                Future.successful(Redirect(routes.ClientDisplayNameController.view()))
+              })
         }
 
       }
