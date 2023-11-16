@@ -22,11 +22,12 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,24 +53,41 @@ class CollectAgentEmailController @Inject()(
       }
   }
 
-  def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async {
+  def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         for {
           agentEmailCached <- dataCacheService.fetchAndGetFormData[AgentEmail](agentEmailFormId)
         } yield {
-          redirectUrl match {
-            case Some(url) if !AgentClientMandateUtils.isRelativeOrDev(url) => BadRequest("The return url is not correctly formatted")
-            case _ =>
-              agentEmailCached match {
-                case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(service, redirectUrl)))
-                case None => Ok(templateAgentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(service, redirectUrl)))
+            redirectUrl match {
+              case Some(providedUrl) =>
+                getSafeLink(providedUrl) match {
+                  case Some(safeLink) =>
+                    agentEmailCached match {
+                      case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, Some(RedirectUrl(safeLink)), getBackLink(service, Some(safeLink))))
+                      case None => Ok(templateAgentEnterEmail(agentEmailForm, service, Some(RedirectUrl(safeLink)), getBackLink(service, Some(safeLink))))
+                    }
+
+                  case None => BadRequest("The return url is not correctly formatted")
+                }
+
+              case _ => agentEmailCached match {
+                case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, None, getBackLink(service, None)))
+                case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
               }
           }
         }
       }
-  }
+}
 
+  private def getSafeLink(theUrl: RedirectUrl) = {
+    try {
+      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
+      Some(policy.url(theUrl))
+    } catch {
+      case _: Exception => None
+    }
+  }
   def editFromSummary(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       for {
@@ -85,25 +103,28 @@ class CollectAgentEmailController @Inject()(
     }
   }
 
-  def submit(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async {
+  def submit(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
-          case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
-          case _ =>
-            agentEmailForm.bindFromRequest().fold(
-              formWithError => {
-                Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, redirectUrl))))
-              },
-              data => {
-                dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { _ =>
-                  redirectUrl match {
-                    case Some(redirect) => Future.successful(Redirect(redirect))
-                    case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
-                  }
-                }
-              })
+          case Some(providedUrl) =>
+            getSafeLink(providedUrl) match {
+              case Some(safeLink) =>
+                agentEmailForm.bindFromRequest().fold(
+                  formWithError => {
+                    Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, Some(RedirectUrl(safeLink)), getBackLink(service, Some(safeLink)))))
+                  },
+                  data => {
+                    dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { _ =>
+                      Future.successful(Redirect(safeLink))
+                    }
+                  })
+
+              case None => Future.successful(Redirect(routes.ClientDisplayNameController.view()))
+            }
+          case None => Future.successful(BadRequest("The return url is not correctly formatted"))
         }
+
       }
   }
 
