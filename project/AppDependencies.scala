@@ -1,6 +1,5 @@
 import sbt._
 import play.sbt.PlayImport._
-import play.core.PlayVersion._
 
 private object AppDependencies {
 
@@ -28,7 +27,7 @@ private object AppDependencies {
       "org.scalatestplus.play"       %% "scalatestplus-play"     % "5.1.0"    % scope,
       "org.jsoup"                    %  "jsoup"                  % "1.16.2"   % scope,
       "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.17.0" % scope,
-      "org.mockito"                  %  "mockito-core"           % "5.6.0"    % scope,
+      "org.mockito"                  %  "mockito-core"           % "5.7.0"    % scope,
       "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2" % scope,
       "com.github.tomakehurst"       %  "wiremock-jre8"          % "2.35.1"   % scope,
       "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.15.3"   % scope
