@@ -127,8 +127,10 @@ class CollectAgentEmailController @Inject()(
               formWithError => {
                 Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, None, getBackLink(service, None))))
               },
-              _ => {
-                Future.successful(Redirect(routes.ClientDisplayNameController.view()))
+              data => {
+                dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { _ =>
+                  Future.successful(Redirect(routes.ClientDisplayNameController.view()))
+                }
               })
         }
 
