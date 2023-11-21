@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.views
