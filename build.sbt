@@ -1,5 +1,9 @@
+import sbt.Keys._
+import sbt._
 import uk.gov.hmrc.DefaultBuildSettings._
+import play.sbt.routes._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName: String = "agent-client-mandate-frontend"
 
@@ -36,6 +40,9 @@ lazy val microservice = Project(appName, file("."))
   .settings(majorVersion := 1)
   .settings(scalaSettings: _*)
   .settings(defaultSettings(): _*)
+  .settings(
+    RoutesKeys.routesImport += "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl"
+  )
   .settings(
     TwirlKeys.templateImports ++= Seq(
       "uk.gov.hmrc.hmrcfrontend.views.html.components._",

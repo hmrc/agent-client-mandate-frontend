@@ -25,6 +25,7 @@ import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,7 +64,7 @@ class ChangeAgentController @Inject()(
           data => {
             if (data.yesNo) {
               val backLink = routes.ChangeAgentController.view(mandateId).url
-              Future.successful(Redirect(routes.CollectEmailController.view(Some(backLink))))
+              Future.successful(Redirect(routes.CollectEmailController.view(Some(RedirectUrl(backLink)))))
             }
             else {
               Future.successful(Redirect(routes.RemoveAgentController.confirmation(mandateId)))
@@ -72,4 +73,5 @@ class ChangeAgentController @Inject()(
         )
       }
   }
+
 }

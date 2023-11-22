@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMand
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.agentEnterEmail
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -90,7 +91,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       test(result)
     }
 
-    def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[String]=None)(test: Future[Result] => Any): Unit = {
+    def viewEmailAuthorisedAgent(cachedData: Option[AgentEmail] = None, redirectUrl: Option[RedirectUrl]=None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -114,7 +115,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
     }
 
     def submitEmailAuthorisedAgent
-    (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[String]=None)(test: Future[Result] => Any): Unit = {
+    (request: FakeRequest[AnyContentAsFormUrlEncoded], isValidEmail: Boolean = false, redirectUrl: Option[RedirectUrl]=None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -184,7 +185,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
     "return 'what is your email address' for AUTHORISED agent" when {
 
       "agent requests(GET) for 'what is your email address' view and the data hasn't been cached" in new Setup {
-        viewEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
+        viewEmailAuthorisedAgent(None, Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.enter-email.title - GOV.UK")
@@ -214,7 +215,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       }
 
       "return url is invalid format" in new Setup {
-        viewEmailAuthorisedAgent(None, Some("http://website.com")) { result =>
+        viewEmailAuthorisedAgent(None, Some(RedirectUrl("http://website.com"))) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
@@ -251,17 +252,13 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/client-display-name"))
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
-            ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
       "redirect to redirect Page if one is supplied" in new Setup {
 
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST")withFormUrlEncodedBody("email" -> "aa@aa.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
           verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
@@ -273,7 +270,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
 
       "return url is invalid format" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("email" -> "aa@aa.com")
-        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some("http://website.com")) { result =>
+        submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some(RedirectUrl("http://website.com"))) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }

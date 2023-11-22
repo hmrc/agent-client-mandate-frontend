@@ -22,13 +22,15 @@ import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,23 +43,35 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
                                        templateCollectEmail: views.html.client.collectEmail
                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
 
-  def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async {
+  def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { _ =>
-      redirectUrl match {
-        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) =>
-          Future.successful(BadRequest("The return url is not correctly formatted"))
-        case Some(x) =>
-          saveBackLink(service, Some(x)).flatMap { _ =>
-            showView(service, None)
+        redirectUrl match {
+          case Some(providedUrl) =>
+            getSafeLink(providedUrl) match {
+              case Some(safeLink) =>
+                saveBackLink(service, Some(safeLink)).flatMap { _ =>
+                  showView(service, None)
+              }
+              case None => Future.successful(BadRequest("The return url is not correctly formatted"))
           }
-        case _ =>
-          saveBackLink(service, None).flatMap { _ =>
-            showView(service, None)
+          case _ =>
+            saveBackLink(service, None).flatMap { _ =>
+              showView(service, None)
           }
-      }
+        }
+     }
+  }
+
+  private def getSafeLink(theUrl: RedirectUrl) = {
+    try {
+      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
+      Some(policy.url(theUrl))
+      } catch {
+      case _: Exception => None
     }
   }
+
 
   def edit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
