@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.MandateAuthRetrievals
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.RelativeOrAbsoluteWithHostnameFromAllowlist
+import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -49,7 +49,7 @@ class RemoveAgentController @Inject()(
   def view(service: String, mandateId: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        getSafeLink(returnUrl) match {
+        DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
           case Some(safeLink) =>
             dataCacheService.cacheFormData[String]("RETURN_URL", safeLink).flatMap { _ =>
               showView(service, mandateId, Some(safeLink), authRetrievals)
@@ -121,15 +121,6 @@ class RemoveAgentController @Inject()(
           case _ => throw new RuntimeException("Cache Retrieval Failed")
         }
       }
-  }
-
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-    } catch {
-      case _: Exception => None
-    }
   }
 
 }

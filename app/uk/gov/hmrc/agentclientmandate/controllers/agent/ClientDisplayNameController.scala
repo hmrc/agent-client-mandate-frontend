@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayNameForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -44,21 +44,6 @@ class ClientDisplayNameController @Inject()(
                                              templateClientDisplayName:views.html.agent.clientDisplayName
                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-  /*def view(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    withAgentRefNumber(Some(service)) { _ =>
-      redirectUrl match {
-        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
-        case _ =>
-          dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId) map {
-            case Some(clientDisplayname) => Ok(templateClientDisplayName(
-              clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service, redirectUrl)))
-            case None => Ok(templateClientDisplayName(
-              clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl)))
-          }
-      }
-    }
-  }*/
-
   def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
@@ -67,7 +52,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              getSafeLink(providedUrl) match {
+              DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
                 case Some(safeLink) =>
                   processViewRequest(service, clientDisplayname, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -83,41 +68,12 @@ class ClientDisplayNameController @Inject()(
                                 (implicit request: Request[_], messages: Messages) = {
     clientDisplayname match {
       case Some(clientName) => Ok(templateClientDisplayName(
-        clientDisplayNameForm.fill(clientName), service, redirectUrl, getBackLink(service, safeLink)))
+        clientDisplayNameForm.fill(clientName), service, redirectUrl, getBackLink(safeLink)))
       case None => Ok(templateClientDisplayName(
-        clientDisplayNameForm, service, redirectUrl, getBackLink(service, safeLink)))
+        clientDisplayNameForm, service, redirectUrl, getBackLink(safeLink)))
     }
   }
 
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-    } catch {
-      case _: Exception => None
-    }
-  }
-
-
-  /*def editFromSummary(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async { implicit request =>
-    withAgentRefNumber(Some(service)) { _ =>
-      for {
-        clientDisplayName <- dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId)
-        callingPage <- dataCacheService.fetchAndGetFormData[String](callingPageCacheId)
-      } yield {
-        redirectUrl match {
-          case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => BadRequest("The return url is not correctly formatted")
-          case _ =>
-            clientDisplayName match {
-              case Some(clientDisplayname) => Ok(templateClientDisplayName(
-                clientDisplayNameForm.fill(clientDisplayname), service, redirectUrl, getBackLink(service,
-                Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
-              case None => Ok(templateClientDisplayName(clientDisplayNameForm, service, redirectUrl, getBackLink(service, redirectUrl.getOrElse(""))))
-            }
-        }
-      }
-    }
-  }*/
 
   def editFromSummary(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
@@ -128,7 +84,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              getSafeLink(providedUrl) match {
+              DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
                 case Some(safeLink) =>
                   processEditSummaryRequest(service, clientDisplayName, callingPage, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -145,40 +101,20 @@ class ClientDisplayNameController @Inject()(
     clientDisplayname match {
       case Some(clientName) =>
         Ok(templateClientDisplayName(
-          clientDisplayNameForm.fill(clientName), service, redirectUrl, getBackLink(service,
+          clientDisplayNameForm.fill(clientName), service, redirectUrl, getBackLink(
             Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
       case None => Ok(templateClientDisplayName(
-        clientDisplayNameForm, service, redirectUrl, getBackLink(service, safeLink)))
+        clientDisplayNameForm, service, redirectUrl, getBackLink(safeLink)))
     }
   }
 
-
-  /*def submit1(service: String, redirectUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    withAgentRefNumber(Some(service)) { _ =>
-      redirectUrl match {
-        case Some(x) if !AgentClientMandateUtils.isRelativeOrDev(x) => Future.successful(BadRequest("The return url is not correctly formatted"))
-        case _ =>
-          clientDisplayNameForm.bindFromRequest().fold(
-            formWithError => Future.successful(BadRequest(templateClientDisplayName(
-              formWithError, service, redirectUrl, getBackLink(service, redirectUrl)))),
-            data =>
-              dataCacheService.cacheFormData[ClientDisplayName](clientDisplayNameFormId, data) map { _ =>
-                redirectUrl match {
-                  case Some(redirect) => Redirect(redirect)
-                  case None => Redirect(routes.OverseasClientQuestionController.view())
-                }
-              }
-          )
-      }
-    }
-  }*/
 
   def submit(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            getSafeLink(providedUrl) match {
+            DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))
@@ -193,7 +129,7 @@ class ClientDisplayNameController @Inject()(
     clientDisplayNameForm.bindFromRequest().fold(
       formWithError => {
         Future.successful(BadRequest(templateClientDisplayName(
-          formWithError, service, redirectUrl, getBackLink(service, safeLink))))},
+          formWithError, service, redirectUrl, getBackLink(safeLink))))},
       data => {
         dataCacheService.cacheFormData[ClientDisplayName](clientDisplayNameFormId, data) flatMap { _ =>
           redirectUrl match {
@@ -213,7 +149,7 @@ class ClientDisplayNameController @Inject()(
     }
   }
 
-  private def getBackLink(service: String, redirectUrl: Option[String]): Option[String] = {
+  private def getBackLink(redirectUrl: Option[String]): Option[String] = {
     redirectUrl match {
       case Some(x) => Some(x)
       case None => Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.CollectAgentEmailController.view().url)

@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
+import play.api.Environment
 import play.api.i18n.Messages
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.{Link, PrincipalTaxIdentifiers, StartDelegationContext}
 import uk.gov.hmrc.domain.AtedUtr
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 
 object DelegationUtils {
 
@@ -55,5 +57,14 @@ object DelegationUtils {
 
   def getDelegatedServiceHomeUrl(service: String)(implicit appConfig: AppConfig): String = {
     appConfig.servicesConfig.getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
+  }
+
+  def getSafeLink(theUrl: RedirectUrl, environment: Environment) = {
+    try {
+      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(environment)
+      Some(policy.url(theUrl))
+    } catch {
+      case _: Exception => None
+    }
   }
 }

@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.ClientDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 import uk.gov.hmrc.agentclientmandate.views
@@ -45,35 +45,10 @@ class EditEmailController @Inject()(
                                      templateEditEmail: views.html.client.editEmail
                                    ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-  /*def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
-    implicit request => {
-      withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev("returnUrl")) {
-          Future.successful(BadRequest("The return url is not correctly formatted"))
-        }
-        else {
-          mandateService.fetchClientMandateByClient(clientId, service).map {
-            case Some(mandate) => mandate.currentStatus.status match {
-              case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
-                val clientDetails = ClientDetails(
-                  mandate.agentParty.name,
-                  appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, "returnUrl").url,
-                  mandate.clientParty.get.contactDetails.email,
-                  appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, RedirectUrl("returnUrl")).url)
-                Ok(Json.toJson(clientDetails))
-              case _ => NotFound
-            }
-            case _ => NotFound
-          }
-        }
-      }
-    }
-  }*/
-
   def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request => {
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        getSafeLink(returnUrl) match {
+        DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
           case Some(safeLink) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
               case Some(mandate) => mandate.currentStatus.status match {
@@ -95,42 +70,10 @@ class EditEmailController @Inject()(
   }
 
 
-  /*def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
-    implicit request =>
-      withOrgCredId(Some(service)) { authRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev("returnUrl")) {
-          Future.successful(BadRequest("The return url is not correctly formatted"))
-        }
-        else {
-          saveBackLink("returnUrl").flatMap { _ =>
-            for {
-              _       <- dataCacheService.cacheFormData("MANDATE_ID", mandateId)
-              mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
-            } yield {
-              val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
-              Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some("returnUrl")))
-            }
-          }
-        }
-      }
-  }*/
-
-
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-    } catch {
-      case _: Exception => None
-    }
-  }
-
-
   def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-
-            getSafeLink(returnUrl) match {
+        DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 saveBackLink(safeLink).flatMap { _ =>
                   for {

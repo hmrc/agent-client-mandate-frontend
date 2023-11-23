@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.Status.{Active, Approved, Cancelled, Rejected}
 import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
-import uk.gov.hmrc.agentclientmandate.utils.RelativeOrAbsoluteWithHostnameFromAllowlist
+import uk.gov.hmrc.agentclientmandate.utils.DelegationUtils
 import uk.gov.hmrc.agentclientmandate.views.html.partials.client_banner
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
@@ -39,7 +39,7 @@ class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerCom
   def getClientBannerPartial(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async { implicit request =>
     val mandateHost = appConfig.mandateFrontendHost
 
-    getSafeLink(returnUrl) match {
+    DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
       case Some(_) =>
         mandateService.fetchClientMandateByClient(clientId, service).map {
           case Some(mandate) => mandate.currentStatus.status match {
@@ -62,14 +62,6 @@ class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerCom
           case None => NotFound
         }
       case None => Future.successful(BadRequest("The return url is not correctly formatted"))
-    }
-  }
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-    } catch {
-      case _: Exception => None
     }
   }
 }
