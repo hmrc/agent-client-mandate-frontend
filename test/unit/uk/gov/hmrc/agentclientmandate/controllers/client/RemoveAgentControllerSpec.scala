@@ -37,6 +37,7 @@ import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.client.{removeAgent, removeAgentConfirmation}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -85,7 +86,7 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
   def viewUnAuthenticatedClient(controller: RemoveAgentController)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSessionNoUser)
+    val result = controller.view(service, "1", RedirectUrl("/api/anywhere")).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
@@ -93,7 +94,7 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view(service, "1", "/api/anywhere").apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view(service, "1", RedirectUrl("/api/anywhere")).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
@@ -102,7 +103,7 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
     val userId = s"user-${UUID.randomUUID}"
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-    val result = controller.view(service, "1", continueUrl).apply(SessionBuilder.updateRequestWithSession(request, userId))
+    val result = controller.view(service, "1", RedirectUrl(continueUrl)).apply(SessionBuilder.updateRequestWithSession(request, userId))
     test(result)
   }
 
@@ -180,7 +181,7 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         val userId = s"user-${UUID.randomUUID}"
         AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
         val request: FakeRequest[AnyContentAsJson] = FakeRequest(GET, "/client/remove-agent/1?returnUrl=/app/return").withJsonBody(Json.toJson("""{}"""))
-        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.view(service, "1", "/api/anywhere")
+        val thrown: RuntimeException = the[RuntimeException] thrownBy await(controller.view(service, "1", RedirectUrl("/api/anywhere"))
           .apply(SessionBuilder.updateRequestWithSession(request, userId)))
 
         thrown.getMessage must be("No Mandate returned")

@@ -23,12 +23,13 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.ClientDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,10 +45,10 @@ class EditEmailController @Inject()(
                                      templateEditEmail: views.html.client.editEmail
                                    ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-  def getClientMandateDetails(clientId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
+  /*def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request => {
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
+        if (!AgentClientMandateUtils.isRelativeOrDev("returnUrl")) {
           Future.successful(BadRequest("The return url is not correctly formatted"))
         }
         else {
@@ -56,9 +57,9 @@ class EditEmailController @Inject()(
               case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
                 val clientDetails = ClientDetails(
                   mandate.agentParty.name,
-                  appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url,
+                  appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, "returnUrl").url,
                   mandate.clientParty.get.contactDetails.email,
-                  appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, returnUrl).url)
+                  appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, RedirectUrl("returnUrl")).url)
                 Ok(Json.toJson(clientDetails))
               case _ => NotFound
             }
@@ -67,26 +68,83 @@ class EditEmailController @Inject()(
         }
       }
     }
+  }*/
+
+  def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
+    implicit request => {
+      withOrgCredId(Some(service)) { clientAuthRetrievals =>
+        getSafeLink(returnUrl) match {
+          case Some(safeLink) =>
+            mandateService.fetchClientMandateByClient(clientId, service).map {
+              case Some(mandate) => mandate.currentStatus.status match {
+                case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
+                  val clientDetails = ClientDetails(
+                    mandate.agentParty.name,
+                    appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url,
+                    mandate.clientParty.get.contactDetails.email,
+                    appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, RedirectUrl(safeLink)).url)
+                  Ok(Json.toJson(clientDetails))
+                case _ => NotFound
+              }
+              case _ => NotFound
+            }
+          case None => Future.successful(BadRequest("The return url is not correctly formatted"))
+        }
+      }
+    }
   }
 
 
-  def view(mandateId: String, service: String, returnUrl: String): Action[AnyContent] = Action.async {
+  /*def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        if (!AgentClientMandateUtils.isRelativeOrDev(returnUrl)) {
+        if (!AgentClientMandateUtils.isRelativeOrDev("returnUrl")) {
           Future.successful(BadRequest("The return url is not correctly formatted"))
         }
         else {
-          saveBackLink(returnUrl).flatMap { _ =>
+          saveBackLink("returnUrl").flatMap { _ =>
             for {
               _       <- dataCacheService.cacheFormData("MANDATE_ID", mandateId)
               mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
             } yield {
               val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
-              Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some(returnUrl)))
+              Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some("returnUrl")))
             }
           }
         }
+      }
+  }*/
+
+
+  private def getSafeLink(theUrl: RedirectUrl) = {
+    try {
+      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
+      Some(policy.url(theUrl))
+    } catch {
+      case _: Exception => None
+    }
+  }
+
+
+  def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
+    implicit request =>
+      withOrgCredId(Some(service)) { authRetrievals =>
+
+            getSafeLink(returnUrl) match {
+              case Some(safeLink) =>
+                saveBackLink(safeLink).flatMap { _ =>
+                  for {
+                    _ <- dataCacheService.cacheFormData("MANDATE_ID", mandateId)
+                    mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
+                  } yield {
+                    val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
+                    Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some(safeLink)))
+                  }
+                }
+              case None => Future.successful(BadRequest("The return url is not correctly formatted"))
+            }
+
+
       }
   }
 

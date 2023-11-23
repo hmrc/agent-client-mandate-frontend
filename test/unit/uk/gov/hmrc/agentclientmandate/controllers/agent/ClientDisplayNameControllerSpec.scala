@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.clientDisplayName
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -84,12 +85,12 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
-      val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      val result = controller.view(service, Some(RedirectUrl(redirectUrl.getOrElse("")))).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
     def editClientDisplayNameAuthorisedAgent(
-                                              cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+                                              cachedData: Option[ClientDisplayName] = None, redirectUrl: Option[RedirectUrl] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -103,7 +104,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
     }
 
     def submitClientDisplayNameAuthorisedAgent(
-                                                request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[String] = None)(test: Future[Result] => Any): Unit = {
+                                                request: FakeRequest[AnyContentAsFormUrlEncoded], redirectUrl: Option[RedirectUrl] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -152,7 +153,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
     "return view for AUTHORISED agent" when {
 
       "agent requests(GET) view and the data hasn't been cached" in new Setup {
-        viewClientDisplayNameAuthorisedAgent() { result =>
+        viewClientDisplayNameAuthorisedAgent(redirectUrl = Some("/some/path")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - GOV.UK")
@@ -178,7 +179,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       }
 
       "agents try to edit client display name but data is not cached" in new Setup {
-        editClientDisplayNameAuthorisedAgent() { result =>
+        editClientDisplayNameAuthorisedAgent(redirectUrl = Some(RedirectUrl("/some/path"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - GOV.UK")
@@ -187,7 +188,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       }
 
       "agents try to edit client display name view pre-populated and the data has been cached" in new Setup {
-        editClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some("/api/anywhere")) { result =>
+        editClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - GOV.UK")
@@ -196,7 +197,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       }
 
       "agent tries to client display name but url format is invalied" in new Setup {
-        editClientDisplayNameAuthorisedAgent(None, Some("http://website.com")) { result =>
+        editClientDisplayNameAuthorisedAgent(None, Some(RedirectUrl("http://website.com"))) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
@@ -206,7 +207,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       "to 'mandate details' when we have no redirectUrl" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
           FakeRequest().withMethod("POST").withFormUrlEncodedBody("clientDisplayName" -> "client display name")
-        submitClientDisplayNameAuthorisedAgent(fakeRequest) { result =>
+        submitClientDisplayNameAuthorisedAgent(fakeRequest, redirectUrl = Some(RedirectUrl("/mandate/agent/overseas-client-question"))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/overseas-client-question"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(),
@@ -217,7 +218,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
       "to redirectUrl if we have one" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] =
           FakeRequest().withMethod("POST").withFormUrlEncodedBody("clientDisplayName" -> "client display name")
-        submitClientDisplayNameAuthorisedAgent(fakeRequest, Some("/api/anywhere")) { result =>
+        submitClientDisplayNameAuthorisedAgent(fakeRequest, Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(),
@@ -227,7 +228,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
 
       "return url is invalid format" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("clientDisplayName" -> "client display name")
-        submitClientDisplayNameAuthorisedAgent(fakeRequest, Some("http://website.com")) { result =>
+        submitClientDisplayNameAuthorisedAgent(fakeRequest, Some(RedirectUrl("http://website.com"))) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
