@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
 
@@ -78,10 +77,6 @@ object AgentClientMandateUtils {
   }
 
   def isUkAgent(agentDetails: AgentDetails): Boolean = agentDetails.addressDetails.countryCode == "GB"
-
-  private def isRelativeUrl(url: String): Boolean = url.matches("^[/][^/].*")
-
-  def isRelativeOrDev(url: String)(implicit appConfig: AppConfig): Boolean = isRelativeUrl(url) || appConfig.isAllowedRedirectUrl(url)
 
   def isNonUkClient(mandate: Mandate): Boolean =
     !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
