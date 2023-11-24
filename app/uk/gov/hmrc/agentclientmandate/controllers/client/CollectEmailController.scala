@@ -22,7 +22,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -30,7 +30,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,7 +47,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
       withOrgCredId(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 saveBackLink(service, Some(safeLink)).flatMap { _ =>
                   showView(service, None)

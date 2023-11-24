@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.ClientDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms._
 import uk.gov.hmrc.agentclientmandate.views
@@ -48,7 +48,7 @@ class EditEmailController @Inject()(
   def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request => {
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
           case Some(safeLink) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
               case Some(mandate) => mandate.currentStatus.status match {
@@ -73,7 +73,7 @@ class EditEmailController @Inject()(
   def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        DelegationUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 saveBackLink(safeLink).flatMap { _ =>
                   for {

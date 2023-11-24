@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayName
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientDisplayNameForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -52,7 +52,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
                 case Some(safeLink) =>
                   processViewRequest(service, clientDisplayname, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -84,7 +84,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
                 case Some(safeLink) =>
                   processEditSummaryRequest(service, clientDisplayName, callingPage, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -114,7 +114,7 @@ class ClientDisplayNameController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))

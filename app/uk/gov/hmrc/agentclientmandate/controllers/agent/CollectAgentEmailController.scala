@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.views
@@ -63,7 +63,7 @@ class CollectAgentEmailController @Inject()(
         } yield {
             redirectUrl match {
               case Some(providedUrl) =>
-                DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+                AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
                   case Some(safeLink) =>
                     processViewRequest(service, agentEmailCached, redirectUrl, Some(safeLink))
                   case None => BadRequest("The return url is not correctly formatted")
@@ -103,7 +103,7 @@ class CollectAgentEmailController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            DelegationUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))
