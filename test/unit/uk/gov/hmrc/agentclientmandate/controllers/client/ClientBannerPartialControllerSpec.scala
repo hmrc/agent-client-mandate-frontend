@@ -17,7 +17,6 @@
 package unit.uk.gov.hmrc.agentclientmandate.controllers.client
 
 import java.util.UUID
-
 import java.time.Instant
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers
@@ -33,6 +32,7 @@ import uk.gov.hmrc.agentclientmandate.service.AgentClientMandateService
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,7 +55,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with MockitoSugar with 
     def viewWithUnAuthenticatedClient(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.getBanner("clientId", "service", "/api/anywhere")
+      val result = controller.getBanner("clientId", "service", RedirectUrl("/api/anywhere"))
         .apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
@@ -64,7 +64,7 @@ class ClientBannerPartialControllerSpec extends PlaySpec with MockitoSugar with 
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
-      val result = controller.getBanner("clientId", "ated", continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+      val result = controller.getBanner("clientId", "ated", RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
   }

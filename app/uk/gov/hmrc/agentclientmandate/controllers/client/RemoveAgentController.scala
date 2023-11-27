@@ -23,9 +23,11 @@ import uk.gov.hmrc.agentclientmandate.connectors.DelegationConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.models.MandateAuthRetrievals
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
+import uk.gov.hmrc.agentclientmandate.utils.AgentClientMandateUtils
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -44,11 +46,15 @@ class RemoveAgentController @Inject()(
                                        templateRemoveAgentConfirmation: views.html.client.removeAgentConfirmation
                                      ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
-  def view(service: String, mandateId: String, returnUrl: String): Action[AnyContent] = Action.async {
+  def view(service: String, mandateId: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        dataCacheService.cacheFormData[String]("RETURN_URL", returnUrl).flatMap { _ =>
-          showView(service, mandateId, Some(returnUrl), authRetrievals)
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
+          case Some(safeLink) =>
+            dataCacheService.cacheFormData[String]("RETURN_URL", safeLink).flatMap { _ =>
+              showView(service, mandateId, Some(safeLink), authRetrievals)
+            }
+          case None => Future.successful(BadRequest("The return url is not correctly formatted"))
         }
       }
   }

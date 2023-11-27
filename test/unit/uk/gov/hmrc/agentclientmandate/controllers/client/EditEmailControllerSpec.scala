@@ -35,6 +35,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.client.editEmail
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -76,7 +77,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
   def viewWithUnAuthenticatedClient(controller: EditEmailController)(continueUrl: String)(test: Future[Result] => Any): Unit = {
 
     AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-    val result = controller.view("mandateId", "service", continueUrl).apply(SessionBuilder.buildRequestWithSessionNoUser)
+    val result = controller.view("mandateId", "service", RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSessionNoUser)
     test(result)
   }
 
@@ -86,7 +87,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockMandateService.fetchClientMandateByClient(ArgumentMatchers.any(), ArgumentMatchers.any())
     (ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(mandate)
-    val result = controller.getClientMandateDetails("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.getClientMandateDetails("mandateId", service, RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 
@@ -100,7 +101,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
       ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("mandateId"))
     when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn Future.successful(Some(mandate))
-    val result = controller.view("mandateId", service, continueUrl).apply(SessionBuilder.buildRequestWithSession(userId))
+    val result = controller.view("mandateId", service, RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
 

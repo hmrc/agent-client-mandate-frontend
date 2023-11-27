@@ -22,7 +22,7 @@ import play.api.mvc._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{DelegationUtils, MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, DelegationUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientCache
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientEmailForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -30,7 +30,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,7 +47,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
       withOrgCredId(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            getSafeLink(providedUrl) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 saveBackLink(service, Some(safeLink)).flatMap { _ =>
                   showView(service, None)
@@ -62,16 +61,6 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
         }
      }
   }
-
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-      } catch {
-      case _: Exception => None
-    }
-  }
-
 
   def edit(service: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -90,7 +79,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
   private def showView(service: String, mode: Option[String])(implicit request: Request[AnyContent]): Future[Result] = {
     for {
       cachedData <- dataCacheService.fetchAndGetFormData[ClientCache](clientFormId)
-      backLink <- getBackLink(service, mode)
+      backLink <- getBackLink(mode)
     } yield {
       val filledForm = cachedData.flatMap(_.email) match {
         case Some(x) => clientEmailForm.fill(x)
@@ -105,7 +94,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
       withOrgCredId(Some(service)) { _ =>
         clientEmailForm.bindFromRequest().fold(
           formWithError =>
-            getBackLink(service, mode).map {
+            getBackLink(mode).map {
               backLink =>
                 BadRequest(templateCollectEmail(service, formWithError, mode, backLink))
             },
@@ -135,7 +124,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
     dataCacheService.cacheFormData[String](backLinkId, redirectUrl.getOrElse(DelegationUtils.getDelegatedServiceRedirectUrl(service)))
   }
 
-  private def getBackLink(service: String, mode: Option[String])(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  private def getBackLink(mode: Option[String])(implicit hc: HeaderCarrier): Future[Option[String]] = {
     mode match {
       case Some("edit") => Future.successful(Some(routes.ReviewMandateController.view().url))
       case _ =>

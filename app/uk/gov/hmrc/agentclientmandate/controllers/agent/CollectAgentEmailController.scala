@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{MandateConstants, RelativeOrAbsoluteWithHostnameFromAllowlist}
+import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.AgentEmailForm._
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.{AgentEmail, ClientMandateDisplayDetails}
 import uk.gov.hmrc.agentclientmandate.views
@@ -49,8 +49,8 @@ class CollectAgentEmailController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         dataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](agentRefCacheId) map {
           case Some(clientMandateDisplayDetails) => Ok(templateAgentEnterEmail(
-            agentEmailForm.fill(AgentEmail(clientMandateDisplayDetails.agentLastUsedEmail)), service, None, getBackLink(service, None)))
-          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
+            agentEmailForm.fill(AgentEmail(clientMandateDisplayDetails.agentLastUsedEmail)), service, None, getBackLink(None)))
+          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(None)))
         }
       }
   }
@@ -63,7 +63,7 @@ class CollectAgentEmailController @Inject()(
         } yield {
             redirectUrl match {
               case Some(providedUrl) =>
-                getSafeLink(providedUrl) match {
+                AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
                   case Some(safeLink) =>
                     processViewRequest(service, agentEmailCached, redirectUrl, Some(safeLink))
                   case None => BadRequest("The return url is not correctly formatted")
@@ -78,19 +78,11 @@ class CollectAgentEmailController @Inject()(
                                  redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
            (implicit request: Request[_], messages: Messages) = {
     agentEmailCached match {
-      case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(service, safeLink)))
-      case None => Ok(templateAgentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(service, safeLink)))
+      case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(safeLink)))
+      case None => Ok(templateAgentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(safeLink)))
     }
   }
 
-  private def getSafeLink(theUrl: RedirectUrl) = {
-    try {
-      val policy = new RelativeOrAbsoluteWithHostnameFromAllowlist(appConfig.environment)
-      Some(policy.url(theUrl))
-    } catch {
-      case _: Exception => None
-    }
-  }
   def editFromSummary(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
       for {
@@ -98,9 +90,9 @@ class CollectAgentEmailController @Inject()(
         callingPage <- dataCacheService.fetchAndGetFormData[String](callingPageCacheId)
       } yield {
         agentEmail match {
-          case Some(agentEmail) => Ok(templateAgentEnterEmail(agentEmailForm.fill(AgentEmail(agentEmail.email)), service, None, getBackLink(service,
+          case Some(agentEmail) => Ok(templateAgentEnterEmail(agentEmailForm.fill(AgentEmail(agentEmail.email)), service, None, getBackLink(
             Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.MandateDetailsController.view(callingPage.getOrElse("")).url))))
-          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(service, None)))
+          case None => Ok(templateAgentEnterEmail(agentEmailForm, service, None, getBackLink(None)))
         }
       }
     }
@@ -111,7 +103,7 @@ class CollectAgentEmailController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            getSafeLink(providedUrl) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))
@@ -125,7 +117,7 @@ class CollectAgentEmailController @Inject()(
                             (implicit request : Request[_], messages : Messages) = {
     agentEmailForm.bindFromRequest().fold(
       formWithError => {
-        Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(service, safeLink))))
+        Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(safeLink))))
       },
       data => {
         dataCacheService.cacheFormData[AgentEmail](agentEmailFormId, data) flatMap { _ =>
@@ -146,7 +138,7 @@ class CollectAgentEmailController @Inject()(
       }
   }
 
-  private def getBackLink(service: String, redirectUrl: Option[String]):Option[String] = {
+  private def getBackLink(redirectUrl: Option[String]):Option[String] = {
     redirectUrl match {
       case Some(x) => Some(x)
       case None => Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url)
