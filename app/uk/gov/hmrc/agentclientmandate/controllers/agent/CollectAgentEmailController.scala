@@ -63,7 +63,7 @@ class CollectAgentEmailController @Inject()(
         } yield {
             redirectUrl match {
               case Some(providedUrl) =>
-                AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+                AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
                   case Some(safeLink) =>
                     processViewRequest(service, agentEmailCached, redirectUrl, Some(safeLink))
                   case None => BadRequest("The return url is not correctly formatted")
@@ -103,7 +103,7 @@ class CollectAgentEmailController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))

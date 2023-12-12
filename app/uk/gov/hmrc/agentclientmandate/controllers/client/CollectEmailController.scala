@@ -47,7 +47,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
       withOrgCredId(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
               case Some(safeLink) =>
                 saveBackLink(service, Some(safeLink)).flatMap { _ =>
                   showView(service, None)

@@ -49,7 +49,7 @@ class RemoveAgentController @Inject()(
   def view(service: String, mandateId: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
           case Some(safeLink) =>
             dataCacheService.cacheFormData[String]("RETURN_URL", safeLink).flatMap { _ =>
               showView(service, mandateId, Some(safeLink), authRetrievals)
