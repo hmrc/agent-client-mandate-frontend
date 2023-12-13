@@ -63,7 +63,7 @@ trait MockControllerSetup {
     .thenReturn(mockEnvironment)
   when(mockAppConfig.loginCallbackAgent).thenReturn("/mandate/agent/summary")
   when(mockAppConfig.loginCallbackClient).thenReturn("/mandate/client/email")
-
+  when(mockAppConfig.allowedHosts).thenReturn(Seq("localhost"))
   when(mockAppConfig.configuration)
     .thenReturn(mockConfig)
 }

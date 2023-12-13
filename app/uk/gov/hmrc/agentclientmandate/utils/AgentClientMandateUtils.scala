@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.agentclientmandate.utils
 
-import play.api.Environment
+import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
-import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, PermitAllOnDev, RedirectUrl}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, OnlyRelative, RedirectUrl}
 
 object AgentClientMandateUtils {
 
@@ -84,18 +84,18 @@ object AgentClientMandateUtils {
   def isNonUkClient(mandate: Mandate): Boolean =
     !(mandate.statusHistory.exists(_.status == Status.Active) && mandate.statusHistory.exists(_.status == Status.New))
 
-  def extractUrl(theUrl: RedirectUrl,  environment: Environment): String = url(theUrl.unsafeValue, environment)
+  def extractUrl(theUrl: RedirectUrl,  appConfig: AppConfig): String = url(theUrl.unsafeValue, appConfig)
 
-  def url(theUrl: String,  environment: Environment): String = {
-    RedirectUrl(theUrl).getEither(OnlyRelative | PermitAllOnDev(environment)) match {
+  def url(theUrl: String,  appConfig: AppConfig): String = {
+    RedirectUrl(theUrl).getEither(OnlyRelative | AbsoluteWithHostnameFromAllowlist(appConfig.allowedHosts: _*)) match {
       case Right(safeRedirectUrl) => safeRedirectUrl.url
       case Left(error) => throw new IllegalArgumentException(error)
     }
   }
 
-  def getSafeLink(theUrl: RedirectUrl, environment: Environment): Option[String] = {
+  def getSafeLink(theUrl: RedirectUrl, appConfig: AppConfig): Option[String] = {
     try {
-      Some(extractUrl(theUrl, environment))
+      Some(extractUrl(theUrl, appConfig))
     } catch {
       case _: Exception => None
     }

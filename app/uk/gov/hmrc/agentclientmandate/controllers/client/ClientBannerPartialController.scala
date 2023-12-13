@@ -41,7 +41,7 @@ class ClientBannerPartialController @Inject()(mcc: MessagesControllerComponents,
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
         val mandateHost = appConfig.mandateFrontendHost
 
-        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
           case Some(_) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
               case Some(mandate) => mandate.currentStatus.status match {

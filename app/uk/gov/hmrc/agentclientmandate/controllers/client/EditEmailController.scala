@@ -48,7 +48,7 @@ class EditEmailController @Inject()(
   def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request => {
       withOrgCredId(Some(service)) { clientAuthRetrievals =>
-        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
           case Some(safeLink) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
               case Some(mandate) => mandate.currentStatus.status match {
@@ -73,7 +73,7 @@ class EditEmailController @Inject()(
   def view(mandateId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
-        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig.environment) match {
+        AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
               case Some(safeLink) =>
                 saveBackLink(safeLink).flatMap { _ =>
                   for {

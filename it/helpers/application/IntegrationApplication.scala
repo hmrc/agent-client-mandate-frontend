@@ -34,10 +34,6 @@ trait IntegrationApplication extends GuiceOneServerPerSuite with WireMockConfig 
   val appConfig: Map[String, Any] = Map(
     "play.http.router"                                  -> "testOnlyDoNotUseInAppConf.Routes",
     "mongo.uri"                                           -> "mongodb://localhost:27017/test-agent-client-mandate-frontend",
-    "microservice.metrics.graphite.host"                  -> "localhost",
-    "microservice.metrics.graphite.port"                  -> 2003,
-    "microservice.metrics.graphite.prefix"                -> "play.agent-client-mandate-frontend.",
-    "microservice.metrics.graphite.enabled"               -> true,
     "microservice.services.auth.host"                     -> wireMockHost,
     "microservice.services.auth.port"                     -> wireMockPort,
     "microservice.services.session-cache.host"            -> wireMockHost,
@@ -60,10 +56,6 @@ trait IntegrationApplication extends GuiceOneServerPerSuite with WireMockConfig 
       Map(
         "play.http.router"                                  -> "testOnlyDoNotUseInAppConf.Routes",
         "mongo.uri"                                           -> "mongodb://localhost:27017/test-agent-client-mandate-frontend",
-        "microservice.metrics.graphite.host"                  -> "localhost",
-        "microservice.metrics.graphite.port"                  -> 2003,
-        "microservice.metrics.graphite.prefix"                -> "play.agent-client-mandate-frontend.",
-        "microservice.metrics.graphite.enabled"               -> true,
         "microservice.services.auth.host"                     -> wireMockHost,
         "microservice.services.auth.port"                     -> wireMockPort,
         "microservice.services.session-cache.host"            -> wireMockHost,

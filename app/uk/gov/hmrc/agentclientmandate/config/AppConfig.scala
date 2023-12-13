@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentclientmandate.config
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.util
 import java.util.Base64
 import javax.inject.{Inject, Named}
 import scala.util.Try
@@ -101,11 +100,6 @@ class AppConfig @Inject()(
   lazy val termsConditions: String = servicesConfig.getString("urls.footer.terms_and_conditions")
   lazy val govukHelp: String = servicesConfig.getString("urls.footer.help_page")
 
-  lazy val allowedRedirectUrls: util.List[String] = configuration.underlying.getStringList("allowedRedirectUrls")
+  lazy val allowedHosts = configuration.get[Seq[String]]("allowedHosts")
 
-  def isAllowedRedirectUrl(url: String): Boolean = {
-    allowedRedirectUrls.contains(url)
-  }
 }
-
-

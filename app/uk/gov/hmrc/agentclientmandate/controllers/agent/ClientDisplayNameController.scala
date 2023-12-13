@@ -52,7 +52,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
                 case Some(safeLink) =>
                   processViewRequest(service, clientDisplayname, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -84,7 +84,7 @@ class ClientDisplayNameController @Inject()(
         } yield {
           redirectUrl match {
             case Some(providedUrl) =>
-              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
                 case Some(safeLink) =>
                   processEditSummaryRequest(service, clientDisplayName, callingPage, redirectUrl, Some(safeLink))
                 case None => BadRequest("The return url is not correctly formatted")
@@ -114,7 +114,7 @@ class ClientDisplayNameController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         redirectUrl match {
           case Some(providedUrl) =>
-            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig.environment) match {
+            AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
               case Some(safeLink) =>
                 processSubmitRequest(service, redirectUrl, Some(safeLink))
               case None => Future.successful(BadRequest("The return url is not correctly formatted"))
