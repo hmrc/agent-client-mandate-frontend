@@ -78,7 +78,8 @@ object AgentDetails {
   implicit val formats: OFormat[AgentDetails] = Json.format[AgentDetails]
 }
 
-case class UpdateRegistrationDetailsRequest(isAnIndividual: Boolean,
+case class UpdateRegistrationDetailsRequest(acknowledgementReference: String,
+                                            isAnIndividual: Boolean,
                                             individual: Option[Individual],
                                             organisation: Option[Organisation],
                                             address: RegisteredAddressDetails,

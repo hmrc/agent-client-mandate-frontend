@@ -21,6 +21,7 @@ import uk.gov.hmrc.agentclientmandate.models.Status.Status
 import uk.gov.hmrc.agentclientmandate.models.{AgentDetails, Mandate, Status}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, OnlyRelative, RedirectUrl}
+import scala.util.Random
 
 object AgentClientMandateUtils {
 
@@ -40,6 +41,14 @@ object AgentClientMandateUtils {
     """^$|^(?!\.)("([^"\r\\]|\\["\r\\])+"|([-a-zA-Z0-9!#$%&'*+\/=?^_`{|}~]+|(?<!\.)\.)+)(?<!\.)@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"""
   val maximumEmailLength = 241
   val minimumEmailLength = 1
+
+  def getUniqueAckNo: String = {
+    val length = 32
+    val nanoTime = System.nanoTime()
+    val restChars = length - nanoTime.toString.length
+    val randomChars = Random.alphanumeric.take(restChars).mkString
+    randomChars + nanoTime
+  }
 
   def validateUTR(utr: Option[String]): Boolean = {
     utr match {

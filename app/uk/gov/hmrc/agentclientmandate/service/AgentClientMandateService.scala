@@ -255,10 +255,12 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
                             nonUkiChangeDetails: Option[Identification],
                             agentAuthRetrievals: AgentAuthRetrievals)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext) = {
-    val updateData = UpdateRegistrationDetailsRequest(isAnIndividual = false,
+    val updateData = UpdateRegistrationDetailsRequest(
+      acknowledgementReference = AgentClientMandateUtils.getUniqueAckNo,
+      isAnIndividual = false,
       individual = None,
       organisation = Some(Organisation(
-        organisationName = editAgentDetails.map(_.agentName).getOrElse(cachedData.organisation.map(_.organisationName).getOrElse("")))),
+      organisationName = editAgentDetails.map(_.agentName).getOrElse(cachedData.organisation.map(_.organisationName).getOrElse("")))),
       address = editAgentDetails.map(_.address).getOrElse(cachedData.addressDetails),
       contactDetails = cachedData.contactDetails,
       isAnAgent = true,
