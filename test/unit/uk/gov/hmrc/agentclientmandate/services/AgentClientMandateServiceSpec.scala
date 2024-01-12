@@ -40,11 +40,15 @@ import scala.concurrent.Future
 class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
   class Setup {
-    val service = new AgentClientMandateService(
-      mockDataCacheService,
-      mockAgentClientMandateConnector,
-      mockBusinessCustomerConnector
-    )
+    val service = new TestAgentClientMandateService
+  }
+
+  class TestAgentClientMandateService extends AgentClientMandateService(
+    mockDataCacheService,
+    mockAgentClientMandateConnector,
+    mockBusinessCustomerConnector
+  ) {
+    override def acknowledgementReference: String = ackRef
   }
 
   val testAgentAuthRetrievals: AgentAuthRetrievals = AgentAuthRetrievals(
@@ -74,6 +78,8 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
   val serviceName = "ATED"
   val mandateId = "12345678"
   val agentLastUsedEmail = "a.b@mail.com"
+
+  val ackRef = "acknowledgementRef"
 
   val userId = s"user-${UUID.randomUUID}"
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -475,7 +481,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         val editAgentAddress: EditAgentAddressDetails =
           EditAgentAddressDetails("Org name", RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(ackRef, isAnIndividual = false, None,
           Some(Organisation("Org name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
@@ -491,7 +497,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
       "ocr details are changed and saved" in new Setup {
         val nonUkiOcrChanges: Identification = Identification("idnumber", "FR", "issuingInstitution")
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(ackRef, isAnIndividual = false, None,
           Some(Organisation("Org Name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, Some(Identification("idnumber", "FR", "issuingInstitution"))))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
@@ -507,7 +513,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
     "fail to update the agent business details" when {
       "none of the inputs are passed" in new Setup {
         val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
-        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+        val updatedDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(ackRef, isAnIndividual = false, None,
           Some(Organisation("Org Name")), RegisteredAddressDetails("address1", "address2", None, None, None, "FR"),
           EtmpContactDetails(None, None, None, None), isAnAgent = true, isAGroup = true, None))
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))

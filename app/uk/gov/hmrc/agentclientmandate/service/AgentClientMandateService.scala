@@ -34,6 +34,8 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
                                           val agentClientMandateConnector: AgentClientMandateConnector,
                                           val businessCustomerConnector: BusinessCustomerConnector) extends MandateConstants with Logging {
 
+  def acknowledgementReference: String = AgentClientMandateUtils.getUniqueAckNo
+
   def createMandate(service: String, authRetrievals: AgentAuthRetrievals)
                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
     dataCacheService.fetchAndGetFormData[AgentEmail](agentEmailFormId) flatMap {
@@ -256,7 +258,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
                             agentAuthRetrievals: AgentAuthRetrievals)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext) = {
     val updateData = UpdateRegistrationDetailsRequest(
-      acknowledgementReference = AgentClientMandateUtils.getUniqueAckNo,
+      acknowledgementReference = acknowledgementReference,
       isAnIndividual = false,
       individual = None,
       organisation = Some(Organisation(

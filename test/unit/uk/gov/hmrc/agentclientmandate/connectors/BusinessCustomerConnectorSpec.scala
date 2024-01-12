@@ -45,6 +45,8 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
   val mockDefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig = mock[ServicesConfig]
 
+  val acknowledgementReference = "acknowledgementRef"
+
   class Setup {
     val connector = new BusinessCustomerConnector(mockDefaultHttpClient, mockServicesConfig)
   }
@@ -57,7 +59,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
       "business customer service responds with a HttpResponse OK" in new Setup {
 
 
-        val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
+        val updateRegDetails = UpdateRegistrationDetailsRequest(acknowledgementReference, isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
@@ -74,7 +76,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
       "business customer service responds with a HttpResponse INTERNAL_SERVER_ERROR" in new Setup {
 
 
-        val updateRegDetails = UpdateRegistrationDetailsRequest(isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
+        val updateRegDetails = UpdateRegistrationDetailsRequest(acknowledgementReference, isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
         when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]

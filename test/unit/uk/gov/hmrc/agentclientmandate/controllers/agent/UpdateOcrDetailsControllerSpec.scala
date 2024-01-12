@@ -41,9 +41,10 @@ import scala.concurrent.Future
 
 class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite {
 
+  val acknowledgementReference = "acknowledgementRef"
   val cachedData: Some[AgentDetails] = Some(AgentBuilder.buildAgentDetails)
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails
-  val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(isAnIndividual = false, None,
+  val updateRegDetails: Some[UpdateRegistrationDetailsRequest] = Some(UpdateRegistrationDetailsRequest(acknowledgementReference, isAnIndividual = false, None,
     Some(Organisation("Org name", Some(true))),
     RegisteredAddressDetails("address1", "address2", None, None, None, "FR"), EtmpContactDetails(None, None, None, None),
     isAnAgent = true, isAGroup = true,
