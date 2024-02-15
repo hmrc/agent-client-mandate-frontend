@@ -42,13 +42,13 @@
 
 @pageScripts = {
 
-    <script @CSPNonce.attr type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
+    <script @CSPNonce.attr type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/accessible-autocomplete.min.js")'></script>
     <script @CSPNonce.attr type="text/javascript">
-      openregisterLocationPicker({
-        defaultValue: '',
-        selectElement: document.getElementById('issuingCountryCode'),
-        url: '@controllers.routes.Assets.versioned("location-autocomplete-graph.json")'
-      })
+      <script @CSPNonce.attr type="text/javascript">
+        accessibleAutocomplete.enhanceSelectElement({
+             selectElement: document.querySelector('#issuingCountryCode')
+        })
+    </script>
     </script>
 }
 
