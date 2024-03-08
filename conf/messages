@@ -92,9 +92,8 @@ client.collect-email.error.general.client-collect-email-form = This email is inv
 
 client.edit-email.title = Edit your email address
 client.edit-email.preheader = Manage your {0} service
-client.edit-email.header = Edit your email address
+client.edit-email.header = Edit your email address for notifications
 client.edit-email.lede = We need this email to send you notifications. For example, when an agent accepts a request to act for you. No confidential information will be sent by email. You should enter your email address, not your agent’s.
-client.edit-email.email = Email address
 client.edit-email.confirm-email = Confirm email address
 client.edit-email.error.general.email = There is a problem with the email address question
 client.edit-email.error.general.confirmEmail = There is a problem with the confirm email address question
@@ -158,8 +157,8 @@ client.declaration.error.general.agree = There is a problem with the checkbox
 
 ##### CLIENT REMOVE AGENT
 
-client.remove-agent.title = Confirm Agent Removal
-client.remove-agent.header = Are you sure you want to cancel the authority for {0} to act on your behalf for {1}?
+client.remove-agent.title = Are you sure you want to cancel this agent to act on your behalf for ATED?
+client.remove-agent.header = Are you sure you want to cancel the agent {0} to act on your behalf for {1}?
 client.remove-agent.error = remove agent
 
 ##### CLIENT REMOVE AGENT CONFIRMATION
