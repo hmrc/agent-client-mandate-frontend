@@ -73,7 +73,8 @@
         @govukInput(
             Input(
                 label = Label(
-                    content = Text(messages("client.edit-email.email"))
+                    content = Text(messages("client.edit-email.header")),
+                    classes = "govuk-visually-hidden"
                 )
             ).withFormField(addEmailForm("email"))
         )
