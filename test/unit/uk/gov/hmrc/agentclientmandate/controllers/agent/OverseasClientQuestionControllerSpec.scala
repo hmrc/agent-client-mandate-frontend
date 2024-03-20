@@ -132,7 +132,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.overseas-client-question.title - GOV.UK")
+          document.title() must be("agent.overseas-client-question.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("submit").text() must be("continue-button")
@@ -143,7 +143,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.overseas-client-question.title - GOV.UK")
+          document.title() must be("agent.overseas-client-question.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("isOverseas").attr("checked") must be("")

@@ -122,7 +122,7 @@ class ReviewMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         viewWithAuthorisedClient(reviewMandateController)(Some(returnData)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.review-agent.title - GOV.UK")
+          document.title() must be("client.review-agent.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("client.review-agent.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section client.review-agent.preheader")
           document.getElementById("agent-ref-name-label").text() must be("client.review-agent.agent-reference")
