@@ -128,7 +128,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.paySA-question.title - GOV.UK")
+          document.title() must be("agent.paySA-question.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("agent.paySA-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.paySA-question.header")
@@ -140,7 +140,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.paySA-question.title - GOV.UK")
+          document.title() must be("agent.paySA-question.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("agent.paySA-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.paySA-question.header")

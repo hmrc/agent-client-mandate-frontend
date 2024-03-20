@@ -123,7 +123,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevUniqueAuthNum(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.prev-auth-num.title - GOV.UK")
+          document.title() must include("agent.prev-auth-num.title - GOV.UK - service.name - site.govuk")
         }
       }
 
@@ -131,7 +131,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.prev-auth-num.title - GOV.UK")
+          document.title() must include("agent.prev-auth-num.title - GOV.UK - service.name - site.govuk")
         }
       }
     }
@@ -141,7 +141,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
         viewWithAuthorisedAgent("any", ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevUniqueAuthNum(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.prev-auth-num.title - GOV.UK")
+          document.title() must include("agent.prev-auth-num.title - GOV.UK - service.name - site.govuk")
         }
       }
     }
