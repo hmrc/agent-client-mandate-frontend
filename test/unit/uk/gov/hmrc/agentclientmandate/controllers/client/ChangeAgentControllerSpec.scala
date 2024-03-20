@@ -131,7 +131,7 @@ class ChangeAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
         viewAuthorisedClient(request, { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.change-agent.title - GOV.UK")
+          document.title() must be("client.change-agent.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("client.change-agent.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("client.change-agent.header")

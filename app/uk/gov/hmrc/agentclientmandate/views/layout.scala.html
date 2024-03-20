@@ -18,16 +18,22 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcTimeoutDialogHelper, HmrcLayout}
 @import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsOneThirdMainContent
 @import views.html.helper.CSPNonce
-
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.HmrcStandardPageParams
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.Banners
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.TemplateOverrides
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 
 @this(
         hmrcLayout: HmrcLayout,
+        hmrcStandardPage: HmrcStandardPage,
         appConfig: AppConfig,
         hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
         hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
         twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
         twoThirdsMainContent: TwoThirdsMainContent
 )
+
 
 @(
     pageTitle: Option[String] = None,
@@ -52,15 +58,22 @@
 
 @signOutUrl = @{(appConfig.serviceSignOutUrl(Some("ated")))}
 
-@hmrcLayout(
-    pageTitle = pageTitle,
-    additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
-    serviceName = Some(messages("mandate.main-title", "ATED")),
-    serviceUrl = Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url),
-    signOutUrl = Some(signOutUrl),
-    additionalScriptsBlock = Some(allScripts),
-    mainContentLayout = Some(sideBar match {
-                                case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
-                                case None => twoThirdsMainContent(_)
-                            })
+@hmrcStandardPage(
+    HmrcStandardPageParams(
+        banners = Banners(
+            phaseBanner = None
+        ),
+        serviceURLs = ServiceURLs(
+            signOutUrl = Some(signOutUrl),
+        ),
+        templateOverrides = TemplateOverrides(
+            additionalScriptsBlock = Some(allScripts),
+            mainContentLayout = Some(sideBar match {
+                case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
+                case None => twoThirdsMainContent(_)
+            })
+        ),
+        serviceName = Some(messages("mandate.main-title", "ATED")),
+        pageTitle = pageTitle.map(messages(_) + " - " + messages("service.name") + " - " + messages("site.govuk")),
+    )
 )(content)

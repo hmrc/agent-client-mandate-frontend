@@ -120,7 +120,7 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
         viewWithAuthorisedAgent(informHmrcController) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.inform-hmrc.title - GOV.UK")
+          document.title() must be("agent.inform-hmrc.title - GOV.UK - service.name - site.govuk")
           document.getElementsByTag("header").text() must include("agent.inform-hmrc.header")
           document.getElementsByTag("header").text() must include("agent.add-a-client.sub-header")
           document.getElementById("paragraph1").text() must be("agent.inform-hmrc.p.1")
