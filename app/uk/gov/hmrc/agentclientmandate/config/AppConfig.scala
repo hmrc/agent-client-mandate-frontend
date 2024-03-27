@@ -30,6 +30,9 @@ class AppConfig @Inject()(
                            @Named("appName") val appName: String
                          ) extends ExternalUrls with CountryCodes {
 
+  val serviceList: Seq[String] =  configuration.getOptional[Seq[String]]("microservice.services.names").getOrElse(
+    throw new Exception("No services available in application configuration"))
+
   private def loadConfig(key: String) = servicesConfig.getString(key)
 
   private val contactHost = servicesConfig.getString("contact-frontend.host")

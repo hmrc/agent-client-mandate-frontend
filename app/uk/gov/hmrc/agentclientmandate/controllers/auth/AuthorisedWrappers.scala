@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.auth
 
+import uk.gov.hmrc.agentclientmandate.utils.ValidateUri
+import uk.gov.hmrc.agentclientmandate.models.StandardAuthRetrievals
 import play.api.Logging
-import play.api.mvc.Result
+import play.api.mvc.{AnyContent, Request, Result}
 import play.api.mvc.Results._
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, ClientAuthRetrievals}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -121,6 +124,32 @@ trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
       case _                 =>
         logger.warn("[withOrgCredId] No credential ID found for organisation user")
         Future.successful(InternalServerError)
+    }
+  }
+
+  private def isValidUrl(appConfig: AppConfig, serviceName: String): Boolean = {
+    ValidateUri.isValid(appConfig.serviceList, serviceName)
+  }
+
+  private def recoverAuthorisedCalls(implicit appConfig: AppConfig, isAnAgent: Boolean): PartialFunction[Throwable, Result] = {
+    case e: NoActiveSession        =>
+      logger.warn(s"[recoverAuthorisedCalls] NoActiveSession: $e")
+      Redirect(loginUrl, loginParams(isAnAgent))
+    case e: AuthorisationException =>
+      logger.error(s"[recoverAuthorisedCalls] Auth exception: $e")
+      Redirect(controllers.routes.ApplicationController.unauthorised)
+  }
+
+  def authorisedFor(isAnAgent: Boolean, serviceName: String)(body: StandardAuthRetrievals => Future[Result])
+                   (implicit req: Request[AnyContent], ec: ExecutionContext, hc: HeaderCarrier, appConfig: AppConfig): Future[Result] = {
+    if (!isValidUrl(appConfig, serviceName)) {
+      logger.error(s"[authorisedFor] Given invalid service name of $serviceName")
+      throw new NotFoundException("Service name not found")
+    } else {
+      authorised((AffinityGroup.Organisation or AffinityGroup.Agent or Enrolment("IR-SA")) and ConfidenceLevel.L50)
+        .retrieve(allEnrolments and affinityGroup and credentials and groupIdentifier) {
+          case Enrolments(enrolments) ~ affGroup ~ creds ~ groupId => body(StandardAuthRetrievals(enrolments, affGroup, creds, groupId))
+        } recover recoverAuthorisedCalls(appConfig, isAnAgent)
     }
   }
 }
