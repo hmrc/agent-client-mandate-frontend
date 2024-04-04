@@ -111,7 +111,7 @@ class MandateDetailsControllerSpec extends PlaySpec with MockitoSugar with Befor
         viewWithAuthorisedAgent(ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.check-client-details.header - GOV.UK - service.name")
+          document.title() must be("agent.check-client-details.header - service.name - GOV.UK")
           document.getElementsByTag("header").text must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByTag("header").text must include("agent.check-client-details.header")
           document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")
@@ -135,7 +135,7 @@ class MandateDetailsControllerSpec extends PlaySpec with MockitoSugar with Befor
         viewWithAuthorisedAgent(ControllerPageIdConstants.overseasClientQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.check-client-details.header - GOV.UK - service.name")
+          document.title() must be("agent.check-client-details.header - service.name - GOV.UK")
           document.getElementsByTag("header").text must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByTag("header").text must include("agent.check-client-details.header")
           document.getElementById("email-address-label").text must be("agent.check-client-details.your-email")

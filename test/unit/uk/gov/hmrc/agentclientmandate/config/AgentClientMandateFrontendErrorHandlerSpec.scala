@@ -20,6 +20,7 @@ import org.jsoup.Jsoup
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import org.scalatestplus.play.PlaySpec
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Injecting}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.config.AgentClientMandateFrontendErrorHandler
@@ -31,13 +32,13 @@ class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with GuiceOneA
   "internalServerErrorTemplate" must {
 
     "retrieve the correct messages" in {
-      implicit val request = FakeRequest()
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
       val errorTemplate: error_template = inject[error_template]
       val errorHandler = new AgentClientMandateFrontendErrorHandler(mcc.messagesApi, mockConfig, errorTemplate, mockAppConfig)
       val result = errorHandler.internalServerErrorTemplate
       val document = Jsoup.parse(contentAsString(result))
 
-      document.title() must be("agent.client.mandate.generic.error.title - service.name")
+      document.title() must be("agent.client.mandate.generic.error.title")
       document.getElementsByTag("h1").text() must include("agent.client.mandate.generic.error.header")
       document.select("#main-content p").first().text() must be("agent.client.mandate.generic.error.message")
       document.select("#main-content p").last().text() must be("agent.client.mandate.generic.error.message2")

@@ -167,7 +167,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         viewWithAuthorisedClient() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("client.collect-email.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section client.collect-email.preheader")
           document.getElementsByClass("govuk-label").text() must be("client.collect-email.email.label")
@@ -181,7 +181,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         viewWithAuthorisedClient(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
         }
       }
@@ -193,7 +193,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         editWithAuthorisedClient() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("client.collect-email.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section client.collect-email.preheader")
           document.getElementsByClass("govuk-label").text() must be("client.collect-email.email.label")
@@ -211,7 +211,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         viewWithAuthorisedClient(Some(cached), Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
 
           document.getElementsByClass("govuk-back-link").text() must be("Back")
@@ -225,7 +225,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         viewWithAuthorisedClient(Some(cached), None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@mail.com")
 
           document.getElementById("backLinkHref") must be(null)
@@ -241,7 +241,7 @@ class CollectEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         backWithAuthorisedClient(Some(cached), Some("http://backlink")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.collect-email.title - GOV.UK - service.name")
+          document.title() must be("client.collect-email.title - service.name - GOV.UK")
 
           document.getElementsByClass("govuk-back-link").text() must be("Back")
           document.getElementsByClass("govuk-back-link").attr("href") must be("http://backlink")

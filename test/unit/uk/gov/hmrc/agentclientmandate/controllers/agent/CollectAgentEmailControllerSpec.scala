@@ -165,7 +165,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         viewEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
           verify(mockDataCacheService, times(1))
             .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -176,7 +176,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         editEmailAuthorisedAgent(Some(agentEmail)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
         }
       }
@@ -188,7 +188,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         viewEmailAuthorisedAgent(None, Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.enter-email.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
@@ -204,7 +204,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         editEmailAuthorisedAgent(None, Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.enter-email.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("info").text() must include(s"agent.enter-email.info.text")
@@ -226,7 +226,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         addClientAuthorisedAgent(Some(clientMandatDisplay)){ result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("agent@mail.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -237,7 +237,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         addClientAuthorisedAgent(None) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.enter-email.title - GOV.UK - service.name")
+          document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](
             ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())

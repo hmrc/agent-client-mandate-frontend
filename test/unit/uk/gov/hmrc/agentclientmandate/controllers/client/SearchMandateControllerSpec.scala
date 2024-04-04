@@ -152,7 +152,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         viewWithAuthorisedClient(searchMandateController)() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.search-mandate.title - GOV.UK - service.name")
+          document.title() must be("client.search-mandate.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("client.search-mandate.header")
           document.getElementById("mandateRef").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
@@ -164,7 +164,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
         viewWithAuthorisedClient(searchMandateController)(Some(cached)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.search-mandate.title - GOV.UK - service.name")
+          document.title() must be("client.search-mandate.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("client.search-mandate.header")
           document.getElementById("mandateRef").`val`() must be("ABC123")
           document.getElementById("submit").text() must be("continue-button")

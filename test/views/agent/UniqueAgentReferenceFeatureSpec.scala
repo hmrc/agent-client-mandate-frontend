@@ -49,7 +49,7 @@ class UniqueAgentReferenceFeatureSpec extends AnyFeatureSpec
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Your unique agent reference is ABC123 - GOV.UK - service.name")
-      assert(document.title() === "agent.unique-reference.title - GOV.UK - service.name")
+      assert(document.title() === "agent.unique-reference.title - service.name - GOV.UK")
       And("The banner text is - Your unique authorisation number for test name is ABC123")
       assert(document.getElementById("banner").text() === "agent.unique-reference.header")
       And("The screen text is - What you must do next")

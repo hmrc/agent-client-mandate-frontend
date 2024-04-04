@@ -15,17 +15,12 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcTimeoutDialogHelper, HmrcLayout}
 @import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsOneThirdMainContent
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcStandardPage, HmrcTimeoutDialogHelper}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
 @import views.html.helper.CSPNonce
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.HmrcStandardPageParams
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.Banners
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.TemplateOverrides
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.ServiceURLs
 
 @this(
-        hmrcLayout: HmrcLayout,
         hmrcStandardPage: HmrcStandardPage,
         appConfig: AppConfig,
         hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
@@ -33,7 +28,6 @@
         twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
         twoThirdsMainContent: TwoThirdsMainContent
 )
-
 
 @(
     pageTitle: Option[String] = None,
@@ -56,15 +50,14 @@
     @scripts
 }
 
-@signOutUrl = @{(appConfig.serviceSignOutUrl(Some("ated")))}
+@signOutUrl = @{appConfig.serviceSignOutUrl(Some("ated"))}
+@serviceUrl = @{uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url}
 
 @hmrcStandardPage(
     HmrcStandardPageParams(
-        banners = Banners(
-            phaseBanner = None
-        ),
         serviceURLs = ServiceURLs(
             signOutUrl = Some(signOutUrl),
+            serviceUrl = Some(serviceUrl)
         ),
         templateOverrides = TemplateOverrides(
             additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
@@ -74,7 +67,7 @@
                 case None => twoThirdsMainContent(_)
             })
         ),
-        serviceName = Some(messages("mandate.main-title", "ATED")),
-        pageTitle = pageTitle.map(messages(_) + " - " + messages("service.name")),
+        serviceName = Some(messages("service.name")),
+        pageTitle = pageTitle
     )
 )(content)

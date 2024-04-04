@@ -128,7 +128,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.nrl-question.title - GOV.UK - service.name")
+          document.title() must be("agent.nrl-question.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.nrl-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.nrl-question.header")
@@ -140,7 +140,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
         viewWithAuthorisedAgentWithSomeData { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.nrl-question.title - GOV.UK - service.name")
+          document.title() must be("agent.nrl-question.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.nrl-question.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.nrl-question.header")

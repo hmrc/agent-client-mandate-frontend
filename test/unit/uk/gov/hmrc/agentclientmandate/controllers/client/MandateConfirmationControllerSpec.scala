@@ -124,7 +124,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with MockitoSugar with 
         viewAuthorisedClient(controller)(Some(mandate)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.agent-confirmation.title - GOV.UK - service.name")
+          document.title() must be("client.agent-confirmation.title - service.name - GOV.UK")
           document.getElementById("banner").text() must include("client.agent-confirmation.banner-text")
           document.getElementById("notification").text() must be("client.agent-confirmation.notification")
           document.getElementById("heading").text() must be("client.agent-confirmation.header")

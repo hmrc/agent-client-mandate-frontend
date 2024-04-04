@@ -57,7 +57,7 @@ class noClientsNoPendingViewSpec extends AnyFeatureSpec
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - client.summary.title - GOV.UK - service.name")
-      assert(document.title() === "client.summary.title - GOV.UK - service.name")
+      assert(document.title() === "client.summary.title - service.name - GOV.UK")
 
       And("I should not see the clients cancelled panel")
       assert(document.getElementById("client-cancelled-title") === null)

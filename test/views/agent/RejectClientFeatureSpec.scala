@@ -47,7 +47,7 @@ class RejectClientFeatureSpec extends AnyFeatureSpec
 
       val document = Jsoup.parse(html.toString())
       Then("The title should match - Are you sure you want to reject the request from this client? - GOV.UK - service.name")
-      assert(document.title() === "agent.reject-client.title - GOV.UK - service.name")
+      assert(document.title() === "agent.reject-client.title - service.name - GOV.UK")
       And("The pre-header text is - Manage your ATED service")
       assert(document.getElementsByTag("h1").text().contains("ated.screen-reader.section agent.edit-mandate-details.pre-header"))
       And("The header text is - Are you sure you want to reject the request from ACME Limited?")

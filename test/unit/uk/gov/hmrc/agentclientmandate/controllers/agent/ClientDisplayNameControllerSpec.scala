@@ -156,7 +156,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         viewClientDisplayNameAuthorisedAgent(redirectUrl = Some("/some/path")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-display-name.title - GOV.UK - service.name")
+          document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.client-display-name.header")
         }
       }
@@ -165,7 +165,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         viewClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some("/api/anywhere")) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-display-name.title - GOV.UK - service.name")
+          document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
           document.getElementById("clientDisplayName").`val`() must be("client display name")
           verify(mockDataCacheService, times(1))
             .fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
@@ -182,7 +182,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         editClientDisplayNameAuthorisedAgent(redirectUrl = Some(RedirectUrl("/some/path"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-display-name.title - GOV.UK - service.name")
+          document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.client-display-name.header")
         }
       }
@@ -191,7 +191,7 @@ class ClientDisplayNameControllerSpec extends PlaySpec with MockitoSugar with Be
         editClientDisplayNameAuthorisedAgent(Some(ClientDisplayName("client display name")), Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-display-name.title - GOV.UK - service.name")
+          document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
           document.getElementById("clientDisplayName").`val`() must be("client display name")
         }
       }

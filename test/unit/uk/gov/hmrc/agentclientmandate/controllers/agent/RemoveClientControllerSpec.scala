@@ -141,7 +141,7 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       viewWithAuthorisedAgent { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("agent.remove-client.header - GOV.UK - service.name")
+        document.title() must be("agent.remove-client.header - service.name - GOV.UK")
         document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
         document.getElementsByTag("header").text() must include("agent.remove-client.header")
         document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.remove-client.header")
@@ -221,7 +221,7 @@ class RemoveClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       showConfirmationWithAuthorisedAgent { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("agent.remove-client-confirmation.title - GOV.UK - service.name")
+        document.title() must be("agent.remove-client-confirmation.title - service.name - GOV.UK")
       }
     }
   }

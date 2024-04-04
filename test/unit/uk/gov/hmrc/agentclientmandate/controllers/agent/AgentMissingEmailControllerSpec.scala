@@ -65,7 +65,7 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         viewEmailAuthorisedAgent() { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.missing-email.title - GOV.UK - service.name")
+          document.title() must be("agent.missing-email.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.missing-email.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementById("info").text() must be("agent.missing-email.text")
