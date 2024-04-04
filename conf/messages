@@ -186,7 +186,7 @@ agent.select-service.error.service = Select a service
 ##### SERVICE
 
 agent.select-service.services.ated = ATED
-service.name = ATED
+service.name = Submit and view you ATED returns
 site.govuk = GOV.UK
 
 ##### AGENT ENTER EMAIL 
