@@ -50,7 +50,7 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.govukfrontend.views.html.components._",
       "uk.gov.hmrc.govukfrontend.views.html.components.implicits._"
     ),
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.13.12",
     libraryDependencies ++= appDependencies,
     retrieveManaged := true
   )
