@@ -119,7 +119,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with MockitoSugar with
         viewWithAuthorisedAgent(controller)(Some(ClientMandateDisplayDetails("test name", mandateId, agentLastUsedEmail))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.unique-reference.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.unique-reference.title - GOV.UK - service.name")
         }
       }
     }

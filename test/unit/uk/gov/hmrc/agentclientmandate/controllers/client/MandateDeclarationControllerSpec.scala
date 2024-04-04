@@ -130,7 +130,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with M
         viewAuthorisedClient(controller)(cachedData) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("Declaration and consent - GOV.UK - service.name - site.govuk")
+          document.title() must be("Declaration and consent - GOV.UK - service.name")
           document.getElementsByTag("header").text() must include("client.agent-declaration.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section client.agent-declaration.pre-heading")
           document.getElementById("declare-title").text() must be("client.agent-declaration.declare-header")

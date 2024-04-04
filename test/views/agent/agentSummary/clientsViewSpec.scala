@@ -98,8 +98,8 @@ class clientsViewSpec extends AnyFeatureSpec
       val html = injectedViewInstanceClients("ATED", Mandates(activeMandates, pendingMandates), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - client.summary.title - GOV.UK - service.name - site.govuk")
-      assert(document.title() === "client.summary.title - GOV.UK - service.name - site.govuk")
+      Then("The title should match - client.summary.title - GOV.UK - service.name")
+      assert(document.title() === "client.summary.title - GOV.UK - service.name")
 
       And ("The h1 should be ATED clients")
       assert(document.getElementsByTag("h1"). text() === "client.summary.title")
@@ -162,8 +162,8 @@ class clientsViewSpec extends AnyFeatureSpec
       val html = injectedViewInstanceClients("ATED", Mandates(activeMandates, Nil), agentDetails, None, "", filterClientsForm)
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - client.summary.title - GOV.UK - service.name - site.govuk")
-      assert(document.title() === "client.summary.title - GOV.UK - service.name - site.govuk")
+      Then("The title should match - client.summary.title - GOV.UK - service.name")
+      assert(document.title() === "client.summary.title - GOV.UK - service.name")
 
       And("The Current Clients tab - should exist and have 1 item")
       assert(document.getElementById("active-mandate-tab").text === "client.summary.client-active.title")

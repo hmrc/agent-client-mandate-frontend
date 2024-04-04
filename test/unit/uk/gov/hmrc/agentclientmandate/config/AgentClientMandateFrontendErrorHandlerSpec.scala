@@ -37,7 +37,7 @@ class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with GuiceOneA
       val result = errorHandler.internalServerErrorTemplate
       val document = Jsoup.parse(contentAsString(result))
 
-      document.title() must be("agent.client.mandate.generic.error.title - service.name - site.govuk")
+      document.title() must be("agent.client.mandate.generic.error.title - service.name")
       document.getElementsByTag("h1").text() must include("agent.client.mandate.generic.error.header")
       document.select("#main-content p").first().text() must be("agent.client.mandate.generic.error.message")
       document.select("#main-content p").last().text() must be("agent.client.mandate.generic.error.message2")

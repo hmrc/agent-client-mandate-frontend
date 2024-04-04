@@ -135,7 +135,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name - site.govuk")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name")
         }
       }
 
@@ -143,7 +143,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name - site.govuk")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name")
         }
       }
     }
@@ -153,7 +153,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
         viewWithAuthorisedAgent("any", ControllerPageIdConstants.paySAQuestionControllerId, Some(PrevRegistered(Some(true)))) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name - site.govuk")
+          document.title() must include("agent.client-prev-registered.title - GOV.UK - service.name")
         }
       }
     }

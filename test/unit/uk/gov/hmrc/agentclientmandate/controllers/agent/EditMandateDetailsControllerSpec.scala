@@ -48,7 +48,7 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
         viewWithAuthorisedAgent(Some(mandate)) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.edit-mandate-details.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.edit-mandate-details.title - GOV.UK - service.name")
           document.getElementsByTag("header").text() must include("agent.edit-mandate-details.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementById("sub-heading").text() must be("agent.edit-mandate-details.sub-heading")

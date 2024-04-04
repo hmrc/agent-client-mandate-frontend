@@ -145,7 +145,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.client-permission.title - GOV.UK - service.name")
           document.getElementsByTag("header").text() must include("agent.client-permission.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
@@ -168,7 +168,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         viewWithAuthorisedAgentWithSomeData(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.client-permission.title - GOV.UK - service.name")
           document.getElementsByTag("header").text() must include("agent.client-permission.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
@@ -186,7 +186,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.client-permission.title - GOV.UK - service.name")
           document.getElementsByTag("header").text() must include("agent.client-permission.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
@@ -205,7 +205,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         viewWithAuthorisedAgent(serviceUsed = "otherService", "") { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.client-permission.title - GOV.UK - service.name")
         }
       }
     }

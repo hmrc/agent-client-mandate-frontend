@@ -145,7 +145,7 @@ class RejectClientControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.reject-client.title - GOV.UK - service.name - site.govuk")
+          document.title() must be("agent.reject-client.title - GOV.UK - service.name")
           document.getElementsByTag("h1").text() must include("agent.reject-client.header")
         }
       }

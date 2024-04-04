@@ -67,6 +67,7 @@
             signOutUrl = Some(signOutUrl),
         ),
         templateOverrides = TemplateOverrides(
+            additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
             additionalScriptsBlock = Some(allScripts),
             mainContentLayout = Some(sideBar match {
                 case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
@@ -74,6 +75,6 @@
             })
         ),
         serviceName = Some(messages("mandate.main-title", "ATED")),
-        pageTitle = pageTitle.map(messages(_) + " - " + messages("service.name") + " - " + messages("site.govuk")),
+        pageTitle = pageTitle.map(messages(_) + " - " + messages("service.name")),
     )
 )(content)
