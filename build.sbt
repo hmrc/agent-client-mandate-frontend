@@ -1,11 +1,15 @@
-import sbt.Keys._
-import sbt._
-import uk.gov.hmrc.DefaultBuildSettings._
-import play.sbt.routes._
+import sbt.Keys.*
+import sbt.*
+import uk.gov.hmrc.DefaultBuildSettings.*
+import play.sbt.routes.*
+import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName: String = "agent-client-mandate-frontend"
+
+ThisBuild / majorVersion := 1
+ThisBuild / scalaVersion := "2.13.12"
 
 lazy val appDependencies : Seq[ModuleID] = AppDependencies()
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -35,13 +39,13 @@ lazy val scoverageSettings = {
 }
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
-  .settings(playSettings ++ scoverageSettings : _*)
-  .settings(majorVersion := 1)
-  .settings(scalaSettings: _*)
-  .settings(defaultSettings(): _*)
+  .enablePlugins((Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins) *)
+  .settings((playSettings ++ scoverageSettings) *)
+  .settings(scalaSettings *)
+  .settings(defaultSettings() *)
   .settings(
-    RoutesKeys.routesImport += "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl"
+    RoutesKeys.routesImport += "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl",
+    scalacOptions ++= Seq("-Wconf:src=target/.*:s", "-Wconf:cat=unused-imports&src=routes/.*:s", "-Wconf:cat=unused-imports&src=html/.*:s")
   )
   .settings(
     TwirlKeys.templateImports ++= Seq(
@@ -50,20 +54,17 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.govukfrontend.views.html.components._",
       "uk.gov.hmrc.govukfrontend.views.html.components.implicits._"
     ),
-    scalaVersion := "2.13.8",
     libraryDependencies ++= appDependencies,
     retrieveManaged := true
   )
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
-  .settings(
-    IntegrationTest / Keys.fork := false,
-    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-    addTestReportOption(IntegrationTest, "int-test-reports"),
-    IntegrationTest  / parallelExecution := false,
-    scalacOptions ++= Seq("-Wconf:src=target/.*:s", "-Wconf:src=routes/.*:s", "-Wconf:cat=unused-imports&src=html/.*:s")
-  )
+
   .settings(resolvers ++= Seq(
     Resolver.jcenterRepo
   ))
   .disablePlugins(JUnitXmlReportPlugin)
+
+lazy val it = project
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(libraryDependencies ++= AppDependencies.itDependencies)

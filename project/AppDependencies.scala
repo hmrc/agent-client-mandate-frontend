@@ -1,39 +1,30 @@
-import sbt._
-import play.sbt.PlayImport._
+import sbt.*
+import play.sbt.PlayImport.*
 
 private object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "7.22.0",
-    "uk.gov.hmrc"       %% "play-partials"                 % "8.4.0-play-28",
-    "uk.gov.hmrc"       %% "domain"                        % "8.3.0-play-28",
-    "uk.gov.hmrc"       %% "http-caching-client"           % "10.0.0-play-28",
-    "uk.gov.hmrc"       %% "emailaddress"                  % "3.8.0",
-    "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.13.0-play-28",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "7.23.0-play-28",
-    "commons-codec"     %  "commons-codec"                 % "1.16.0"
+    "uk.gov.hmrc"   %% "bootstrap-frontend-play-30"            % "8.5.0",
+    "uk.gov.hmrc"   %% "play-partials-play-30"                 % "9.1.0",
+    "uk.gov.hmrc"   %% "domain-play-30"                        % "9.0.0",
+    "uk.gov.hmrc"   %% "http-caching-client-play-30"           % "11.2.0",
+    "uk.gov.hmrc"   %% "emailaddress-play-30"                  % "4.0.0",
+    "uk.gov.hmrc"   %% "play-conditional-form-mapping-play-30" % "2.0.0",
+    "uk.gov.hmrc"   %% "play-frontend-hmrc-play-30"            % "8.5.0",
+    "commons-codec" %  "commons-codec"                         % "1.16.1"
   )
 
-  trait TestDependencies {
-    lazy val scope: String = "it,test"
-    lazy val test: Seq[ModuleID] = Nil
-  }
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"                  %% "bootstrap-test-play-30" % "8.5.0",
+    "org.scalatestplus.play"       %% "scalatestplus-play"     % "7.0.1",
+    "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.18.0"
+  ).map(_ % Test)
 
-  object Test {
-    def apply(): Seq[ModuleID] = new TestDependencies {
-      override lazy val test: Seq[ModuleID] = Seq(
-      "uk.gov.hmrc"                  %% "bootstrap-test-play-28" % "7.22.0"   % scope,
-      "org.scalatestplus.play"       %% "scalatestplus-play"     % "5.1.0"    % scope,
-      "org.jsoup"                    %  "jsoup"                  % "1.16.2"   % scope,
-      "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.17.0" % scope,
-      "org.mockito"                  %  "mockito-core"           % "5.7.0"    % scope,
-      "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2" % scope,
-      "com.github.tomakehurst"       %  "wiremock-jre8"          % "2.35.1"   % scope,
-      "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.15.3"   % scope
-      )
-    }.test
-  }
 
-  def apply(): Seq[ModuleID] = compile ++ Test()
+  val itDependencies: Seq[ModuleID] = Seq(
+    "org.wiremock" %  "wiremock-standalone" % "3.5.2" % Test,
+  )
+
+  def apply(): Seq[ModuleID] = compile ++ test
 }
