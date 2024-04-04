@@ -15,25 +15,20 @@ private object AppDependencies {
     "commons-codec" %  "commons-codec"                         % "1.16.1"
   )
 
-  trait TestDependencies {
-    lazy val scope: String = "it,test"
-    lazy val test: Seq[ModuleID] = Nil
-  }
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"                  %% "bootstrap-test-play-30" % "8.5.0",
+    "org.scalatestplus.play"       %% "scalatestplus-play"     % "7.0.1",
+    "org.jsoup"                    %  "jsoup"                  % "1.17.2",
+    "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.18.0",
+    "org.mockito"                  %  "mockito-core"           % "5.11.0",
+    "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.17.0"
+  ).map(_ % Test)
 
-  object Test {
-    def apply(): Seq[ModuleID] = new TestDependencies {
-      override lazy val test: Seq[ModuleID] = Seq(
-      "uk.gov.hmrc"                  %% "bootstrap-test-play-30" % "8.5.0"    % scope,
-      "org.scalatestplus.play"       %% "scalatestplus-play"     % "7.0.1"    % scope,
-      "org.jsoup"                    %  "jsoup"                  % "1.17.2"   % scope,
-      "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.18.0" % scope,
-      "org.mockito"                  %  "mockito-core"           % "5.11.0"   % scope,
-      "org.scalatestplus"            %% "scalatestplus-mockito"  % "1.0.0-M2" % scope,
-      "org.wiremock"                 %  "wiremock"               % "3.5.2"    % scope,
-      "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.17.0"   % scope
-      )
-    }.test
-  }
 
-  def apply(): Seq[ModuleID] = compile ++ Test()
+  val itDependencies: Seq[ModuleID] = Seq(
+    "org.wiremock" %  "wiremock-standalone" % "3.5.2" % Test,
+  )
+
+  def apply(): Seq[ModuleID] = compile ++ test
 }
