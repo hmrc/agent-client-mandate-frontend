@@ -203,7 +203,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.summary.title - GOV.UK")
+          document.title() must be("client.summary.title - service.name - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-btn").text() must be("client.summary.add-client")
           document.getElementById("add-client-link") must be(null)
@@ -221,7 +221,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-visually-hidden").eq(0).text must be("client.summary.hidden.client_activated")
-          document.title() must be("client.summary.title - GOV.UK")
+          document.title() must be("client.summary.title - service.name - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("filter-clients") must be(null)
@@ -241,7 +241,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.summary.title - GOV.UK")
+          document.title() must be("client.summary.title - service.name - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("filter-clients").text() must be("client.summary.filter-clients")
@@ -262,7 +262,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.summary.title - GOV.UK")
+          document.title() must be("client.summary.title - service.name - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("active-mandate-tab").attr("href") must be("#active-mandates")
@@ -280,7 +280,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("client.summary.title - GOV.UK")
+          document.title() must be("client.summary.title - service.name - GOV.UK")
           document.getElementById("header").text must be("client.summary.title")
           document.getElementById("add-client-link").text() must be("client.summary.add-client")
           document.getElementById("pending-mandate-tab").attr("href") must be("#pending-mandates")

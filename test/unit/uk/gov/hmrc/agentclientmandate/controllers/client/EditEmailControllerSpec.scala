@@ -136,7 +136,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
       viewWithAuthorisedClient(controller)("/api/anywhere") { result =>
         status(result) must be(OK)
         val document = Jsoup.parse(contentAsString(result))
-        document.title() must be("client.edit-email.title - GOV.UK")
+        document.title() must be("client.edit-email.title - service.name - GOV.UK")
         document.getElementById("email").`val`() must be("client@client.com")
 
         document.getElementsByClass("govuk-back-link").text() must be("Back")

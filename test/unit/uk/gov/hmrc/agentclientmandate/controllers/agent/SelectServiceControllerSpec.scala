@@ -73,14 +73,13 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.select-service.title - GOV.UK")
+          document.title() must be("agent.select-service.title - service.name - GOV.UK")
           document.getElementsByTag("header").text() must include("agent.select-service.header")
           document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.select-service.header")
           document.getElementById("submit").text() must be("submit-button")
         }
       }
-
     }
 
     "agent requests(GET) for 'select service question' view and single service feature is enabled" when {

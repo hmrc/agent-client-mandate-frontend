@@ -21,7 +21,6 @@ mandate.agent.delegation.url.text = Change client
 agent-client-mandate.error.summaryHeader = There is a problem with this page
 agent.add-a-client.sub-header = Add a client
 
-mandate.main-title = Submit and view your {0} returns
 mandate.sign-out = Sign out
 
 ated.screen-reader.section = This section is:
@@ -186,6 +185,7 @@ agent.select-service.error.service = Select a service
 ##### SERVICE
 
 agent.select-service.services.ated = ATED
+service.name = Submit and view your ATED returns
 
 ##### AGENT ENTER EMAIL 
 

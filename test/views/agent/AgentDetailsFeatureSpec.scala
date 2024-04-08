@@ -45,8 +45,8 @@ class AgentDetailsFeatureSpec extends AnyFeatureSpec
       val html = injectedViewInstanceAgentDetails(AgentBuilder.buildAgentDetails, "service", Some("http://"))
 
       val document = Jsoup.parse(html.toString())
-      Then("The title should match - Your details - GOV.UK")
-      assert(document.title() === "agent.edit-details.title - GOV.UK")
+      Then("The title should match - Your details - GOV.UK - service.name")
+      assert(document.title() === "agent.edit-details.title - service.name - GOV.UK")
 
       And("The pre-header text is - Edit details")
       assert(document.getElementsByTag("header").text() contains "ated.screen-reader.section agent.edit-details.sub-header")

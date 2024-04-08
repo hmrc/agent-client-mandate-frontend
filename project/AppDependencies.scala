@@ -22,9 +22,7 @@ private object AppDependencies {
   ).map(_ % Test)
 
 
-  val itDependencies: Seq[ModuleID] = Seq(
-    "org.wiremock" %  "wiremock-standalone" % "3.5.2" % Test,
-  )
+  val itDependencies: Seq[ModuleID] = Seq()
 
   def apply(): Seq[ModuleID] = compile ++ test
 }

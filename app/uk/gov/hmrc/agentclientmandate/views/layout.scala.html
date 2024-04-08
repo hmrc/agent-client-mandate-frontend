@@ -15,13 +15,13 @@
  *@
 
 @import uk.gov.hmrc.agentclientmandate.config.AppConfig
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcTimeoutDialogHelper, HmrcLayout}
 @import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsOneThirdMainContent
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcStandardPage, HmrcTimeoutDialogHelper}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
 @import views.html.helper.CSPNonce
 
-
 @this(
-        hmrcLayout: HmrcLayout,
+        hmrcStandardPage: HmrcStandardPage,
         appConfig: AppConfig,
         hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
         hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
@@ -50,17 +50,24 @@
     @scripts
 }
 
-@signOutUrl = @{(appConfig.serviceSignOutUrl(Some("ated")))}
+@signOutUrl = @{appConfig.serviceSignOutUrl(Some("ated"))}
+@serviceUrl = @{uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url}
 
-@hmrcLayout(
-    pageTitle = pageTitle,
-    additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
-    serviceName = Some(messages("mandate.main-title", "ATED")),
-    serviceUrl = Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url),
-    signOutUrl = Some(signOutUrl),
-    additionalScriptsBlock = Some(allScripts),
-    mainContentLayout = Some(sideBar match {
-                                case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
-                                case None => twoThirdsMainContent(_)
-                            })
+@hmrcStandardPage(
+    HmrcStandardPageParams(
+        serviceURLs = ServiceURLs(
+            signOutUrl = Some(signOutUrl),
+            serviceUrl = Some(serviceUrl)
+        ),
+        templateOverrides = TemplateOverrides(
+            additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
+            additionalScriptsBlock = Some(allScripts),
+            mainContentLayout = Some(sideBar match {
+                case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
+                case None => twoThirdsMainContent(_)
+            })
+        ),
+        serviceName = Some(messages("service.name")),
+        pageTitle = pageTitle
+    )
 )(content)
