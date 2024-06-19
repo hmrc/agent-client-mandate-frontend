@@ -66,7 +66,6 @@
         @govukRadios(
             Radios(
                 fieldset = Some(Fieldset(
-                    classes = "govuk-radios--inline",
                     legend = Some(Legend(
                         classes = "govuk-visually-hidden",
                         content = Text(messages("client.change-agent.header"))
@@ -81,7 +80,8 @@
                         content = Text(messages("radio-no")),
                         value = Some("false")
                     )
-                )
+                ),
+                classes = "govuk-radios--inline"
             ).withFormField(changeAgentForm("yesNo"))
         )
 

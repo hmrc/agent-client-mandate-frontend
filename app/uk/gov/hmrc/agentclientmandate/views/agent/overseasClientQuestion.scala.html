@@ -68,7 +68,6 @@
     @govukRadios(
         Radios(
             fieldset = Some(Fieldset(
-                classes = "govuk-radios--inline",
                 legend = Some(Legend(
                     classes = "govuk-visually-hidden",
                     content = Text(Messages("agent.overseas-client-question.header"))
@@ -83,7 +82,8 @@
                     content = Text(Messages("radio-no")),
                     value = Some("false")
                 )
-            )
+            ),
+            classes = "govuk-radios--inline"
         ).withFormField(overseasClientQuestionForm("isOverseas"))
     )
 
