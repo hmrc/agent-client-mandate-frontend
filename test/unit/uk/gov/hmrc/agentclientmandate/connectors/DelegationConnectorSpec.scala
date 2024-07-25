@@ -16,9 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers._
@@ -27,25 +25,19 @@ import uk.gov.hmrc.agentclientmandate.models.{Link, PrincipalTaxIdentifiers, Sta
 import uk.gov.hmrc.domain.AtedUtr
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
+class DelegationConnectorSpec extends PlaySpec  with MockitoSugar {
 
-  val mockDefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig = mock[ServicesConfig]
 
-  trait Setup {
+  trait Setup extends ConnectorMocks {
+    when(mockServicesConfig.baseUrl("delegation")).thenReturn("http://localhost:9020/")
     val connector: DelegationConnector = new DelegationConnector(
-      mockDefaultHttpClient,
+      mockHttpClient,
       mockServicesConfig
     )
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockDefaultHttpClient)
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -63,9 +55,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
   "startDelegation" should {
     "create a new delegation" when {
       "supplied with a delegation context" in new Setup {
-        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-            .thenReturn(Future.successful(HttpResponse(CREATED, "")))
+        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(CREATED, "")))
 
         await(connector.startDelegation("oid", startDelegationContext)) mustBe true
       }
@@ -73,25 +63,19 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAnd
 
     "fail to create a new delegation" when {
       "a 400 response is returned" in new Setup {
-        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("failed", BAD_REQUEST, BAD_REQUEST)))
+        when(execute[HttpResponse]).thenReturn(Future.failed(UpstreamErrorResponse("failed", BAD_REQUEST, BAD_REQUEST)))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
 
       "a 200 response is returned" in new Setup {
-        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }
 
       "a 500 response is returned" in new Setup {
-        when(mockDefaultHttpClient.PUT[StartDelegationContext, HttpResponse](ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("failed", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
+        when(execute[HttpResponse]).thenReturn(Future.failed(UpstreamErrorResponse("failed", INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR)))
 
         intercept[RuntimeException](await(connector.startDelegation("oid", startDelegationContext)))
       }

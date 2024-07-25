@@ -16,9 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
@@ -27,12 +25,10 @@ import uk.gov.hmrc.agentclientmandate.connectors.BusinessCustomerConnector
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
+class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar {
 
   val testAgentAuthRetrievals = AgentAuthRetrievals(
     "agentRef",
@@ -42,13 +38,13 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
     "internalId"
   )
 
-  val mockDefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig = mock[ServicesConfig]
 
   val acknowledgementReference = "acknowledgementRef"
 
-  class Setup {
-    val connector = new BusinessCustomerConnector(mockDefaultHttpClient, mockServicesConfig)
+  class Setup extends ConnectorMocks {
+    when(mockServicesConfig.baseUrl("business-customer")).thenReturn("http://localhost:9020/")
+    val connector = new BusinessCustomerConnector(mockHttpClient, mockServicesConfig)
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -57,41 +53,26 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar with Bef
 
     "return status OK" when {
       "business customer service responds with a HttpResponse OK" in new Setup {
-
-
         val updateRegDetails = UpdateRegistrationDetailsRequest(acknowledgementReference, isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
-        when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(OK, responseJson, Map.empty[String, Seq[String]])))
+        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, responseJson, Map.empty[String, Seq[String]])))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(OK)
       }
     }
 
-
     "return response" when {
       "business customer service responds with a HttpResponse INTERNAL_SERVER_ERROR" in new Setup {
-
-
         val updateRegDetails = UpdateRegistrationDetailsRequest(acknowledgementReference, isAnIndividual = false,None,Some(Organisation("Org Name",Some(true))),
           RegisteredAddressDetails("address1","address2",None,None,None,"FR"),
           EtmpContactDetails(None,None,None,None),isAnAgent = true,isAGroup = true,Some(Identification("idnumber","FR","issuingInstitution")))
-        when(mockDefaultHttpClient.POST[UpdateRegistrationDetailsRequest, HttpResponse]
-          (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson, Map.empty[String, Seq[String]])))
+        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, responseJson, Map.empty[String, Seq[String]])))
         val result = await(connector.updateRegistrationDetails("safeId", updateRegDetails, testAgentAuthRetrievals))
         result.status must be(INTERNAL_SERVER_ERROR)
       }
     }
 
-  }
-
-  override def beforeEach(): Unit = {
-    reset(mockDefaultHttpClient)
   }
 
   val responseJson: JsValue = Json.parse("""{"valid": true}""")

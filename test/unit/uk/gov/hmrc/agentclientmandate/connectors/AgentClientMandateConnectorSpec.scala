@@ -17,19 +17,17 @@
 package unit.uk.gov.hmrc.agentclientmandate.connectors
 
 import java.time.{Instant, LocalDate}
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AgentClientMandateConnector
 import uk.gov.hmrc.agentclientmandate.models.{CreateMandateDto, _}
 import uk.gov.hmrc.domain.AgentBusinessUtr
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AgentBuilder, AgentBusinessUtrGenerator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,17 +35,17 @@ import scala.concurrent.Future
 
 class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
-  val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
 
   override def beforeEach(): Unit = {
     reset(mockServicesConfig)
   }
 
-  class Setup {
+  class Setup extends ConnectorMocks {
+    when(mockServicesConfig.baseUrl("agent-client-mandate")).thenReturn("http://localhost:9020/")
     val agentClientMandateConnector = new AgentClientMandateConnector(
       mockServicesConfig,
-      mockDefaultHttpClient
+      mockHttpClient
     )
   }
 
@@ -89,10 +87,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "create a mandate" in new Setup {
       val successResponse = Json.toJson(mandateDto)
 
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(),any(),any()))
-        .thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.createMandate(mandateDto, testAgentAuthRetrievals)
       await(response).status must be(OK)
@@ -102,9 +97,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "fetch a valid mandate" in new Setup {
       val successResponse = Json.toJson(mandate)
 
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandate(mandateId)
       await(response).status must be(OK)
@@ -114,10 +107,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "return valid response, when client approves it" in new Setup {
       val successResponse = Json.toJson(mandate)
 
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = await(agentClientMandateConnector.approveMandate(mandate, testClientAuthRetrievals))
       response.status must be(OK)
@@ -126,9 +116,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "fetch all valid mandates" in new Setup {
       val successResponse = Json.toJson(mandateDto)
 
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchAllMandates(testAgentAuthRetrievals, serviceName, allClients = true, None)
       await(response).status must be(OK)
@@ -137,36 +125,28 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "fetch all valid mandates for only users clients" in new Setup {
       val successResponse = Json.toJson(mandateDto)
 
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchAllMandates(testAgentAuthRetrievals, serviceName, allClients = false, None)
       await(response).status must be(OK)
     }
 
     "reject a client" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.rejectClient(mandateId, testAgentAuthRetrievals.agentCode))
       response.status must be(OK)
     }
 
     "get agent details" in new Setup {
-      when(mockDefaultHttpClient.GET[AgentDetails]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(agentDetails))
+     when(execute[AgentDetails]).thenReturn(Future.successful(agentDetails))
 
       val response: AgentDetails = await(agentClientMandateConnector.fetchAgentDetails())
       response.agentName must be("Org Name")
     }
 
     "get agent details for an individual" in new Setup {
-      when(mockDefaultHttpClient.GET[AgentDetails]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(agentDetails.copy(
+      when(execute[AgentDetails]).thenReturn(Future.successful(agentDetails.copy(
           isAnIndividual = true,
           individual = Some(Individual("name", Some("middle"), "last", LocalDate.now()))
       )))
@@ -176,9 +156,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     }
 
     "get agent details for an individual with no data" in new Setup {
-      when(mockDefaultHttpClient.GET[AgentDetails]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(agentDetails.copy(
+      when(execute[AgentDetails]).thenReturn(Future.successful(agentDetails.copy(
           isAnIndividual = true
       )))
 
@@ -187,36 +165,28 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     }
 
     "activate a client" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.activateMandate(mandateId, testAgentAuthRetrievals.agentCode))
       response.status must be(OK)
     }
 
     "remove an agent" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.remove(mandateId))
       response.status must be(OK)
     }
 
     "remove a client" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.remove(mandateId))
       response.status must be(OK)
     }
 
     "edit client mandate" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.editMandate(mandate, testAgentAuthRetrievals))
       response.status must be(OK)
@@ -225,9 +195,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "fetch a mandate for a client" in new Setup {
       val successResponse = Json.toJson(mandate)
 
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service")
       await(response).status must be(OK)
@@ -236,54 +204,42 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "fetch a mandate for a client by id" in new Setup {
       val successResponse = Json.toJson(mandate)
 
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, successResponse, Map.empty[String, Seq[String]])))
 
       val response = agentClientMandateConnector.fetchMandateByClient("clientId", "service")
       await(response).status must be(OK)
     }
 
     "does an agent have a missing email" in new Setup {
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = agentClientMandateConnector.doesAgentHaveMissingEmail("ated", testAgentAuthRetrievals)
       await(response).status must be(OK)
     }
 
     "update an agents email address" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateAgentMissingEmail("test@mail.com", testAgentAuthRetrievals, "ated"))
       response.status must be(OK)
     }
 
     "update a client email address" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateClientEmail("test@mail.com", "mandateId", testClientAuthRetrievals))
       response.status must be(OK)
     }
 
     "update an agent cred id" in new Setup {
-      when(mockDefaultHttpClient.POST[JsValue, HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = await(agentClientMandateConnector.updateAgentCredId(testAgentAuthRetrievals))
       response.status must be(OK)
     }
 
     "get clients that have cancelled" in new Setup {
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response = agentClientMandateConnector.fetchClientsCancelled(testAgentAuthRetrievals, "ated")
       await(response).status must be(OK)

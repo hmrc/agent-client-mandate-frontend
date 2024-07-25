@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
-import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext._
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -37,7 +37,7 @@ class DelegationConnector @Inject()(val http: HttpClientV2,
 
   def startDelegation(oid: String, delegationContext: StartDelegationContext)
                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    http.put(url"${delegationUrl(oid)}").withBody(delegationContext).execute[HttpResponse].map { response =>
+    http.put(url"${delegationUrl(oid)}").withBody(Json.toJson(delegationContext)).execute[HttpResponse].map { response =>
       response.status match {
         case CREATED =>
           logger.info("[Delegation] Successfully created delegation")

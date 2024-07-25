@@ -33,6 +33,7 @@ class DataCacheService @Inject()(val http: HttpClientV2,
   val baseUri: String = config.baseDataCacheUri
   val defaultSource: String = config.dataCacheDefaultSource
   val domain: String = config.dataCacheDomain
+  def httpClientV2: HttpClientV2 = http
 
   def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[Option[T]] = {
     fetchAndGetEntry[T](key = formId)
