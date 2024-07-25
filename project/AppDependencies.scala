@@ -10,9 +10,9 @@ private object AppDependencies {
     "uk.gov.hmrc"   %% "domain-play-30"                        % "10.0.0",
     "uk.gov.hmrc"   %% "http-caching-client-play-30"           % "12.1.0",
     "uk.gov.hmrc"   %% "emailaddress-play-30"                  % "4.0.0",
-    "uk.gov.hmrc"   %% "play-conditional-form-mapping-play-30" % "2.0.0",
-    "uk.gov.hmrc"   %% "play-frontend-hmrc-play-30"            % "10.1.0",
-    "commons-codec" %  "commons-codec"                         % "1.17.0"
+    "uk.gov.hmrc"   %% "play-conditional-form-mapping-play-30" % "3.1.0",
+    "uk.gov.hmrc"   %% "play-frontend-hmrc-play-30"            % "10.5.0",
+    "commons-codec" %  "commons-codec"                         % "1.17.1"
   )
 
   val test: Seq[ModuleID] = Seq(
