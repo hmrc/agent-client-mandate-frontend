@@ -20,18 +20,17 @@ package uk.gov.hmrc.agentclientmandate.connectors
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, UpdateRegistrationDetailsRequest}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class BusinessCustomerConnector @Inject()(
-                                         val http: DefaultHttpClient,
+                                         val http: HttpClientV2,
                                          val servicesConfig: ServicesConfig
                                          ) extends Logging {
 
@@ -44,7 +43,7 @@ class BusinessCustomerConnector @Inject()(
     val authLink = authRetrievals.mandateConnectorUri
     val postUrl = s"""$serviceUrl$authLink/$baseUri/$updateRegistrationDetailsURI/$safeId"""
     val jsonData = Json.toJson(updateRegistrationDetails)
-    http.POST[JsValue, HttpResponse](postUrl, jsonData)(implicitly, implicitly, implicitly, implicitly) map { response =>
+    http.post(url"$postUrl").withBody(jsonData).execute[HttpResponse].map{ response =>
       response.status match {
         case OK => response
         case status =>

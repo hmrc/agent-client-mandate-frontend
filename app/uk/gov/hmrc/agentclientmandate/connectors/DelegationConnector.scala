@@ -20,15 +20,16 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
+import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits._
-
+import uk.gov.hmrc.http.StringContextOps
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DelegationConnector @Inject()(val http: DefaultHttpClient,
+class DelegationConnector @Inject()(val http: HttpClientV2,
                                     val servicesConfig: ServicesConfig) extends Logging {
   protected def serviceUrl: String = servicesConfig.baseUrl("delegation")
 
@@ -36,7 +37,7 @@ class DelegationConnector @Inject()(val http: DefaultHttpClient,
 
   def startDelegation(oid: String, delegationContext: StartDelegationContext)
                      (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    http.PUT[StartDelegationContext, HttpResponse](delegationUrl(oid), delegationContext) map { response =>
+    http.put(url"${delegationUrl(oid)}").withBody(delegationContext).execute[HttpResponse].map { response =>
       response.status match {
         case CREATED =>
           logger.info("[Delegation] Successfully created delegation")

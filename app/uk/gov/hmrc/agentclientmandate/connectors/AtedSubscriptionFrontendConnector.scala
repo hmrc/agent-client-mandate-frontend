@@ -21,15 +21,15 @@ import play.api.mvc.Request
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.partials.HeaderCarrierForPartialsConverter
 import uk.gov.hmrc.http.HttpReads.Implicits._
-
+import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.client.HttpClientV2
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AtedSubscriptionFrontendConnector @Inject()(
-                                                   http: DefaultHttpClient,
+                                                   http: HttpClientV2,
                                                    servicesConfig: ServicesConfig,
                                                    val cryp: SessionCookieCrypto
                                                  ) extends HeaderCarrierForPartialsConverter {
@@ -39,7 +39,7 @@ class AtedSubscriptionFrontendConnector @Inject()(
 
   def clearCache(service: String)(implicit request: Request[_], ec: ExecutionContext): Future[HttpResponse] = {
     val getUrl = s"$serviceUrl/$clearCacheUri/$service"
-    http.GET[HttpResponse](getUrl)
+    http.get(url"$getUrl").execute[HttpResponse]
   }
 
   def crypto: String => String = identity
