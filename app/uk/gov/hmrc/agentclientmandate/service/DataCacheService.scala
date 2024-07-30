@@ -21,18 +21,19 @@ import play.api.Logging
 import play.api.libs.json.Format
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.http.cache.client.SessionCache
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DataCacheService @Inject()(val http: DefaultHttpClient,
+class DataCacheService @Inject()(val http: HttpClientV2,
                                  val config: AppConfig) extends SessionCache with Logging {
 
   val baseUri: String = config.baseDataCacheUri
   val defaultSource: String = config.dataCacheDefaultSource
   val domain: String = config.dataCacheDomain
+  def httpClientV2: HttpClientV2 = http
 
   def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[Option[T]] = {
     fetchAndGetEntry[T](key = formId)
@@ -42,7 +43,7 @@ class DataCacheService @Inject()(val http: DefaultHttpClient,
     cache[T](formId, formData).map(_ => formData)
   }
 
-  def clearCache()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def clearCache()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
     remove()
   }
 }

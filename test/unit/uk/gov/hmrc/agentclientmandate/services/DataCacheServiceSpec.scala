@@ -28,8 +28,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, SessionId}
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
+import unit.uk.gov.hmrc.agentclientmandate.connectors.ConnectorMocks
 import scala.concurrent.{ExecutionContext, Future}
 
 class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
@@ -58,12 +57,12 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
     implicit val formats: OFormat[FormData] = Json.format[FormData]
   }
 
-  val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
   val mockAppConfig: AppConfig = mock[AppConfig]
 
-  class Setup {
+  class Setup extends ConnectorMocks {
+    when(mockAppConfig.baseDataCacheUri).thenReturn("http://localhost:9020/")
     val testDataCacheService = new DataCacheService(
-      mockDefaultHttpClient,
+      mockHttpClient,
       mockAppConfig
     )
   }
@@ -78,9 +77,7 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
           Future.successful(None)
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](any(), any(), any())
-          (any(), any(), any()))
-          .thenReturn(Future.successful(CacheMap("test", Map())))
+        when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map())))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(None)
       }
@@ -94,9 +91,7 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
           Future.successful(Some(formData))
         }
 
-        when(mockDefaultHttpClient.GET[CacheMap](any(), any(), any())
-          (any(), any(), any()))
-          .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.parse(
+        when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.parse(
             """{
               |   "name":"some-data",
               |   "other": false
@@ -114,9 +109,7 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
           Future.successful(cacheMap)
         }
 
-        when(mockDefaultHttpClient.PUT[FormData, CacheMap](any(), any(), any())
-          (any(), any(), any(), any()))
-          .thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
+       when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
 
         await(testDataCacheService.cacheFormData[FormData](formId, formData)) must be(formData)
       }
@@ -126,12 +119,9 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
       "asked to do so" in new Setup {
         when(mockSessionCache.remove()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        when(mockDefaultHttpClient.DELETE[HttpResponse]
-        (any(), any())
-        (any(), any(), any())
-        ).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        await(testDataCacheService.clearCache()).status must be(OK)
+        await(testDataCacheService.clearCache()) must be(())
       }
     }
   }

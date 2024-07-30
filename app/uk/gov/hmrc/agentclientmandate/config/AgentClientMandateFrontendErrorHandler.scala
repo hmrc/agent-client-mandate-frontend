@@ -21,10 +21,10 @@ import java.util
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.{Messages, MessagesApi}
-import play.api.mvc.Request
-import play.twirl.api.{Html, HtmlFormat}
+import play.api.mvc.RequestHeader
+import play.twirl.api.Html
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
-
+import scala.concurrent.{Future, ExecutionContext}
 import scala.jdk.CollectionConverters._
 
 @Singleton
@@ -32,25 +32,26 @@ class AgentClientMandateFrontendErrorHandler @Inject()(
                                                         val messagesApi: MessagesApi,
                                                         val configuration: Configuration,
                                                         val templateError: uk.gov.hmrc.agentclientmandate.views.html.error_template,
-                                                        implicit val appConfig: AppConfig
+                                                        implicit val appConfig: AppConfig,
+                                                        val ec: ExecutionContext
                                                       ) extends FrontendErrorHandler {
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)
-                                    (implicit rh: Request[_]): HtmlFormat.Appendable = {
+                                    (implicit rh: RequestHeader): Future[Html] = {
     val bitsFromPath: Array[String] = rh.path.split("/")
     val config: util.List[String] = configuration.underlying.getStringList("microservice.servicesUsed")
     val service: Array[String] = bitsFromPath.filter(config.asScala.contains(_))
 
-    templateError(pageTitle, heading, message, None, service.headOption, appConfig)
+    Future.successful(templateError(pageTitle, heading, message, None, service.headOption, appConfig))
   }
 
-  override def internalServerErrorTemplate(implicit request: Request[_]): Html = {
-    templateError(
+  override def internalServerErrorTemplate(implicit request: RequestHeader): Future[Html] =
+    Future.successful(templateError(
       Messages("agent.client.mandate.generic.error.title"),
       Messages("agent.client.mandate.generic.error.header"),
       Messages("agent.client.mandate.generic.error.message"),
       Some(Messages("agent.client.mandate.generic.error.message2")),
       None,
-      appConfig)
-  }
+      appConfig))
+
 }

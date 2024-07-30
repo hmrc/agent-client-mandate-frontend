@@ -29,14 +29,11 @@ import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
 
-  val mockDefaultHttpClient: DefaultHttpClient = mock[DefaultHttpClient]
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val mockSessionCookieCrypto: SessionCookieCrypto = mock[SessionCookieCrypto]
   val mockEncWithDec: Encrypter with Decrypter = mock[Encrypter with Decrypter]
@@ -46,15 +43,14 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
       .thenReturn(mockEncWithDec)
     when(mockEncWithDec.encrypt(any()))
       .thenReturn(Crypted("test"))
-
-    reset(mockDefaultHttpClient)
   }
 
   implicit val request: Request[_] = FakeRequest(GET, "")
 
-  class Setup {
+  class Setup extends ConnectorMocks {
+    when(mockServicesConfig.baseUrl("ated-subscription-frontend")).thenReturn("http://localhost:9020/")
     val connector = new AtedSubscriptionFrontendConnector(
-      mockDefaultHttpClient,
+      mockHttpClient,
       mockServicesConfig,
       mockSessionCookieCrypto
     )
@@ -62,9 +58,7 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
 
   "AtedSubscriptionFrontendConnector" must {
     "clear cache" in new Setup {
-      when(mockDefaultHttpClient.GET[HttpResponse]
-        (any(), any(), any())
-        (any(), any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val response: Future[HttpResponse] = connector.clearCache("")
       await(response).status must be(OK)
