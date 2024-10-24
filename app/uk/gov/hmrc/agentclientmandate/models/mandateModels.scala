@@ -132,7 +132,7 @@ object Mandate {
   implicit val formats: OFormat[Mandate] = Json.format[Mandate]
 }
 
-case class ClientDetails(agentName: String, changeAgentLink: String, email: String, changeEmailLink: String)
+case class ClientDetails(agentName: String, changeAgentLink: String, email: String, changeEmailLink: String, status: String = "")
 
 object ClientDetails {
   implicit val formats: OFormat[ClientDetails] = Json.format[ClientDetails]

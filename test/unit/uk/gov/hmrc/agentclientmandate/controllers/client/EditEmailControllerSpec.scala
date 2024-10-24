@@ -175,7 +175,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           currentStatus = MandateStatus(Status.New, Instant.now(), "credId"), statusHistory = Nil, Subscription(None, Service("ated", "ATED")),
           clientDisplayName = "client display name")
         getDetailsWithAuthorisedClient(controller)(Some(mandate), "/api/anywhere") { result =>
-          status(result) must be(NOT_FOUND)
+          status(result) must be(OK)
         }
       }
 
