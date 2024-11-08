@@ -145,6 +145,16 @@ class AgentMissingEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         }
       }
     }
+
+    "user selected option 'no' for use email address" in new Setup {
+      val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest()
+        .withMethod("POST")
+        .withFormUrlEncodedBody("useEmailAddress" -> "false","email" -> "")
+      submitEmailAuthorisedAgent(fakeRequest, isValidEmail = false) { result =>
+        status(result) must be(SEE_OTHER)
+        redirectLocation(result).get must include("summary")
+      }
+    }
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
