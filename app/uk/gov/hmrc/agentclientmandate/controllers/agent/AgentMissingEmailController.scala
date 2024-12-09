@@ -44,15 +44,17 @@ class AgentMissingEmailController @Inject()(
     }
   }
 
-  def submit(service: String): Action[AnyContent] = Action.async { implicit request =>
+  def submit(service: String): Action[AnyContent] = Action.async(implicit request => {
     withAgentRefNumber(Some(service)) { authRetrievals =>
       agentMissingEmailForm.bindFromRequest().fold(
         formWithError => Future.successful(BadRequest(templateAgentMissingEmail(formWithError, service))),
         data => {
-          agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
+          if (data.email.isDefined) {
+            agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
+          }
           Future.successful(Redirect(routes.AgentSummaryController.view()))
         }
       )
     }
-  }
+  })
 }
