@@ -49,9 +49,7 @@ class AgentMissingEmailController @Inject()(
       agentMissingEmailForm.bindFromRequest().fold(
         formWithError => Future.successful(BadRequest(templateAgentMissingEmail(formWithError, service))),
         data => {
-          if (data.email.isDefined) {
-            agentClientMandateService.updateAgentMissingEmail(data.email.get, authRetrievals, service)
-          }
+          agentClientMandateService.updateAgentMissingEmail(data.email, authRetrievals, service)
           Future.successful(Redirect(routes.AgentSummaryController.view()))
         }
       )
