@@ -57,7 +57,9 @@
           Input(
             label = Label(
               content = Text(messages("agent.missing-email.email_address"))
-            )
+            ),
+            autocomplete = Some("email"),
+            inputmode = Some("email")
           ).withFormField(agentMissingEmailForm("email"))
         )
 }

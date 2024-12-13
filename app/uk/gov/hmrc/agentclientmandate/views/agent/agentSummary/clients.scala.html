@@ -83,7 +83,8 @@
           Input(
             label = Label(
               content = Text(Messages("client.summary.filter-display_name"))
-            )
+            ),
+            autocomplete = Some("name"),
           ).withFormField(filterClientsForm("displayName"))
         )
 
@@ -92,7 +93,7 @@
               fieldset = Some(Fieldset(
                 legend = Some(Legend(
                   classes = "govuk-visually-hidden",
-                  content = Text(Messages("agent.overseas-client-question.header"))
+                  content = Text(Messages("client.summary.filter-clients"))
                 ))
               )),
               items = Seq(
