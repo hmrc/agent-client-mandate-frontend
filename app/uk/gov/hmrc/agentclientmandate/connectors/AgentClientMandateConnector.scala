@@ -119,12 +119,12 @@ class AgentClientMandateConnector @Inject()(val servicesConfig: ServicesConfig,
     http.get(url"$getUrl").execute[HttpResponse]
   }
 
-  def updateAgentMissingEmail(emailAddress: String, agentAuthRetrievals: AgentAuthRetrievals, service: String)
-                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def updateAgentMissingEmail(emailAddress: Option[String], agentAuthRetrievals: AgentAuthRetrievals, service: String)
+                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Option[Future[HttpResponse]]= emailAddress map { email =>
     val authLink = agentAuthRetrievals.mandateConnectorUriNoAuthId
     val arn = agentAuthRetrievals.agentRef
 
-    val jsonData = Json.toJson(emailAddress)
+    val jsonData = Json.toJson(email)
     val postUrl = s"$serviceUrl$authLink/$mandateUri/updateAgentEmail/$arn/$service"
     http.post(url"$postUrl").withBody(jsonData).execute[HttpResponse]
   }

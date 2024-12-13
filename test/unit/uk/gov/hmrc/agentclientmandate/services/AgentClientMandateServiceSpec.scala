@@ -466,7 +466,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
 
     "update agent email" must {
       "update an agents missing email address" in new Setup {
-        service.updateAgentMissingEmail("test@mail.com", testAgentAuthRetrievals, "ated")
+        service.updateAgentMissingEmail(Some("test@mail.com"), testAgentAuthRetrievals, "ated")
       }
     }
 

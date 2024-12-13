@@ -220,7 +220,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
     "update an agents email address" in new Setup {
       when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
 
-      val response = await(agentClientMandateConnector.updateAgentMissingEmail("test@mail.com", testAgentAuthRetrievals, "ated"))
+      val response = await(agentClientMandateConnector.updateAgentMissingEmail(Some("test@mail.com"), testAgentAuthRetrievals, "ated").get)
       response.status must be(OK)
     }
 

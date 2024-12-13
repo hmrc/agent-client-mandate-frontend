@@ -219,7 +219,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
     }
   }
 
-  def updateAgentMissingEmail(emailAddress: String, agentAuthRetrievals: AgentAuthRetrievals, service: String)
+  def updateAgentMissingEmail(emailAddress: Option[String], agentAuthRetrievals: AgentAuthRetrievals, service: String)
                              (implicit hc: HeaderCarrier, ec: ExecutionContext): Unit = {
     agentClientMandateConnector.updateAgentMissingEmail(emailAddress, agentAuthRetrievals, service)
   }
