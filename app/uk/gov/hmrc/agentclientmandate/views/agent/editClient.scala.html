@@ -76,7 +76,8 @@
               ),
               hint = Some(Hint(
                   content = Text(Messages("agent.edit-mandate-details.hint"))
-              ))
+              )),
+              autocomplete = Some("name")
           ).withFormField(editMandateDetailsForm("displayName"))
       )
 
@@ -84,7 +85,9 @@
           Input(
               label = Label(
                   content = Text(Messages("agent.edit-mandate-details.email"))
-              )
+              ),
+            autocomplete = Some("email"),
+            inputmode = Some("email")
           ).withFormField(editMandateDetailsForm("email"))
       )
 

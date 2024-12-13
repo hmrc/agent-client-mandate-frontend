@@ -72,7 +72,9 @@
               label = Label(
                   classes = "govuk-visually-hidden",
                   content = Text(messages("client.collect-email.email.label"))
-              )
+              ),
+            autocomplete = Some("email"),
+            inputmode = Some("email")
           ).withFormField(addEmailForm("email"))
       )
 

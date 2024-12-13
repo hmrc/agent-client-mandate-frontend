@@ -75,7 +75,8 @@
                     label = Label(
                         classes = "govuk-visually-hidden",
                         content = Text(Messages("agent.client-display-name.change"))
-                    )
+                    ),
+                    autocomplete = Some("name")
                 ).withFormField(clientDisplayNameForm("clientDisplayName"))
             )
         </div>

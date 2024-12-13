@@ -83,7 +83,9 @@
                 label = Label(
                     classes = "govuk-visually-hidden",
                     content = Text(Messages("agent.enter-email.field.email.label"))
-                )
+                ),
+            autocomplete = Some("email"),
+            inputmode = Some("email")
             ).withFormField(agentEmailForm("email"))
         )
     </div>

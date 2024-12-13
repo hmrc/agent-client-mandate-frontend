@@ -95,7 +95,8 @@
       Input(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.agentName"))
-          )
+          ),
+          autocomplete = Some("name"),
       ).withFormField(agentDetailsForm("agentName"))
     )
 
@@ -103,7 +104,8 @@
       Input(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.line_1"))
-          )
+          ),
+          autocomplete = Some("address-line1"),
       ).withFormField(agentDetailsForm("address.addressLine1"))
     )
 
@@ -111,7 +113,8 @@
       Input(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.line_2"))
-          )
+          ),
+          autocomplete = Some("address-line2"),
       ).withFormField(agentDetailsForm("address.addressLine2"))
     )
 
@@ -119,7 +122,8 @@
       Input(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.line_3"))
-          )
+          ),
+          autocomplete = Some("address-line3"),
       ).withFormField(agentDetailsForm("address.addressLine3"))
     )
 
@@ -127,7 +131,8 @@
       Input(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.line_4"))
-          )
+          ),
+          autocomplete = Some("address-level1"),
       ).withFormField(agentDetailsForm("address.addressLine4"))
     )
 
