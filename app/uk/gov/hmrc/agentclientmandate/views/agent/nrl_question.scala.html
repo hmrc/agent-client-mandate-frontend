@@ -43,9 +43,7 @@
 
 @implicitFormInstance = @{ Some(nrlQuestionForm) }
 
-@main_template(title = titleBuilder(messages("agent.nrl-question.title"), Some(nrlQuestionForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.nrl-question.title"), Some(nrlQuestionForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(nrlQuestionForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(nrlQuestionForm))

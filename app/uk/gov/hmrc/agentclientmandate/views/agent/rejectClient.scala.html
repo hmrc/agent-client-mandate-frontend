@@ -41,9 +41,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.reject-client.title"), Some(rejectClientForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.reject-client.title"), Some(rejectClientForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(rejectClientForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(rejectClientForm))

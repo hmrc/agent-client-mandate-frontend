@@ -36,9 +36,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.inform-hmrc.title"))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.inform-hmrc.title")), beforeContent = Some(backLinkHtml)) {
 
     <header>
         <h1 class="govuk-heading-xl">

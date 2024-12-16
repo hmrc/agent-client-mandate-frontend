@@ -59,9 +59,7 @@
 
 @implicitFormInstance = @{ Some(agentDetailsForm) }
 
-@main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), scriptElem = Some(pageScripts)) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), scriptElem = Some(pageScripts), beforeContent = Some(backLinkHtml)) {
 
     @if(agentDetailsForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentDetailsForm))

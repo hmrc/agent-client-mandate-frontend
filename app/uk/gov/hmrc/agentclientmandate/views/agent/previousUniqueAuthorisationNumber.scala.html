@@ -49,9 +49,7 @@
     <p class="govuk-body" id="titleNumber-text-2">@messages("agent.prev-auth-num.accordion.p2")</p>
 }
 
-@main_template(title = titleBuilder(messages("agent.prev-auth-num.title"), Some(prevUniqueAuthNumForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.prev-auth-num.title"), Some(prevUniqueAuthNumForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(prevUniqueAuthNumForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(prevUniqueAuthNumForm))

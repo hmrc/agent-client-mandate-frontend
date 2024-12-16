@@ -34,9 +34,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.edit-details.title"))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.edit-details.title")), beforeContent = Some(backLinkHtml)) {
 
     <header>
         <h1 class="govuk-heading-xl">

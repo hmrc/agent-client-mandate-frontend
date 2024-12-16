@@ -41,9 +41,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.remove-client.header", clientName), Some(removeClientForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.remove-client.header", clientName), Some(removeClientForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(removeClientForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(removeClientForm))

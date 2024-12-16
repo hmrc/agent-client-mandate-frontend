@@ -43,9 +43,8 @@
 
 @implicitFormInstance = @{ Some(selectServiceForm) }
 
-@main_template(title = titleBuilder(messages("agent.select-service.title"), Some(selectServiceForm))) {
+@main_template(title = titleBuilder(messages("agent.select-service.title"), Some(selectServiceForm)), beforeContent = Some(backLinkHtml)) {
 
-    @backLinkHtml
 
     @if(selectServiceForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(selectServiceForm))
