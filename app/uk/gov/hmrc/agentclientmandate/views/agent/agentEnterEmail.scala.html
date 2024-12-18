@@ -51,9 +51,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.enter-email.title"), Some(agentEmailForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.enter-email.title"), Some(agentEmailForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(agentEmailForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentEmailForm))

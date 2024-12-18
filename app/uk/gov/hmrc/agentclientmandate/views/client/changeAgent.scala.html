@@ -41,9 +41,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("client.change-agent.title"), Some(changeAgentForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("client.change-agent.title"), Some(changeAgentForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(changeAgentForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(changeAgentForm))

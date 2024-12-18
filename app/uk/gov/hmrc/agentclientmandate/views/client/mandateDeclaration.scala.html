@@ -37,9 +37,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("Declaration and consent"))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("Declaration and consent")), beforeContent = Some(backLinkHtml)) {
 
     <header>
         <h1 class="govuk-heading-xl">

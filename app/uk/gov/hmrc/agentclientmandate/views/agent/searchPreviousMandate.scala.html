@@ -41,9 +41,8 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.search-previous-mandate.title"), Some(mandateRefForm))) {
+@main_template(title = titleBuilder(messages("agent.search-previous-mandate.title"), Some(mandateRefForm)), beforeContent = Some(backLinkHtml)) {
 
-    @backLinkHtml
 
     @if(mandateRefForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(mandateRefForm))

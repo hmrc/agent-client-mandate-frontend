@@ -98,9 +98,7 @@
 
 }
 
-@main_template(title = titleBuilder(Messages("agent.edit-details.title"), Some(identificationForm)),scriptElem = Some(pageScripts)) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(Messages("agent.edit-details.title"), Some(identificationForm)),scriptElem = Some(pageScripts), beforeContent = Some(backLinkHtml)) {
 
     @if(identificationForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(identificationForm))

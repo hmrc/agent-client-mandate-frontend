@@ -41,9 +41,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("agent.edit-mandate-details.title", clientParty.getOrElse("")), Some(editMandateDetailsForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.edit-mandate-details.title", clientParty.getOrElse("")), Some(editMandateDetailsForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(editMandateDetailsForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(editMandateDetailsForm))

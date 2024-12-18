@@ -60,9 +60,7 @@
     }
 }
 
-@main_template(title = titleBuilder(messages("agent.client-permission.title"), Some(clientPermissionForm)), scriptElem = Some(pageScripts)) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.client-permission.title"), Some(clientPermissionForm)), scriptElem = Some(pageScripts), beforeContent = Some(backLinkHtml)) {
 
     @if(clientPermissionForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(clientPermissionForm))

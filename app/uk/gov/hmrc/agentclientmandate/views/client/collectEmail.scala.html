@@ -41,9 +41,8 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("client.collect-email.title"), Some(addEmailForm))) {
+@main_template(title = titleBuilder(messages("client.collect-email.title"), Some(addEmailForm)), beforeContent = Some(backLinkHtml)) {
 
-    @backLinkHtml
 
     @if(addEmailForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(addEmailForm))

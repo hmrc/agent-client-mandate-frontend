@@ -44,9 +44,7 @@
 
 @implicitFormInstance = @{ Some(overseasClientQuestionForm) }
 
-@main_template(title = titleBuilder(messages("agent.overseas-client-question.title"), Some(overseasClientQuestionForm))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("agent.overseas-client-question.title"), Some(overseasClientQuestionForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(overseasClientQuestionForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(overseasClientQuestionForm))

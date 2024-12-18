@@ -37,9 +37,7 @@
 }
 }
 
-@main_template(title = titleBuilder(messages("client.review-agent.title"))) {
-
-    @backLinkHtml
+@main_template(title = titleBuilder(messages("client.review-agent.title")), beforeContent = Some(backLinkHtml)) {
 
     <header>
         <h1 class="govuk-heading-xl">
