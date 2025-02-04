@@ -41,7 +41,7 @@ POST    /agent/service             uk.gov.hmrc.agentclientmandate.controllers.ag
 
 GET     /agent/add-client      uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.addClient(service = "ated")
 GET     /agent/edit-email      uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.editFromSummary(service = "ated")
-GET     /agent/email           uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.view(service = "ated", returnUrl: Option[RedirectUrl] ?= None)
+GET     /agent/email           uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.view(service = "ated", redirectUrl: Option[RedirectUrl] ?= None)
 POST    /agent/email           uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.submit(service = "ated", redirectUrl : Option[RedirectUrl] ?= None)
 GET     /agent/email-session     uk.gov.hmrc.agentclientmandate.controllers.agent.CollectAgentEmailController.getAgentEmail(service = "ated")
 
