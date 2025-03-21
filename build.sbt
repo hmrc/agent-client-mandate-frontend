@@ -13,7 +13,7 @@ ThisBuild / scalaVersion := "2.13.15"
 
 lazy val appDependencies : Seq[ModuleID] = AppDependencies()
 lazy val plugins : Seq[Plugins] = Seq.empty
-lazy val playSettings : Seq[Setting[_]] = Seq.empty
+lazy val playSettings : Seq[Setting[?]] = Seq.empty
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
