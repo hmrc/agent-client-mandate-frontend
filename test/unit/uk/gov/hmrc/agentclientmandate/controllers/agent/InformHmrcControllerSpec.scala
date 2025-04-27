@@ -26,7 +26,7 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.Result
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
+import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.InformHmrcController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
@@ -44,7 +44,6 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val serviceAWRS: String = "AWRS"
@@ -54,9 +53,6 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
   class Setup {
     val informHmrcController = new InformHmrcController(
       stubbedMessagesControllerComponents,
-      mockDataCacheService,
-      mockBusinessCustomerConnector,
-      mockAtedSubscriptionConnector,
       implicitly,
       mockAppConfig,
       mockAuthConnector,
@@ -74,7 +70,6 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
       val userId = s"user-${UUID.randomUUID}"
       val prevReg: Option[PrevRegistered] = None
 
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
       when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
@@ -97,7 +92,6 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-    reset(mockBusinessCustomerConnector)
     reset(mockAtedSubscriptionConnector)
     reset(mockDataCacheService)
   }

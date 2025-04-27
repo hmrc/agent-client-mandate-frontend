@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
-import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
+import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
@@ -30,11 +29,11 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClientPermissionController @Inject()(
-                                            businessCustomerConnector: BusinessCustomerFrontendConnector,
                                             atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
                                             dataCacheService: DataCacheService,
                                             mcc: MessagesControllerComponents,
@@ -49,7 +48,6 @@ class ClientPermissionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         for {
           clientPermission <- dataCacheService.fetchAndGetFormData[ClientPermission](clientPermissionFormId)
-          _ <- businessCustomerConnector.clearCache(service)
           _ <- {
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK, ""))
