@@ -27,7 +27,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.connectors.{AtedSubscriptionFrontendConnector, BusinessCustomerFrontendConnector}
+import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBeforeController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
 import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
@@ -44,7 +44,6 @@ import scala.concurrent.Future
 class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockBusinessCustomerConnector: BusinessCustomerFrontendConnector = mock[BusinessCustomerFrontendConnector]
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
@@ -54,7 +53,6 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
     val controller = new HasClientRegisteredBeforeController(
       stubbedMessagesControllerComponents,
       mockDataCacheService,
-      mockBusinessCustomerConnector,
       mockAtedSubscriptionConnector,
       implicitly,
       mockAppConfig,
@@ -81,8 +79,6 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
     (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
-      when(mockBusinessCustomerConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-        .thenReturn (Future.successful(HttpResponse(OK, "")))
       when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
@@ -106,7 +102,6 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-    reset(mockBusinessCustomerConnector)
     reset(mockAtedSubscriptionConnector)
   }
 
