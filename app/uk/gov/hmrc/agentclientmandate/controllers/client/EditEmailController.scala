@@ -51,16 +51,15 @@ class EditEmailController @Inject()(
         AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
           case Some(safeLink) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
-              case Some(mandate) => mandate.currentStatus.status match {
-                case uk.gov.hmrc.agentclientmandate.models.Status.Active =>
-                  val clientDetails = ClientDetails(
-                    mandate.agentParty.name,
-                    appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url,
-                    mandate.clientParty.get.contactDetails.email,
-                    appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, RedirectUrl(safeLink)).url)
-                  Ok(Json.toJson(clientDetails))
-                case _ => NotFound
-              }
+              case Some(mandate) =>
+                val clientDetails = ClientDetails(
+                  mandate.agentParty.name,
+                  appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url,
+                  mandate.clientParty.get.contactDetails.email,
+                  appConfig.mandateFrontendHost + routes.EditEmailController.view(mandate.id, RedirectUrl(safeLink)).url,
+                  mandate.currentStatus.status.toString)
+                Ok(Json.toJson(clientDetails))
+
               case _ => NotFound
             }
           case None => Future.successful(BadRequest("The return url is not correctly formatted"))
@@ -74,18 +73,18 @@ class EditEmailController @Inject()(
     implicit request =>
       withOrgCredId(Some(service)) { authRetrievals =>
         AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
-              case Some(safeLink) =>
-                saveBackLink(safeLink).flatMap { _ =>
-                  for {
-                    _ <- dataCacheService.cacheFormData("MANDATE_ID", mandateId)
-                    mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
-                  } yield {
-                    val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
-                    Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some(safeLink)))
-                  }
-                }
-              case None => Future.successful(BadRequest("The return url is not correctly formatted"))
+          case Some(safeLink) =>
+            saveBackLink(safeLink).flatMap { _ =>
+              for {
+                _ <- dataCacheService.cacheFormData("MANDATE_ID", mandateId)
+                mandate <- mandateService.fetchClientMandate(mandateId, authRetrievals)
+              } yield {
+                val clientForm = ClientEmail(mandate.get.clientParty.get.contactDetails.email)
+                Ok(templateEditEmail(service, clientEmailForm.fill(clientForm), Some(safeLink)))
+              }
             }
+          case None => Future.successful(BadRequest("The return url is not correctly formatted"))
+        }
 
 
       }
