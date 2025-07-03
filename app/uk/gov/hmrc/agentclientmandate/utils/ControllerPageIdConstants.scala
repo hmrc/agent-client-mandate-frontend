@@ -20,4 +20,6 @@ object ControllerPageIdConstants {
   val paySAQuestionControllerId = "paySA"
   val overseasClientQuestionControllerId = "overseas"
   val nrlQuestionControllerId: String = "nrl"
+  val beforeRegisteringClientControllerId: String = "beforeRegisteringClient"
+
 }

@@ -30,7 +30,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
+import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, FeatureSwitch}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.clientPermission
@@ -45,6 +45,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val mockFeatureSwitch: ACMFeatureSwitches = mock[ACMFeatureSwitches]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val injectedViewInstanceClientPermission: clientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
@@ -57,8 +58,14 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       mockAuthConnector,
       implicitly,
       mockAppConfig,
+      mockFeatureSwitch,
       injectedViewInstanceClientPermission
     )
+
+    def setUpFeatureSwitchMock(value: Boolean): Unit = {
+      when(mockFeatureSwitch.registeringClientContentUpdate)
+        .thenReturn(FeatureSwitch("registeringClientContentUpdate", value))
+    }
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
 
@@ -146,8 +153,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
             startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
           assert(document.getElementById("hasPermission") != null)
           assert(document.getElementById("hasPermission-2") != null)
-          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
-          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
+          assert(document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
+          assert(document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
 
           document.getElementById("continue").text() must be("continue-button")
           assert(document.select("#submit").text() === "agent.all-my-clients.button")
@@ -176,6 +183,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       }
 
       "agent requests(GET) for 'client permission' view from nrl" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -185,8 +193,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
           assert(document.getElementById("hasPermission") != null)
           assert(document.getElementById("hasPermission-2") != null)
-          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
-          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
+          assert(document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
+          assert(document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
           assert(document.select("#continue").text() === "continue-button")
           assert(document.select("#submit").text() === "agent.all-my-clients.button")
           document.getElementsByClass("govuk-back-link").text() must be("Back")
@@ -195,6 +203,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       }
 
       "agent requests(GET) for 'client permission' view for other service - it doesn't clear session cache for ated-subscription" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgent(serviceUsed = "otherService", "") { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
@@ -215,6 +224,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "redirect agent to 'mandate summary' page" when {
       "valid form is submitted and NO" in new Setup {
+        setUpFeatureSwitchMock(false)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -225,6 +235,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
+        setUpFeatureSwitchMock(false)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -235,6 +246,36 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         }
       }
     }
-  }
 
+    "have the correct back link" when {
+      "view is rendered from paySA" in new Setup {
+        setUpFeatureSwitchMock(false)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
+        }
+      }
+
+      "view is rendered from nrl" in new Setup {
+        setUpFeatureSwitchMock(true)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/nrl-question")
+        }
+      }
+
+      "view is rendered from beforeRegisteringClient" in new Setup {
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.beforeRegisteringClientControllerId) { result =>
+          status(result) must be(OK)
+          val document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/before-registering-client/" + ControllerPageIdConstants.beforeRegisteringClientControllerId)
+        }
+      }
+    }
+  }
 }
