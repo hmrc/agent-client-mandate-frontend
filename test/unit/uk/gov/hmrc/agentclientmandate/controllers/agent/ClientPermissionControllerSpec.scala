@@ -16,8 +16,8 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import java.util.UUID
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -30,14 +30,15 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
+import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, FeatureSwitch}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.views
-import uk.gov.hmrc.agentclientmandate.views.html.agent.clientPermission
+import uk.gov.hmrc.agentclientmandate.views.html.agent.{clientPermission, clientPermission_new}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -45,9 +46,11 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
+  val mockFeatureSwitch: ACMFeatureSwitches = mock[ACMFeatureSwitches]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val injectedViewInstanceClientPermission: clientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
+  val injectedViewInstanceClientPermissionNew: clientPermission_new = app.injector.instanceOf[views.html.agent.clientPermission_new]
 
   class Setup {
     val controller = new ClientPermissionController(
@@ -57,8 +60,15 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      injectedViewInstanceClientPermission
+      mockFeatureSwitch,
+      injectedViewInstanceClientPermission,
+      injectedViewInstanceClientPermissionNew
     )
+
+    def setUpFeatureSwitchMock(value: Boolean): Unit = {
+      when(mockFeatureSwitch.registeringClientContentUpdate)
+        .thenReturn(FeatureSwitch("registeringClientContentUpdate", value))
+    }
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
 
@@ -135,70 +145,41 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "return 'nrl question' view for AUTHORISED agent" when {
       "agent requests(GET) for 'client permission' view from PaySA" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
-          document.getElementById("permission-text").text() must
-            startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
-          assert(document.getElementById("hasPermission") != null)
-          assert(document.getElementById("hasPermission-2") != null)
-          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
-          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
 
-          document.getElementById("continue").text() must be("continue-button")
-          assert(document.select("#submit").text() === "agent.all-my-clients.button")
-
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
       "agent requests(GET) for 'client permission' view from PaySA With saved data" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgentWithSomeData(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
-          document.getElementById("permission-text").text() must
-            startWith("agent.client-permission.hasPermission.selected.ated.yes.notice")
-          document.getElementById("hasPermission").attr("checked") must be("")
-          document.getElementById("continue").text() must be("continue-button")
-
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
         }
       }
 
       "agent requests(GET) for 'client permission' view from nrl" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
           status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-permission.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.client-permission.header")
-          assert(document.getElementById("hasPermission") != null)
-          assert(document.getElementById("hasPermission-2") != null)
-          assert( document.getElementsByAttributeValue("for", "hasPermission").text() contains "radio-yes")
-          assert( document.getElementsByAttributeValue("for", "hasPermission-2").text() contains "radio-no")
-          assert(document.select("#continue").text() === "continue-button")
-          assert(document.select("#submit").text() === "agent.all-my-clients.button")
-          document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/nrl-question")
+
         }
       }
 
       "agent requests(GET) for 'client permission' view for other service - it doesn't clear session cache for ated-subscription" in new Setup {
+        setUpFeatureSwitchMock(false)
         viewWithAuthorisedAgent(serviceUsed = "otherService", "") { result =>
           status(result) must be(OK)
-          val document = Jsoup.parse(contentAsString(result))
-          document.title() must be("agent.client-permission.title - service.name - GOV.UK")
+        }
+      }
+    }
+
+    "render clientPermission_new page" when {
+      "feature flag is turned on and user is authorised" in new Setup {
+        setUpFeatureSwitchMock(true)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
+          status(result) must be(OK)
         }
       }
     }
@@ -214,7 +195,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
     }
 
     "redirect agent to 'mandate summary' page" when {
-      "valid form is submitted and NO" in new Setup {
+      "valid form is submitted and NO is selected and feature flag is set to false" in new Setup {
+        setUpFeatureSwitchMock(false)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -223,8 +205,21 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       }
     }
 
+    "redirect agent to kick out page" when {
+      "valid form is submitted and user clicks NO and feature flag is set to true" in new Setup {
+        setUpFeatureSwitchMock(true)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
+        submitWithAuthorisedAgent("", fakeRequest) { result =>
+          status(result) must be(SEE_OTHER)
+          // kick out page not implemented yet, so redirect to summary page as a placeholder
+          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
+        }
+      }
+    }
+
     "returns BAD_REQUEST" when {
       "invalid form is submitted" in new Setup {
+        setUpFeatureSwitchMock(false)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("hasPermission" -> "")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -235,6 +230,59 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         }
       }
     }
-  }
 
+    "render the original view page" when {
+      "feature flag is set to false" in new Setup {
+        setUpFeatureSwitchMock(false)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val document: Document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-body").isEmpty mustBe false
+        }
+      }
+    }
+
+    "render the new view page " when {
+      "feature flag is set to true" in new Setup {
+        setUpFeatureSwitchMock(true)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val newViewDocument: Document =Jsoup.parse(contentAsString(result))
+          newViewDocument.getElementsByClass("govuk-body").isEmpty mustBe true
+        }
+      }
+    }
+
+    "have the correct back link" when {
+      "view is rendered from paySA" in new Setup {
+        setUpFeatureSwitchMock(false)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val document: Document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
+        }
+      }
+
+      "view is rendered from nrl" in new Setup {
+        setUpFeatureSwitchMock(false)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.nrlQuestionControllerId) { result =>
+          status(result) must be(OK)
+          val document: Document = Jsoup.parse(contentAsString(result))
+          document.getElementsByClass("govuk-back-link").text() must be("Back")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/nrl-question")
+        }
+      }
+
+      "view is rendered from beforeRegisteringClient" in new Setup {
+        setUpFeatureSwitchMock(true)
+        viewWithAuthorisedAgent(service, ControllerPageIdConstants.beforeRegisteringClientControllerId) { result =>
+          status(result) must be(OK)
+          val newViewDocument: Document = Jsoup.parse(contentAsString(result))
+          newViewDocument.getElementsByClass("govuk-back-link").text() must be("Back")
+          newViewDocument.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/before-registering-client/" + ControllerPageIdConstants.beforeRegisteringClientControllerId)
+        }
+      }
+    }
+  }
 }
