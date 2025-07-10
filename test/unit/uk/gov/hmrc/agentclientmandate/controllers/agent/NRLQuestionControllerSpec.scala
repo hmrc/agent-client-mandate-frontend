@@ -28,11 +28,12 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.NRLQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, FeatureSwitch}
+import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.nrl_question
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import java.util.UUID
@@ -41,8 +42,8 @@ import scala.concurrent.Future
 
 class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite {
 
+  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockFeatureSwitch: ACMFeatureSwitches = mock[ACMFeatureSwitches]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
   val injectedViewInstanceNrlQuestion: nrl_question = app.injector.instanceOf[views.html.agent.nrl_question]
@@ -54,14 +55,9 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      mockFeatureSwitch,
+      mockServicesConfig,
       injectedViewInstanceNrlQuestion
     )
-
-    def setUpFeatureSwitchMock(value: Boolean): Unit = {
-      when(mockFeatureSwitch.registeringClientContentUpdate)
-        .thenReturn(FeatureSwitch("registeringClientContentUpdate", value))
-    }
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
@@ -109,6 +105,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
+    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "NRLQuestionController" must {
@@ -171,7 +168,6 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
     "redirect agent to 'client permission' page" when {
       "valid form is submitted and NO is selected as client pays self-assessment and feature flag is off" in new Setup {
-        setUpFeatureSwitchMock(false)
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -181,7 +177,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
       "redirect agent to 'before registering client' page" when {
         "valid form is submitted and NO is selected as client pays self-assessment and feature flag is on" in new Setup {
-          setUpFeatureSwitchMock(true)
+          FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
           val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "false")
           submitWithAuthorisedAgent(fakeRequest) { result =>
             status(result) must be(SEE_OTHER)

@@ -16,6 +16,7 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -51,8 +52,6 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
     }
 
     "be DISABLED if the system property is undefined" in {
-      System.clearProperty("features.test")
-
       FeatureSwitch.forName("test").enabled must be(false)
     }
 
@@ -77,6 +76,11 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
       System.setProperty("features.registering_client_content_update", "true")
       MandateFeatureSwitches.registeringClientContentUpdate.enabled must be(true)
       System.clearProperty("features.registering_client_content_update")
+    }
+
+    "should be set to false by default in application.conf" in {
+      val config = ConfigFactory.load()
+      config.getBoolean("features.registering_client_content_update") must be(false)
     }
   }
 

@@ -20,11 +20,12 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -36,8 +37,8 @@ class PaySAQuestionController @Inject()(
                                          val authConnector: AuthConnector,
                                          implicit val ec: ExecutionContext,
                                          implicit val appConfig: AppConfig,
+                                         implicit val servicesConfig: ServicesConfig,
                                          val mcc: MessagesControllerComponents,
-                                         ACMFeatureSwitches: ACMFeatureSwitches,
                                          templatePaySAQuestion: views.html.agent.paySAQuestion
                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
@@ -66,7 +67,7 @@ class PaySAQuestionController @Inject()(
             val result = if (data.paySA.getOrElse(false)) {
               Redirect(routes.MandateDetailsController.view(controllerId))
             } else {
-              if (ACMFeatureSwitches.registeringClientContentUpdate.enabled) {
+              if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
                 Redirect(routes.BeforeRegisteringClientController.view(controllerId))
               } else {
                 Redirect(routes.ClientPermissionController.view(controllerId))

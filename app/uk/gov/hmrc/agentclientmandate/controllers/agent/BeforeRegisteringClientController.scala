@@ -19,38 +19,38 @@ package uk.gov.hmrc.agentclientmandate.controllers.agent
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
 class BeforeRegisteringClientController @Inject()(
-                                       mcc: MessagesControllerComponents,
-                                       val authConnector: AuthConnector,
-                                       implicit val appConfig: AppConfig,
-                                       templateBeforeRegisteringClient: views.html.agent.beforeRegisteringClient,
-                                        ACMFeatureSwitches: ACMFeatureSwitches
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                   mcc: MessagesControllerComponents,
+                                                   val authConnector: AuthConnector,
+                                                   implicit val appConfig: AppConfig,
+                                                   implicit val servicesConfig: ServicesConfig,
+                                                   templateBeforeRegisteringClient: views.html.agent.beforeRegisteringClient
+                                                 ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.beforeRegisteringClientControllerId
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action { implicit request =>
-    if (ACMFeatureSwitches.registeringClientContentUpdate.enabled) {
+    if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
       Ok(templateBeforeRegisteringClient(callingPage, service, getBackLink(callingPage)))
     } else {
       Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view(callingPage))
     }
   }
 
-  def submit(): Action[AnyContent] = Action {
+  def submit(callingPage: String): Action[AnyContent] = Action {
     Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view(controllerId))
   }
 
-  private def getBackLink(callingPage: String): String
-  = {
+  private def getBackLink(callingPage: String): String = {
     val paySAPageId: String = ControllerPageIdConstants.paySAQuestionControllerId
 
     callingPage match {
@@ -58,7 +58,4 @@ class BeforeRegisteringClientController @Inject()(
       case _ => routes.NRLQuestionController.view().url
     }
   }
-
-
-  }
-
+}
