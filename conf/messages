@@ -504,3 +504,12 @@ footer.links.cookies.text         = Cookies
 footer.links.privacy_policy.text         = Privacy policy
 footer.links.terms_and_conditions.text = Terms and conditions
 footer.links.help_page.text       = Help using GOV.UK
+
+
+##### CANNOT REGISTER CLIENT ERROR
+
+agent.cannot.register.client.title = Add a client
+agent.cannot.register.client.header = You cannot register this client
+agent.cannot.register.client.message1 = You must have permission from your client before you can continue.
+agent.cannot.register.client.message2 = If you do not have permission, your client must complete an ATED 1 for before you can register them.
+agent.cannot.register.client.kickout.button = Return to client list
