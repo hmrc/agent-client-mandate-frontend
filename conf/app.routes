@@ -111,3 +111,5 @@ POST    /agent/details/edit/businessDetails        uk.gov.hmrc.agentclientmandat
 
 GET     /agent/details/edit/ocrDetails        uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController.view(service = "ated")
 POST    /agent/details/edit/ocrDetails        uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController.submit(service = "ated")
+
+GET    /agent/permission-kickout/:callingPage        uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController.show(callingPage: String)
