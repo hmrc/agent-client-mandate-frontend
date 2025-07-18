@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentclientmandate.utils
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import play.api.libs.json.{Json, OFormat}
 
+import javax.inject.Inject
 import scala.util.Try
 
 case class FeatureSwitch(name: String, enabled: Boolean)
@@ -66,5 +67,13 @@ object MandateFeatureSwitches {
     case "registering_client_content_update" => Some(registeringClientContentUpdate)
     case _ => None
   }
+
+}
+
+class ACMFeatureSwitches @Inject() (implicit val servicesConfig: ServicesConfig) {
+
+  def singleService: FeatureSwitch = MandateFeatureSwitches.singleService
+
+  def registeringClientContentUpdate: FeatureSwitch = MandateFeatureSwitches.registeringClientContentUpdate
 
 }

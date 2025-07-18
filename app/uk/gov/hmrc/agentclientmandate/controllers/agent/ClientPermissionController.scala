@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, FeatureSwitch, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -42,6 +42,8 @@ class ClientPermissionController @Inject()(
                                             implicit val appConfig: AppConfig,
                                             templateClientPermission: views.html.agent.clientPermission,
                                             templateClientPermissionNew: views.html.agent.clientPermission_new
+                                            ACMFeatureSwitches: ACMFeatureSwitches,
+                                            templateClientPermission: views.html.agent.clientPermission
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {

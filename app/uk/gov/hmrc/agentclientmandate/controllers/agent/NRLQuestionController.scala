@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestionForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -37,6 +37,7 @@ class NRLQuestionController @Inject()(
                                        val authConnector: AuthConnector,
                                        implicit val ec: ExecutionContext,
                                        implicit val appConfig: AppConfig,
+                                       ACMFeatureSwitches: ACMFeatureSwitches,
                                        templateNrlQuestion: views.html.agent.nrl_question
                                      ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
@@ -66,9 +67,12 @@ class NRLQuestionController @Inject()(
             val result = if (data.nrl.getOrElse(false)) {
               Redirect(routes.PaySAQuestionController.view())
             } else {
-              Redirect(routes.ClientPermissionController.view(controllerId))
+              if (ACMFeatureSwitches.registeringClientContentUpdate.enabled) {
+                Redirect(routes.BeforeRegisteringClientController.view(controllerId))
+              } else {
+                Redirect(routes.ClientPermissionController.view(controllerId))
+              }
             }
-
             Future.successful(result)
           }
         )

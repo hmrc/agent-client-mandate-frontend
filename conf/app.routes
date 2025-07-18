@@ -61,6 +61,9 @@ POST    /agent/nrl-question            uk.gov.hmrc.agentclientmandate.controller
 GET     /agent/paySA-question            uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController.view(service = "ated")
 POST    /agent/paySA-question            uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController.submit(service = "ated")
 
+GET     /agent/before-registering-client/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController.view(service = "ated", callingPage: String)
+POST    /agent/before-registering-client/   uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController.submit()
+
 GET     /agent/client-permission/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController.view(service = "ated", callingPage: String)
 POST    /agent/client-permission/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController.submit(service = "ated", callingPage: String)
 

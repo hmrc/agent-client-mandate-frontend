@@ -237,6 +237,13 @@ agent.paySA-question.header = Does your client pay tax in the UK through Self As
 agent.paySA-question.error.general.paySA = There is a problem with the do you pay Self Assessment question
 agent.paySA-question.paySA.not-selected.error = Select yes if your client pays tax in the UK through Self Assessment
 
+##### AGENT BEFORE REGISTERING CLIENT PAGE
+
+agent.before-registering-client.title = Before registering your client
+agent.before-registering-client.header = Before registering your client
+agent.before-registering-client.bullet-2 = once you have registered them, send their ATED 1 to HMRC and keep a copy for your records.
+agent.before-registering-client.bullet-3 = form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
+
 ##### AGENT CLIENT PERMISSION PAGE
 
 agent.client-permission.title = Do you have permission to register on behalf of your client?
