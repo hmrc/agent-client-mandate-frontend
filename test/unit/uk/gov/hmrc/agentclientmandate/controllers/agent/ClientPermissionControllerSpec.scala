@@ -60,9 +60,9 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       mockAuthConnector,
       implicitly,
       mockAppConfig,
-      mockFeatureSwitch,
       injectedViewInstanceClientPermission,
-      injectedViewInstanceClientPermissionNew
+      injectedViewInstanceClientPermissionNew,
+      mockFeatureSwitch
     )
 
     def setUpFeatureSwitchMock(value: Boolean): Unit = {
@@ -211,8 +211,7 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          // kick out page not implemented yet, so redirect to summary page as a placeholder
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
+          redirectLocation(result) must be(Some(s"/mandate/agent/permission-kickout/"))
         }
       }
     }

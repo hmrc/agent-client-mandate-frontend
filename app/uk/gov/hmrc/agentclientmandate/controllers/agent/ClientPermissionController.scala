@@ -41,9 +41,8 @@ class ClientPermissionController @Inject()(
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig,
                                             templateClientPermission: views.html.agent.clientPermission,
-                                            templateClientPermissionNew: views.html.agent.clientPermission_new
-                                            ACMFeatureSwitches: ACMFeatureSwitches,
-                                            templateClientPermission: views.html.agent.clientPermission
+                                            templateClientPermissionNew: views.html.agent.clientPermission_new,
+                                            ACMFeatureSwitches: ACMFeatureSwitches
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
@@ -55,10 +54,7 @@ class ClientPermissionController @Inject()(
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK, ""))
           }
-        } yield if (FeatureSwitch.isEnabled("registeringClientContentUpdate")(appConfig.servicesConfig)) {
-          // when rebased from main, after DL-16789 is merged, you can change the above line to this line:
-//        } yield if (ACMFeatureSwitches.registeringClientContentUpdate.enabled) {
-          // (will also need to import ACMFeatureSwitches)
+        } yield if (ACMFeatureSwitches.registeringClientContentUpdate.enabled) {
           Ok(templateClientPermissionNew(clientPermissionForm.fill(
             clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
         } else {
@@ -81,9 +77,8 @@ class ClientPermissionController @Inject()(
             dataCacheService.cacheFormData[ClientPermission](clientPermissionFormId, data)
             val result = data.hasPermission.contains(true) match {
               case true => Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
-              // kick out page not implemented yet, so redirect to summary page as a placeholder
               case false if ACMFeatureSwitches.registeringClientContentUpdate.enabled =>
-                Redirect(routes.AgentSummaryController.view())
+                Redirect(routes.CannotRegisterClientKickoutController.show(callingPage))
               case false => Redirect(routes.AgentSummaryController.view())
             }
             Future.successful(result)
