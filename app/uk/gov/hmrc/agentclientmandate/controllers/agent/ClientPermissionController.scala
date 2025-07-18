@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -40,6 +40,7 @@ class ClientPermissionController @Inject()(
                                             val authConnector: AuthConnector,
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig,
+                                            ACMFeatureSwitches: ACMFeatureSwitches,
                                             templateClientPermission: views.html.agent.clientPermission
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
@@ -81,11 +82,14 @@ class ClientPermissionController @Inject()(
   }
 
   private def getBackLink(callingPage: String) = {
-    val pageId: String = ControllerPageIdConstants.paySAQuestionControllerId
+    val PaySAPageId: String = ControllerPageIdConstants.paySAQuestionControllerId
+    val beforeRegisteringClientControllerPageId: String = ControllerPageIdConstants.beforeRegisteringClientControllerId
 
     callingPage match {
-      case `pageId` => Some(routes.PaySAQuestionController.view().url)
-      case _        => Some(routes.NRLQuestionController.view().url)
+      case `PaySAPageId` => Some(routes.PaySAQuestionController.view().url)
+      case `beforeRegisteringClientControllerPageId` if ACMFeatureSwitches.registeringClientContentUpdate.enabled =>
+        Some(routes.BeforeRegisteringClientController.view(callingPage).url)
+      case _ => Some(routes.NRLQuestionController.view().url)
     }
   }
 }
