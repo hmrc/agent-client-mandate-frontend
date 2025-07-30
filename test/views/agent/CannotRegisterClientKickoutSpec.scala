@@ -19,9 +19,8 @@ package views.agent
 import org.jsoup.Jsoup
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.test.Helpers._
 import play.api.test.FakeRequest
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.agentclientmandate.views.html.agent.cannotRegisterClientKickout
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
@@ -35,7 +34,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
     private val view   = app.injector.instanceOf[cannotRegisterClientKickout]
     private val mcc    = app.injector.instanceOf[play.api.mvc.MessagesControllerComponents]
     private implicit val messagesApi: MessagesApi = mcc.messagesApi
-    private implicit val messages     = messagesApi.preferred(FakeRequest())
+    private implicit val messages: Messages = messagesApi.preferred(FakeRequest())
     private implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
     "cannotRegisterClientKickout.scala.html" should {
