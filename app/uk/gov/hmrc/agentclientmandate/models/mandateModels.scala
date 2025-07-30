@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ object PartyType extends Enumeration {
   val Organisation: models.PartyType.Value = Value
 
   implicit val enumFormat: Format[PartyType] = new Format[PartyType] {
-    def reads(json: JsValue) = JsSuccess(PartyType.withName(json.as[String]))
+    def reads(json: JsValue): JsResult[PartyType] = JsSuccess(PartyType.withName(json.as[String]))
 
-    def writes(`enum`: PartyType) = JsString(enum.toString)
+    def writes(`enum`: PartyType): JsValue = JsString(enum.toString)
   }
 }
 
@@ -54,45 +54,40 @@ object Status extends Enumeration {
   val Approved: models.Status.Value = Value
   val Active: models.Status.Value = Value
   val Rejected: models.Status.Value = Value
-  val Expired: models.Status.Value = Value
   val Cancelled: models.Status.Value = Value
   val PendingCancellation: models.Status.Value = Value
   val PendingActivation: models.Status.Value = Value
 
   implicit val enumFormat: Format[Status] = new Format[Status] {
-    def reads(json: JsValue) = JsSuccess(Status.withName(json.as[String]))
+    def reads(json: JsValue): JsResult[Status] = JsSuccess(Status.withName(json.as[String]))
 
-    def writes(`enum`: Status) = JsString(enum.toString)
+    def writes(`enum`: Status): JsValue = JsString(enum.toString)
   }
 }
 
 case class MandateStatus(status: Status, timestamp: Instant, updatedBy: String)
 
 object MandateStatus {
-  val writes: Writes[MandateStatus] = new Writes[MandateStatus] {
-    override def writes(o: MandateStatus): JsValue = {
-      val status: JsValue = Json.toJson(o.status)
-      val updatedBy: JsValue = Json.toJson(o.updatedBy)
-      val timestamp: JsValue = Json.toJson(o.timestamp.toEpochMilli)
+  private val writes: Writes[MandateStatus] = (o: MandateStatus) => {
+    val status: JsValue = Json.toJson(o.status)
+    val updatedBy: JsValue = Json.toJson(o.updatedBy)
+    val timestamp: JsValue = Json.toJson(o.timestamp.toEpochMilli)
 
-      Json.obj(
-        "status" -> status,
-        "timestamp" -> timestamp,
-        "updatedBy" -> updatedBy
-      )
-    }
+    Json.obj(
+      "status" -> status,
+      "timestamp" -> timestamp,
+      "updatedBy" -> updatedBy
+    )
   }
 
-  val reads: Reads[MandateStatus] = new Reads[MandateStatus] {
-    override def reads(json: JsValue): JsResult[MandateStatus] = {
-      val status = (json \ "status").asOpt[Status]
-      val updatedBy = (json \ "updatedBy").asOpt[String]
-      val timestamp = (json \ "timestamp").asOpt[Long].map(number => Instant.ofEpochMilli(number.longValue()))
+  private val reads: Reads[MandateStatus] = (json: JsValue) => {
+    val status = (json \ "status").asOpt[Status]
+    val updatedBy = (json \ "updatedBy").asOpt[String]
+    val timestamp = (json \ "timestamp").asOpt[Long].map(number => Instant.ofEpochMilli(number.longValue()))
 
-      (status, updatedBy, timestamp) match {
-        case (Some(st), Some(ub), Some(ts)) => JsSuccess(MandateStatus(st, ts, ub))
-        case _                              => JsError("Could not parse MandateStatus")
-      }
+    (status, updatedBy, timestamp) match {
+      case (Some(st), Some(ub), Some(ts)) => JsSuccess(MandateStatus(st, ts, ub))
+      case _ => JsError("Could not parse MandateStatus")
     }
   }
 
@@ -132,7 +127,7 @@ object Mandate {
   implicit val formats: OFormat[Mandate] = Json.format[Mandate]
 }
 
-case class ClientDetails(agentName: String, changeAgentLink: String, email: String, changeEmailLink: String)
+case class ClientDetails(agentName: String, changeAgentLink: String, email: String, changeEmailLink: String, status: String = "")
 
 object ClientDetails {
   implicit val formats: OFormat[ClientDetails] = Json.format[ClientDetails]
