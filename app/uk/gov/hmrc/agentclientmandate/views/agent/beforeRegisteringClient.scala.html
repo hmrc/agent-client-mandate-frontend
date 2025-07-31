@@ -63,7 +63,7 @@
         </ul>
     </div>
 
-    @formHelper(action = routes.BeforeRegisteringClientController.submit()) {
+    @formHelper(action = routes.BeforeRegisteringClientController.submit(callingPage)) {
         @govukButton(Button(
             content = Text(messages("continue-button")),
             inputType = Some("submit"),

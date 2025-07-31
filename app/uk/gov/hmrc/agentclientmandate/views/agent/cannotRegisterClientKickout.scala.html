@@ -39,13 +39,7 @@ govukBackLink: GovukBackLink)
     }
 }
 
-
-
-@main_template(
-    title = titleBuilder(messages("agent.cannot.register.client.title")),
-    beforeContent = Some(backLinkHtml)
-) {
-
+@main_template(title = titleBuilder(messages("agent.cannot.register.client.title")),beforeContent = Some(backLinkHtml)) {
 
     <header>
         <h1 class="govuk-heading-xl">
@@ -53,19 +47,18 @@ govukBackLink: GovukBackLink)
                     <span class="govuk-visually-hidden">
                     @messages("ated.screen-reader.section")
                     </span>
-                    @messages("agent.cannot.register.client.title")
+                    @messages("agent.add-a-client.sub-header")
                 </span>
             @messages("agent.cannot.register.client.header")
         </h1>
     </header>
-
 
     <div class="govuk-body">
         <p class="govuk-body">@messages("agent.cannot.register.client.message1")</p>
         <p class="govuk-body">@messages("agent.cannot.register.client.message2")</p>
     </div>
 
-    <a href="@agentSummaryUrl" class="govuk-button">
+    <a href="@agentSummaryUrl" class="govuk-button" id="returnToClientListLink">
         @messages("agent.cannot.register.client.kickout.button")
     </a>
 

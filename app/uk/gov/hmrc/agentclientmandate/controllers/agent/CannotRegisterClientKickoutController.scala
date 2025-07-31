@@ -15,36 +15,37 @@
  */
 
 package uk.gov.hmrc.agentclientmandate.controllers.agent
-import javax.inject.{Inject, Singleton}
+
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateConstants}
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
-import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.agentclientmandate.utils.{MandateConstants, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.views
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 @Singleton
 class CannotRegisterClientKickoutController @Inject()(
-                                   mcc: MessagesControllerComponents,
-                                   val authConnector: AuthConnector,
-                                   implicit val ec: ExecutionContext,
-                                   implicit val appConfig: AppConfig,
-                                   implicit val servicesConfig: ServicesConfig,
-                                   cannotRegisterClientKickoutView: views.html.agent.cannotRegisterClientKickout
-                                 ) extends FrontendController(mcc)
-  with AuthorisedWrappers
-  with MandateConstants {
+                                                       mcc: MessagesControllerComponents,
+                                                       val authConnector: AuthConnector,
+                                                       implicit val ec: ExecutionContext,
+                                                       implicit val appConfig: AppConfig,
+                                                       implicit val servicesConfig: ServicesConfig,
+                                                       cannotRegisterClientKickoutView: views.html.agent.cannotRegisterClientKickout
+                                                     ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+
   def show(callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { _ =>
-      if(FeatureSwitch.isEnabled("registering_client_content_update")) {
+      if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
         Future.successful(
           Ok(
             cannotRegisterClientKickoutView(
               agentSummaryUrl = routes.AgentSummaryController.view().url,
-              backLink  = Some(routes.ClientPermissionController.view(callingPage).url)
+              backLink = Some(routes.ClientPermissionController.view(callingPage).url)
             )
           )
         )

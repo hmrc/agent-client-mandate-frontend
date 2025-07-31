@@ -62,10 +62,12 @@ GET     /agent/paySA-question            uk.gov.hmrc.agentclientmandate.controll
 POST    /agent/paySA-question            uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController.submit(service = "ated")
 
 GET     /agent/before-registering-client/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController.view(service = "ated", callingPage: String)
-POST    /agent/before-registering-client/   uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController.submit()
+POST    /agent/before-registering-client/:callingPage                uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController.submit(callingPage: String)
 
 GET     /agent/client-permission/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController.view(service = "ated", callingPage: String)
 POST    /agent/client-permission/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController.submit(service = "ated", callingPage: String)
+
+GET    /agent/permission-kickout/:callingPage        uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController.show(callingPage: String)
 
 GET     /agent/client-registered-previously/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBeforeController.view(service = "ated", callingPage: String)
 POST    /agent/client-registered-previously/:callingPage   uk.gov.hmrc.agentclientmandate.controllers.agent.HasClientRegisteredBeforeController.submit(service = "ated", callingPage: String)
@@ -114,5 +116,3 @@ POST    /agent/details/edit/businessDetails        uk.gov.hmrc.agentclientmandat
 
 GET     /agent/details/edit/ocrDetails        uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController.view(service = "ated")
 POST    /agent/details/edit/ocrDetails        uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController.submit(service = "ated")
-
-GET    /agent/permission-kickout/:callingPage        uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController.show(callingPage: String)

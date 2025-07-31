@@ -21,12 +21,13 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, ControllerPageIdConstants, MandateConstants}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -40,8 +41,9 @@ class ClientPermissionController @Inject()(
                                             val authConnector: AuthConnector,
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig,
-                                            ACMFeatureSwitches: ACMFeatureSwitches,
-                                            templateClientPermission: views.html.agent.clientPermission
+                                            implicit val servicesConfig: ServicesConfig,
+                                            templateClientPermission: views.html.agent.clientPermission,
+                                            templateClientPermissionNew: views.html.agent.clientPermission_new,
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
@@ -53,11 +55,15 @@ class ClientPermissionController @Inject()(
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK, ""))
           }
-        } yield Ok(templateClientPermission(clientPermissionForm.fill(
-          clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
+        } yield if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
+          Ok(templateClientPermissionNew(clientPermissionForm.fill(
+            clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
+        } else {
+          Ok(templateClientPermission(clientPermissionForm.fill(
+            clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
+        }
       }
   }
-
 
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -69,25 +75,29 @@ class ClientPermissionController @Inject()(
           },
           data => {
             dataCacheService.cacheFormData[ClientPermission](clientPermissionFormId, data)
-            val result = if (data.hasPermission.getOrElse(false)) {
-              Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
-            } else {
-              Redirect(routes.AgentSummaryController.view())
-            }
-
+            val result =
+              if (data.hasPermission.getOrElse(false)) {
+                Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
+              } else {
+                if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
+                  Redirect(routes.CannotRegisterClientKickoutController.show(callingPage))
+                } else {
+                  Redirect(routes.AgentSummaryController.view())
+                }
+              }
             Future.successful(result)
           }
         )
       }
   }
 
-  private def getBackLink(callingPage: String) = {
+  private def getBackLink(callingPage: String): Some[String] = {
     val PaySAPageId: String = ControllerPageIdConstants.paySAQuestionControllerId
     val beforeRegisteringClientControllerPageId: String = ControllerPageIdConstants.beforeRegisteringClientControllerId
 
     callingPage match {
       case `PaySAPageId` => Some(routes.PaySAQuestionController.view().url)
-      case `beforeRegisteringClientControllerPageId` if ACMFeatureSwitches.registeringClientContentUpdate.enabled =>
+      case `beforeRegisteringClientControllerPageId` if MandateFeatureSwitches.registeringClientContentUpdate.enabled =>
         Some(routes.BeforeRegisteringClientController.view(callingPage).url)
       case _ => Some(routes.NRLQuestionController.view().url)
     }

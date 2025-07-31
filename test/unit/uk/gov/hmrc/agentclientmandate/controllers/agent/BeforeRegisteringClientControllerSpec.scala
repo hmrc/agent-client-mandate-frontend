@@ -16,23 +16,25 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
 
-import org.mockito.Mockito.when
+import org.mockito.Mockito.reset
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.Status.OK
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController
-import uk.gov.hmrc.agentclientmandate.utils.{ACMFeatureSwitches, FeatureSwitch}
+import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import java.util.UUID
 
-class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar with GuiceOneServerPerSuite with MockControllerSetup {
+class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar with GuiceOneServerPerSuite with MockControllerSetup with BeforeAndAfterEach{
 
+  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockFeatureSwitch: ACMFeatureSwitches = mock[ACMFeatureSwitches]
   val service: String = "ATED"
   val injectedViewInstanceBeforeRegisteringClient: uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient = app.injector.instanceOf[uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient]
 
@@ -40,8 +42,8 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
     stubbedMessagesControllerComponents,
     mockAuthConnector,
     mockAppConfig,
-    injectedViewInstanceBeforeRegisteringClient,
-    mockFeatureSwitch
+    mockServicesConfig,
+    injectedViewInstanceBeforeRegisteringClient
   )
 
   lazy val userId = s"user-${UUID.randomUUID}"
@@ -50,16 +52,16 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
   }
 
-  def setUpFeatureSwitchMock(value: Boolean): Unit = {
-    when(mockFeatureSwitch.registeringClientContentUpdate)
-      .thenReturn(FeatureSwitch("registeringClientContentUpdate", value))
+  override def beforeEach(): Unit = {
+    reset(mockAuthConnector)
+    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "BeforeRegisteringClientController" should {
 
     "return OK when the view is accessed and feature flag is set to true" in {
       setUpMocks()
-      setUpFeatureSwitchMock(true)
+      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result = mockBeforeRegisteringClientController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe OK
@@ -67,7 +69,6 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
 
     "redirect to ClientPermissionController when the view is accessed and feature flag is set to false" in {
       setUpMocks()
-      setUpFeatureSwitchMock(false)
       val result = mockBeforeRegisteringClientController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe SEE_OTHER
@@ -76,8 +77,8 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
 
     "redirect to ClientPermissionController when the submit action is called" in {
       setUpMocks()
-      setUpFeatureSwitchMock(true)
-      val result = mockBeforeRegisteringClientController.submit().apply(SessionBuilder.buildRequestWithSession(userId))
+      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
+      val result = mockBeforeRegisteringClientController.submit(callingPage = "nrl").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe SEE_OTHER
       redirectLocation(result) mustBe Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view("beforeRegisteringClient").url)
@@ -85,7 +86,7 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
 
     "have the correct back link based on caller id" in {
       setUpMocks()
-      setUpFeatureSwitchMock(true)
+      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result = mockBeforeRegisteringClientController.view(service, "paySA").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe OK

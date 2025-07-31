@@ -15,42 +15,45 @@
  */
 
 package unit.uk.gov.hmrc.agentclientmandate.controllers.agent
-import org.mockito.ArgumentMatchers.{eq => eqStr}
-import org.mockito.Mockito.{reset, when}
+import org.mockito.Mockito.reset
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController
-import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
+import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.views.html.agent.cannotRegisterClientKickout
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.agentclientmandate.views.html.agent.cannotRegisterClientKickout
-import play.api.mvc.Result
-class CannotRegisterClientKickoutControllerSpec
-  extends PlaySpec
-    with BeforeAndAfterEach
-    with MockitoSugar
-    with MockControllerSetup
-    with GuiceOneAppPerSuite {
-  private val mockAuthConnector: AuthConnector =
-    mock[AuthConnector]
-  private val mcc: MessagesControllerComponents =
-    app.injector.instanceOf[MessagesControllerComponents]
-  private val injectedView: cannotRegisterClientKickout =
-    app.injector.instanceOf[cannotRegisterClientKickout]
+
+class CannotRegisterClientKickoutControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneAppPerSuite {
+
+  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
+  private val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  private val injectedView: cannotRegisterClientKickout = app.injector.instanceOf[cannotRegisterClientKickout]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockServicesConfig)
+    reset(mockAuthConnector)
+    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
-  private def stubFlag(on: Boolean): Unit =
-    when(mockServicesConfig.getBoolean(eqStr("features.registering_client_content_update")))
-      .thenReturn(on)
-  private val controller = new CannotRegisterClientKickoutController(mcc, mockAuthConnector, global, mockAppConfig, mockServicesConfig, injectedView
+
+  private val controller = new CannotRegisterClientKickoutController(
+    mcc,
+    mockAuthConnector,
+    global,
+    mockAppConfig,
+    mockServicesConfig,
+    injectedView
   )
+
   "KickoutController GET show" must {
     "redirect to sign-in for UNAUTHENTICATED agents" in {
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
@@ -59,6 +62,7 @@ class CannotRegisterClientKickoutControllerSpec
       status(result) mustBe SEE_OTHER
       redirectLocation(result).get must include("/gg/sign-in")
     }
+
     "redirect to sign-in for UNAUTHORiSED agents" in {
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
       val result: Future[Result] =
@@ -66,16 +70,17 @@ class CannotRegisterClientKickoutControllerSpec
       status(result) mustBe SEE_OTHER
       redirectLocation(result).get must include("/gg/sign-in")
     }
+
     "return NOT_FOUND when the feature-switch is OFF" in {
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      stubFlag(on = false)
       val result: Future[Result] =
         controller.show("pageId").apply(SessionBuilder.buildRequestWithSession("user1"))
       status(result) mustBe NOT_FOUND
     }
+
     "return OK and render the kick-out page when the feature-switch is ON" in {
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      stubFlag(on = true)
+      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result: Future[Result] =
         controller.show("pageId").apply(SessionBuilder.buildRequestWithSession("user1"))
       status(result) mustBe OK
