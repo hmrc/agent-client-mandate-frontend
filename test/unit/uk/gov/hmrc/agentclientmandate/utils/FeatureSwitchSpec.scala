@@ -78,9 +78,9 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
       System.clearProperty("features.registering_client_content_update")
     }
 
-    "should be set to false by default in application.conf" in {
+    "should be set to true by default in application.conf" in {
       val config = ConfigFactory.load()
-      config.getBoolean("features.registering_client_content_update") must be(false)
+      config.getBoolean("features.registering_client_content_update") must be(true)
     }
   }
 
