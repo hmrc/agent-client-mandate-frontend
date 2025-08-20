@@ -57,6 +57,7 @@ object Status extends Enumeration {
   val Cancelled: models.Status.Value = Value
   val PendingCancellation: models.Status.Value = Value
   val PendingActivation: models.Status.Value = Value
+  val Expired: models.Status.Value = Value
 
   implicit val enumFormat: Format[Status] = new Format[Status] {
     def reads(json: JsValue): JsResult[Status] = JsSuccess(Status.withName(json.as[String]))
