@@ -23,14 +23,14 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{AnyContentAsJson, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateAddressDetailsController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetails
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetailsForm.editAgentAddressDetailsForm
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.editDetails.update_address_details
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -94,14 +94,14 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
     }
 
     def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
-                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any): Unit = {
+                              (fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(updatedRegDetails))
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       test(result)
     }
   }
@@ -152,11 +152,14 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
     "submit the input business details" when {
       "AUTHORISED user tries to submit" in new Setup {
         val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = editAgentAddressDetailsForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded]  = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(updateRegDetails, "abc")(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/edit")
+        }
         }
       }
     }
@@ -164,8 +167,10 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
     "fail to submit the input business details" when {
       "AUTHORISED user tries to submit but fails due to form eror" in new Setup {
         val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = ""))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = editAgentAddressDetailsForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }
@@ -173,13 +178,13 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
 
       "AUTHORISED user tries to submit but ETMP update fails" in new Setup {
         val x: EditAgentAddressDetails = EditAgentAddressDetails("Org name", address = RegisteredAddressDetails("address1", "address2", countryCode = "FR"))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = editAgentAddressDetailsForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }
       }
     }
-  }
-
 }
