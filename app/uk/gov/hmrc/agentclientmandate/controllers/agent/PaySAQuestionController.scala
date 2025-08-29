@@ -20,7 +20,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion._
 import uk.gov.hmrc.agentclientmandate.views
@@ -67,11 +67,7 @@ class PaySAQuestionController @Inject()(
             val result = if (data.paySA.getOrElse(false)) {
               Redirect(routes.MandateDetailsController.view(controllerId))
             } else {
-              if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
                 Redirect(routes.BeforeRegisteringClientController.view(controllerId))
-              } else {
-                Redirect(routes.ClientPermissionController.view(controllerId))
-              }
             }
             Future.successful(result)
           }

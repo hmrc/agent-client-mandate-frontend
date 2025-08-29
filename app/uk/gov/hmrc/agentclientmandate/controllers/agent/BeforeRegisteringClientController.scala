@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentclientmandate.controllers.agent
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -36,18 +36,12 @@ class BeforeRegisteringClientController @Inject()(
                                                    templateBeforeRegisteringClient: views.html.agent.beforeRegisteringClient
                                                  ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
-  val controllerId: String = ControllerPageIdConstants.beforeRegisteringClientControllerId
-
   def view(service: String, callingPage: String): Action[AnyContent] = Action { implicit request =>
-    if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
       Ok(templateBeforeRegisteringClient(callingPage, service, getBackLink(callingPage)))
-    } else {
-      Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view(callingPage))
-    }
   }
 
   def submit(callingPage: String): Action[AnyContent] = Action {
-    Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view(controllerId))
+    Redirect(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view(callingPage))
   }
 
   private def getBackLink(callingPage: String): String = {

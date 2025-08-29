@@ -59,11 +59,8 @@ object MandateFeatureSwitches {
 
   def  singleService(implicit config: ServicesConfig): FeatureSwitch = FeatureSwitch.forName("single_service")
 
-  def registeringClientContentUpdate(implicit config: ServicesConfig): FeatureSwitch = FeatureSwitch.forName("registering_client_content_update")
-
   def byName(name: String)(implicit config: ServicesConfig): Option[FeatureSwitch] = name match {
     case "single_service" => Some(singleService)
-    case "registering_client_content_update" => Some(registeringClientContentUpdate)
     case _ => None
   }
 

@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermissionForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -55,16 +55,12 @@ class ClientPermissionController @Inject()(
             if (service.toUpperCase == "ATED") atedSubscriptionConnector.clearCache(service)
             else Future.successful(HttpResponse(OK, ""))
           }
-        } yield if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
+        } yield {
           Ok(templateClientPermissionNew(clientPermissionForm.fill(
-            clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
-        } else {
-          Ok(templateClientPermission(clientPermissionForm.fill(
             clientPermission.getOrElse(ClientPermission())), service, callingPage, getBackLink(callingPage)))
         }
       }
   }
-
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
@@ -79,11 +75,7 @@ class ClientPermissionController @Inject()(
               if (data.hasPermission.getOrElse(false)) {
                 Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
               } else {
-                if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
                   Redirect(routes.CannotRegisterClientKickoutController.show(callingPage))
-                } else {
-                  Redirect(routes.AgentSummaryController.view())
-                }
               }
             Future.successful(result)
           }
@@ -92,14 +84,6 @@ class ClientPermissionController @Inject()(
   }
 
   private def getBackLink(callingPage: String): Some[String] = {
-    val PaySAPageId: String = ControllerPageIdConstants.paySAQuestionControllerId
-    val beforeRegisteringClientControllerPageId: String = ControllerPageIdConstants.beforeRegisteringClientControllerId
-
-    callingPage match {
-      case `PaySAPageId` => Some(routes.PaySAQuestionController.view().url)
-      case `beforeRegisteringClientControllerPageId` if MandateFeatureSwitches.registeringClientContentUpdate.enabled =>
-        Some(routes.BeforeRegisteringClientController.view(callingPage).url)
-      case _ => Some(routes.NRLQuestionController.view().url)
-    }
+    Some(routes.BeforeRegisteringClientController.view(callingPage).url)
   }
 }
