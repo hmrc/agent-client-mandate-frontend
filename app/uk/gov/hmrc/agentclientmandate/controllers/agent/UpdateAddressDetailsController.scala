@@ -28,7 +28,6 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetails
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.EditAgentAddressDetailsForm._
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.play.bootstrap.controller.WithUnsafeDefaultFormBinding
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -43,7 +42,7 @@ class UpdateAddressDetailsController @Inject()(
                                                 implicit val appConfig: AppConfig,
                                                 val authConnector: AuthConnector,
                                                 templateUpdateAddressDetails: views.html.agent.editDetails.update_address_details
-                                              ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging with WithUnsafeDefaultFormBinding {
+                                              ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
