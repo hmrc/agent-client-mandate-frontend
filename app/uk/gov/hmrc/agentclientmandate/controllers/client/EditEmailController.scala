@@ -52,7 +52,7 @@ class EditEmailController @Inject()(
         AgentClientMandateUtils.getSafeLink(returnUrl, appConfig) match {
           case Some(safeLink) =>
             mandateService.fetchClientMandateByClient(clientId, service).map {
-              case Some(mandate) if mandate.currentStatus.status != Expired=>
+              case Some(mandate) =>
                 val clientDetails = ClientDetails(
                   mandate.agentParty.name,
                   appConfig.mandateFrontendHost + routes.RemoveAgentController.view(mandate.id, returnUrl).url,

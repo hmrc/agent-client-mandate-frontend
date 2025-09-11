@@ -84,6 +84,7 @@ object AgentClientMandateUtils {
     status match {
       case Status.New => "Await"
       case Status.PendingActivation | Status.PendingCancellation => "Pending"
+      case Status.Expired => "Expired"
       case _ => ""
     }
   }
