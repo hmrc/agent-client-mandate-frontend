@@ -28,7 +28,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.NRLQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.nrl_question
@@ -76,7 +75,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
     def viewWithAuthorisedAgent(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
-      
+
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
@@ -105,7 +104,6 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "NRLQuestionController" must {
@@ -166,23 +164,12 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
       }
     }
 
-    "redirect agent to 'client permission' page" when {
-      "valid form is submitted and NO is selected as client pays self-assessment and feature flag is off" in new Setup {
+    "redirect agent to 'before registering client' page" when {
+      "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/agent/client-permission/nrl")
-        }
-      }
-
-      "redirect agent to 'before registering client' page" when {
-        "valid form is submitted and NO is selected as client pays self-assessment and feature flag is on" in new Setup {
-          FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
-          val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("nrl" -> "false")
-          submitWithAuthorisedAgent(fakeRequest) { result =>
-            status(result) must be(SEE_OTHER)
-            redirectLocation(result).get must include(s"/agent/before-registering-client/nrl")
-          }
+          redirectLocation(result).get must include(s"/agent/before-registering-client/nrl")
         }
       }
     }

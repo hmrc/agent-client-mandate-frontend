@@ -28,7 +28,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.PaySAQuestionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.PaySAQuestion
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.paySAQuestion
@@ -105,7 +104,6 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "PaySAQuestionController" must {
@@ -165,19 +163,8 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
       }
     }
 
-    "redirect agent to 'client permission' page" when {
-      "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("paySA" -> "false")
-        submitWithAuthorisedAgent(fakeRequest) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result).get must include(s"/agent/client-permission/paySA")
-        }
-      }
-    }
-
     "redirect agent to 'before registering client' page" when {
-      "valid form is submitted and NO is selected as client pays self-assessment and feature flag is on" in new Setup {
-        FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
+      "valid form is submitted and NO is selected as client pays self-assessment" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("paySA" -> "false")
         submitWithAuthorisedAgent(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)

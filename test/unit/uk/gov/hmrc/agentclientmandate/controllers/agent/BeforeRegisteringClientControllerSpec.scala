@@ -24,7 +24,6 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.Status.OK
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
@@ -54,39 +53,27 @@ class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar w
 
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
-    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "BeforeRegisteringClientController" should {
 
     "return OK when the view is accessed and feature flag is set to true" in {
       setUpMocks()
-      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result = mockBeforeRegisteringClientController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe OK
     }
 
-    "redirect to ClientPermissionController when the view is accessed and feature flag is set to false" in {
-      setUpMocks()
-      val result = mockBeforeRegisteringClientController.view(service, "callingPage").apply(SessionBuilder.buildRequestWithSession(userId))
-
-      status(result) mustBe SEE_OTHER
-      redirectLocation(result) mustBe Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view("callingPage").url)
-    }
-
     "redirect to ClientPermissionController when the submit action is called" in {
       setUpMocks()
-      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result = mockBeforeRegisteringClientController.submit(callingPage = "nrl").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe SEE_OTHER
-      redirectLocation(result) mustBe Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view("beforeRegisteringClient").url)
+      redirectLocation(result) mustBe Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.ClientPermissionController.view("nrl").url)
     }
 
     "have the correct back link based on caller id" in {
       setUpMocks()
-      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result = mockBeforeRegisteringClientController.view(service, "paySA").apply(SessionBuilder.buildRequestWithSession(userId))
 
       status(result) mustBe OK

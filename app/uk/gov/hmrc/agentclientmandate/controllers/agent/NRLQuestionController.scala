@@ -20,7 +20,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, MandateConstants}
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestion
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NRLQuestionForm._
 import uk.gov.hmrc.agentclientmandate.views
@@ -68,11 +68,7 @@ class NRLQuestionController @Inject()(
             val result = if (data.nrl.getOrElse(false)) {
               Redirect(routes.PaySAQuestionController.view())
             } else {
-              if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
                 Redirect(routes.BeforeRegisteringClientController.view(controllerId))
-              } else {
-                Redirect(routes.ClientPermissionController.view(controllerId))
-              }
             }
             Future.successful(result)
           }
