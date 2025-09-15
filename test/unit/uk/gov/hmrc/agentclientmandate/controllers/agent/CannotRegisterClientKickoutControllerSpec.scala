@@ -23,7 +23,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController
-import uk.gov.hmrc.agentclientmandate.utils.{FeatureSwitch, MandateFeatureSwitches}
 import uk.gov.hmrc.agentclientmandate.views.html.agent.cannotRegisterClientKickout
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -42,7 +41,6 @@ class CannotRegisterClientKickoutControllerSpec extends PlaySpec with BeforeAndA
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuthConnector)
-    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   private val controller = new CannotRegisterClientKickoutController(
@@ -71,16 +69,8 @@ class CannotRegisterClientKickoutControllerSpec extends PlaySpec with BeforeAndA
       redirectLocation(result).get must include("/gg/sign-in")
     }
 
-    "return NOT_FOUND when the feature-switch is OFF" in {
+    "return OK and render the kick-out page" in {
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result: Future[Result] =
-        controller.show("pageId").apply(SessionBuilder.buildRequestWithSession("user1"))
-      status(result) mustBe NOT_FOUND
-    }
-
-    "return OK and render the kick-out page when the feature-switch is ON" in {
-      AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
       val result: Future[Result] =
         controller.show("pageId").apply(SessionBuilder.buildRequestWithSession("user1"))
       status(result) mustBe OK

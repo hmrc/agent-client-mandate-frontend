@@ -23,13 +23,13 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{AnyContentAsJson, Result}
+import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.UpdateOcrDetailsController
 import uk.gov.hmrc.agentclientmandate.models._
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.NonUkIdentificationForm.nonUkIdentificationForm
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.OverseasCompany
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.editDetails.update_ocr_details
@@ -96,14 +96,14 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
     }
 
     def saveWithAuthorisedUser(updatedRegDetails: Option[UpdateRegistrationDetailsRequest], service: String)
-                              (fakeRequest: FakeRequest[AnyContentAsJson])(test: Future[Result] => Any): Unit = {
+                              (fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(updatedRegDetails))
-      val result = controller.submit(service).apply(SessionBuilder.updateRequestWithSession(fakeRequest, userId))
+      val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       test(result)
     }
   }
@@ -154,8 +154,10 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
     "submit the input ocr details" when {
       "AUTHORISED user tries to submit" in new Setup {
         val x: OverseasCompany = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some("FR"))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = nonUkIdentificationForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded]  = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(updateRegDetails, "abc")(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("/agent/edit")
@@ -166,8 +168,10 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
     "fail to submit the input ocr details" when {
       "AUTHORISED user tries to submit but fails due to form error" in new Setup {
         val x: OverseasCompany = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some(""))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = nonUkIdentificationForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded]  = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }
@@ -175,8 +179,10 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
 
       "AUTHORISED user tries to submit but ETMP update fails" in new Setup {
         val x: OverseasCompany = OverseasCompany(Some(true), Some("IdNumber"), Some("issuingCountry"), Some("FR"))
-        val inputJson: JsValue = Json.toJson(x)
-        val fakeRequest: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(inputJson)
+        val formData: Map[String, String] = nonUkIdentificationForm.mapping.unbind(x)
+        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded]  = FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody(formData.toSeq: _*)
         saveWithAuthorisedUser(None, "abc")(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
         }

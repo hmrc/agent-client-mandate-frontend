@@ -30,7 +30,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
 import uk.gov.hmrc.agentclientmandate.controllers.agent.ClientPermissionController
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.agentclientmandate.utils.{ControllerPageIdConstants, FeatureSwitch, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.ControllerPageIdConstants
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientPermission
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.{clientPermission, clientPermission_new}
@@ -117,7 +117,6 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
   override def beforeEach(): Unit = {
     reset(mockAuthConnector)
     reset(mockAtedSubscriptionConnector)
-    FeatureSwitch.disable(MandateFeatureSwitches.registeringClientContentUpdate)
   }
 
   "ClientPermissionController" must {
@@ -170,7 +169,6 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
 
     "render clientPermission_new page" when {
       "feature flag is turned on and user is authorised" in new Setup {
-        FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
         }
@@ -187,19 +185,8 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       }
     }
 
-    "redirect agent to 'mandate summary' page" when {
-      "valid form is submitted and NO is selected and feature flag is set to false" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
-        submitWithAuthorisedAgent("", fakeRequest) { result =>
-          status(result) must be(SEE_OTHER)
-          redirectLocation(result) must be(Some(s"/mandate/agent/summary"))
-        }
-      }
-    }
-
     "redirect agent to kick out page" when {
-      "valid form is submitted and user clicks NO and feature flag is set to true" in new Setup {
-        FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
+      "valid form is submitted and user clicks NO" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("hasPermission" -> "false")
         submitWithAuthorisedAgent("", fakeRequest) { result =>
           status(result) must be(SEE_OTHER)
@@ -221,34 +208,13 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
       }
     }
 
-    "render the original view page" when {
-      "feature flag is set to false" in new Setup {
-        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
-          status(result) must be(OK)
-          val document: Document = Jsoup.parse(contentAsString(result))
-          document.getElementsByClass("govuk-body").isEmpty mustBe false
-        }
-      }
-    }
-
-    "render the new view page " when {
-      "feature flag is set to true" in new Setup {
-        FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
-        viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
-          status(result) must be(OK)
-          val newViewDocument: Document =Jsoup.parse(contentAsString(result))
-          newViewDocument.getElementsByClass("govuk-body").isEmpty mustBe true
-        }
-      }
-    }
-
     "have the correct back link" when {
       "view is rendered from paySA" in new Setup {
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.paySAQuestionControllerId) { result =>
           status(result) must be(OK)
           val document: Document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/paySA-question")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/before-registering-client/paySA")
         }
       }
 
@@ -257,12 +223,11 @@ class ClientPermissionControllerSpec extends PlaySpec with BeforeAndAfterEach wi
           status(result) must be(OK)
           val document: Document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-back-link").text() must be("Back")
-          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/nrl-question")
+          document.getElementsByClass("govuk-back-link").attr("href") must be("/mandate/agent/before-registering-client/nrl")
         }
       }
 
       "view is rendered from beforeRegisteringClient" in new Setup {
-        FeatureSwitch.enable(MandateFeatureSwitches.registeringClientContentUpdate)
         viewWithAuthorisedAgent(service, ControllerPageIdConstants.beforeRegisteringClientControllerId) { result =>
           status(result) must be(OK)
           val newViewDocument: Document = Jsoup.parse(contentAsString(result))

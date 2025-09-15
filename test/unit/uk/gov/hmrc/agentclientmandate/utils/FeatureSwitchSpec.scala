@@ -16,7 +16,6 @@
 
 package unit.uk.gov.hmrc.agentclientmandate.utils
 
-import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -67,21 +66,9 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
 
     "AtedFeatureSwitches.byName should return Some(feature) or None" in {
       MandateFeatureSwitches.byName("single_service") must be(Some(MandateFeatureSwitches.singleService))
-      MandateFeatureSwitches.byName("registering_client_content_update") must be(Some(MandateFeatureSwitches.registeringClientContentUpdate))
       MandateFeatureSwitches.byName("xyz") must be(None)
     }
 
-    "MandateFeatureSwitches.registeringClientContentUpdate should return the correct feature switch" in {
-      MandateFeatureSwitches.registeringClientContentUpdate.enabled must be(false)
-      System.setProperty("features.registering_client_content_update", "true")
-      MandateFeatureSwitches.registeringClientContentUpdate.enabled must be(true)
-      System.clearProperty("features.registering_client_content_update")
-    }
-
-    "should be set to true by default in application.conf" in {
-      val config = ConfigFactory.load()
-      config.getBoolean("features.registering_client_content_update") must be(true)
-    }
   }
 
 }

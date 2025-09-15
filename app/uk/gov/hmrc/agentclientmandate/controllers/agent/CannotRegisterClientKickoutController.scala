@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentclientmandate.controllers.agent
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.utils.{MandateConstants, MandateFeatureSwitches}
+import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
 import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -40,7 +40,6 @@ class CannotRegisterClientKickoutController @Inject()(
 
   def show(callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { _ =>
-      if (MandateFeatureSwitches.registeringClientContentUpdate.enabled) {
         Future.successful(
           Ok(
             cannotRegisterClientKickoutView(
@@ -49,9 +48,6 @@ class CannotRegisterClientKickoutController @Inject()(
             )
           )
         )
-      } else {
-        Future.successful(NotFound)
-      }
     }
   }
 }
