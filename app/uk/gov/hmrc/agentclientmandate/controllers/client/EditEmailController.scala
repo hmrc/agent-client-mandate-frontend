@@ -21,7 +21,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 import uk.gov.hmrc.agentclientmandate.controllers.auth.AuthorisedWrappers
-import uk.gov.hmrc.agentclientmandate.models.Status.Expired
 import uk.gov.hmrc.agentclientmandate.models.ClientDetails
 import uk.gov.hmrc.agentclientmandate.service.{AgentClientMandateService, DataCacheService}
 import uk.gov.hmrc.agentclientmandate.utils.{AgentClientMandateUtils, MandateConstants}
