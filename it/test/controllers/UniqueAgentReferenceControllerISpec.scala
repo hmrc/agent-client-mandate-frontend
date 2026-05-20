@@ -46,7 +46,7 @@ class UniqueAgentReferenceControllerISpec extends IntegrationSpec {
                    |    "agentId": "NE0"
                    |  },
                    |  "agentCode": "M4T81X",
-                   |  "optionalCredentials": {"providerId": "12345-credId", "providerType": "GovernmmentGateway"},
+                   |  "optionalCredentials": {"providerId": "12345-credId", "providerType": "GovernmentGateway"},
                    |  "internalId": "internal id"
                    | }""".stripMargin
               )
