@@ -53,11 +53,6 @@ class AppConfig @Inject()(
   lazy val timeoutCountdown: Int = loadConfig("timeoutCountdown").toInt
   lazy val defaultTimeoutSeconds: Int = loadConfig("defaultTimeoutSeconds").toInt
 
-  lazy val baseDataCacheUri: String = servicesConfig.baseUrl("cachable.session-cache")
-  lazy val dataCacheDefaultSource: String = appName
-  lazy val dataCacheDomain: String = servicesConfig.getConfString(
-    "cachable.session-cache.domain", throw new Exception(s"Could not find config 'cachable.session-cache.domain'")
-  )
 
   def nonUkUri(service: String, backLinkUrl: String): String = {
     val forwardUrl =

@@ -20,6 +20,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.CannotRegisterClientKickoutController
@@ -31,7 +32,13 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CannotRegisterClientKickoutControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneAppPerSuite {
+class CannotRegisterClientKickoutControllerSpec
+  extends PlaySpec
+    with BeforeAndAfterEach
+    with MockitoSugar
+    with MockControllerSetup
+    with GuiceOneAppPerSuite
+    with TestApplicationBuilder {
 
   implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   private val mockAuthConnector: AuthConnector = mock[AuthConnector]

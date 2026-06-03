@@ -22,13 +22,14 @@ import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
-class clientPermissionViewSpec extends AnyWordSpec with MockitoSugar with ViewTestHelper with GuiceOneServerPerSuite {
+class clientPermissionViewSpec extends AnyWordSpec with MockitoSugar with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
   implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()

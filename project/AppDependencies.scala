@@ -23,20 +23,19 @@ private object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"   %% "bootstrap-frontend-play-30"            % bootstrapVersion,
-    "uk.gov.hmrc"   %% "play-partials-play-30"                 % "10.2.0",
-    "uk.gov.hmrc"   %% "domain-play-30"                        % "11.0.0",
-    "uk.gov.hmrc"   %% "http-caching-client-play-30"           % "12.2.0",
-    "uk.gov.hmrc"   %% "play-conditional-form-mapping-play-30" % "3.5.0",
-    "uk.gov.hmrc"   %% "play-frontend-hmrc-play-30"            % "13.5.0",
-    "commons-codec" %  "commons-codec"                         % "1.22.0"
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-30"            % bootstrapVersion,
+    "uk.gov.hmrc"       %% "play-partials-play-30"                 % "10.2.0",
+    "uk.gov.hmrc"       %% "domain-play-30"                        % "11.0.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30"                    % "2.12.0",
+    "uk.gov.hmrc"       %% "play-conditional-form-mapping-play-30" % "3.5.0",
+    "uk.gov.hmrc"       %% "play-frontend-hmrc-play-30"            % "13.8.0",
+    "commons-codec"     % "commons-codec"                          % "1.22.0"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"                  %% "bootstrap-test-play-30" % bootstrapVersion,
-    "org.scalatestplus"            %% "scalacheck-1-17"        % "3.2.18.0"
+    "uk.gov.hmrc"       %% "bootstrap-test-play-30" % bootstrapVersion,
+    "org.scalatestplus" %% "scalacheck-1-17"        % "3.2.18.0"
   ).map(_ % Test)
-
 
   val itDependencies: Seq[ModuleID] = Seq()
 

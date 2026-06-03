@@ -21,11 +21,18 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import play.api.inject.{bind => playBind}
+import uk.gov.hmrc.agentclientmandate.repositories.{DefaultSessionCacheRepository, SessionCacheRepository}
+import uk.gov.hmrc.mongo.TimestampSupport
+import java.time.Instant
 
 class ServiceBindings extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
    Seq(
      playBind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector]).eagerly(),
+     playBind(classOf[SessionCacheRepository]).to(classOf[DefaultSessionCacheRepository]),
+     playBind(classOf[TimestampSupport]).toInstance(new TimestampSupport {
+       override def timestamp(): Instant = Instant.now()
+     })
    )
   }
 }

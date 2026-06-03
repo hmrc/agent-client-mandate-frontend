@@ -18,70 +18,89 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import helpers.{AgentBusinessUtrGenerator, IntegrationSpec}
-import play.api.http.Status.OK
-import play.api.http.{HeaderNames => HN}
+import play.api.http.Status.{OK, SEE_OTHER}
+import play.api.libs.json.Format
 import play.api.libs.ws.WSResponse
-import uk.gov.hmrc.http.HeaderNames
+import uk.gov.hmrc.agentclientmandate.utils.MandateConstants
+import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.ClientMandateDisplayDetails
 
-class UniqueAgentReferenceControllerISpec extends IntegrationSpec {
+class UniqueAgentReferenceControllerISpec
+    extends IntegrationSpec
+    with MandateConstants {
+
+  private def stubAuthorisedAgent(): Unit = {
+    val agentRefNo = new AgentBusinessUtrGenerator().nextAgentBusinessUtr
+
+    stubFor(
+      post(urlMatching("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(OK)
+            .withBody(
+              s"""{
+                 | "authorisedEnrolments" : [{
+                 |    "key": "HMRC-AGENT-AGENT",
+                 |    "identifiers": [{ "key": "AgentRefNumber", "value": "$agentRefNo" }]
+                 |  }],
+                 |  "agentInformation": {
+                 |    "agentCode" : "M4T81X",
+                 |    "agentFriendlyName" : "Mr Anderson",
+                 |    "agentId": "NE0"
+                 |  },
+                 |  "agentCode": "M4T81X",
+                 |  "optionalCredentials": {
+                 |    "providerId": "12345-credId",
+                 |    "providerType": "GovernmentGateway"
+                 |  },
+                 |  "internalId": "internal id"
+                 | }""".stripMargin
+            )
+        )
+    )
+  }
 
   "/agent/unique-reference" should {
     "retrieve the unique agent reference" when {
       "a unique reference is available" in {
-        val agentRefNo = new AgentBusinessUtrGenerator().nextAgentBusinessUtr
+        clearSessionCache()
+        stubAuthorisedAgent()
 
-        stubFor(post(urlMatching("/auth/authorise"))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(
-                s"""{
-                   | "authorisedEnrolments" : [{
-                   |    "key": "HMRC-AGENT-AGENT",
-                   |    "identifiers": [{ "key": "AgentRefNumber", "value": "$agentRefNo" }]
-                   |  }],
-                   |  "agentInformation": {
-                   |    "agentCode" : "M4T81X",
-                   |    "agentFriendlyName" : "Mr Anderson",
-                   |    "agentId": "NE0"
-                   |  },
-                   |  "agentCode": "M4T81X",
-                   |  "optionalCredentials": {"providerId": "12345-credId", "providerType": "GovernmentGateway"},
-                   |  "internalId": "internal id"
-                   | }""".stripMargin
-              )
+        val cachedMandateDetails = ClientMandateDisplayDetails(
+          name = "name",
+          mandateId = "mandateId",
+          agentLastUsedEmail = "agentLastUsedEmail"
+        )
+
+        await(
+          dataCacheService.cacheFormData[ClientMandateDisplayDetails](
+            agentRefCacheId,
+            cachedMandateDetails
+          )(
+            cacheHeaderCarrier,
+            ec,
+            implicitly[Format[ClientMandateDisplayDetails]]
           )
         )
 
-        stubFor(get(urlPathMatching(s"/keystore/agent-client-mandate-frontend/$SessionId"))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(
-                s"""{
-                   | "id" : "$SessionId",
-                   | "data" : {
-                   |    "agent-ref-id" : {
-                   |      "name": "name",
-                   |      "mandateId": "mandateId",
-                   |      "agentLastUsedEmail": "agentLastUsedEmail"
-                   |    }
-                   | }
-                   |}""".stripMargin
-              )
-          )
+        val result: WSResponse = await(
+          hitApplicationEndpoint("/agent/unique-reference").get()
         )
 
-        val result: WSResponse = await(hitApplicationEndpoint("/agent/unique-reference")
-          .withHttpHeaders(
-            HN.SET_COOKIE -> getSessionCookie(),
-            HeaderNames.xSessionId -> s"$SessionId",
-            "Authorization" -> "value")
-          .get())
+        result.status mustBe OK
+      }
+    }
 
-        result.status mustBe 200
+    "redirect" when {
+      "a unique reference is not available in the cache" in {
+        clearSessionCache()
+        stubAuthorisedAgent()
+
+        val result: WSResponse = await(
+          hitApplicationEndpoint("/agent/unique-reference").get()
+        )
+
+        result.status mustBe SEE_OTHER
       }
     }
   }
-
 }

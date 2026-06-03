@@ -21,21 +21,29 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.http.Status.OK
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.controllers.agent.BeforeRegisteringClientController
+import uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder, MockControllerSetup, SessionBuilder}
 
 import java.util.UUID
 
-class BeforeRegisteringClientControllerSpec extends PlaySpec with MockitoSugar with GuiceOneServerPerSuite with MockControllerSetup with BeforeAndAfterEach{
+class BeforeRegisteringClientControllerSpec
+  extends PlaySpec
+    with MockitoSugar
+    with GuiceOneServerPerSuite
+    with TestApplicationBuilder
+    with MockControllerSetup
+    with BeforeAndAfterEach {
 
   implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
-  val injectedViewInstanceBeforeRegisteringClient: uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient = app.injector.instanceOf[uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient]
+  val injectedViewInstanceBeforeRegisteringClient: beforeRegisteringClient = app.injector.instanceOf[beforeRegisteringClient]
 
   val mockBeforeRegisteringClientController: BeforeRegisteringClientController = new BeforeRegisteringClientController(
     stubbedMessagesControllerComponents,
