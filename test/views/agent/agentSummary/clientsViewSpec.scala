@@ -22,6 +22,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.models._
@@ -33,7 +34,7 @@ import uk.gov.hmrc.domain.{AtedUtr, Generator}
 import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 
 class clientsViewSpec extends AnyFeatureSpec
-  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
   val registeredAddressDetails: RegisteredAddressDetails = RegisteredAddressDetails("123 Fake Street", "Somewhere", None, None, None, "GB")
   val agentDetails: AgentDetails = AgentBuilder.buildAgentDetails

@@ -18,13 +18,12 @@ package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import helpers.IntegrationSpec
-import java.time.Instant
-import play.api.http.Status.OK
-import play.api.http.{HeaderNames => HN}
-import play.api.libs.json.Json
+import play.api.http.Status.{OK, SEE_OTHER}
+import play.api.libs.json.Format
 import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.agentclientmandate.models._
-import uk.gov.hmrc.http.HeaderNames
+
+import java.time.Instant
 
 class MandateConfirmationControllerISpec extends IntegrationSpec {
 
@@ -32,58 +31,82 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
     Mandate(
       id = "ABC123",
       createdBy = User("cerdId", "Joe Bloggs"),
-      agentParty = Party("ated-ref-no", "name", `type` = PartyType.Organisation, contactDetails = ContactDetails("aa@aa.com", None)),
-      clientParty = Some(Party("client-id", "client name", `type` = PartyType.Organisation, contactDetails = ContactDetails("bb@bb.com", None))),
-      currentStatus = MandateStatus(status = Status.New, Instant.now(), updatedBy = ""),
+      agentParty = Party(
+        "ated-ref-no",
+        "name",
+        `type` = PartyType.Organisation,
+        contactDetails = ContactDetails("aa@aa.com", None)
+      ),
+      clientParty = Some(
+        Party(
+          "client-id",
+          "client name",
+          `type` = PartyType.Organisation,
+          contactDetails = ContactDetails("bb@bb.com", None)
+        )
+      ),
+      currentStatus = MandateStatus(Status.New, Instant.now(), updatedBy = ""),
       statusHistory = Nil,
-      subscription = Subscription(referenceNumber = None, service = Service(id = "ated-ref-no", name = "ated")),
+      subscription = Subscription(
+        referenceNumber = None,
+        service = Service(id = "ated-ref-no", name = "ated")
+      ),
       clientDisplayName = "client display name"
     )
 
-  "/agent/unique-reference" should {
-    "retrieve the unique agent reference" when {
-      "a unique reference is available" in {
+  private def stubAuthorisedClient(): Unit =
+    stubFor(
+      post(urlMatching("/auth/authorise"))
+        .willReturn(
+          aResponse()
+            .withStatus(OK)
+            .withBody(
+              s"""{
+                 | "optionalCredentials": {
+                 |   "providerId": "12345-credId",
+                 |   "providerType": "GovernmentGateway"
+                 | }
+                 |}""".stripMargin
+            )
+        )
+    )
 
-        stubFor(post(urlMatching("/auth/authorise"))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(
-                s"""{
-                   | "optionalCredentials": {
-                   |    "providerId": "12345-credId",
-                   |    "providerType": "GovernmmentGateway"
-                   | }
-                   |}""".stripMargin
-              )
+  "/client/confirmation" should {
+    "retrieve the mandate confirmation" when {
+      "a client approved mandate is available" in {
+        clearSessionCache()
+        stubAuthorisedClient()
+
+        await(
+          dataCacheService.cacheFormData[Mandate](
+            "client-approved",
+            mandate
+          )(
+            cacheHeaderCarrier,
+            ec,
+            implicitly[Format[Mandate]]
           )
         )
 
-        val mandateJson: String = Json.toJson(mandate).toString()
-
-        stubFor(get(urlPathMatching(s"/keystore/agent-client-mandate-frontend/$SessionId"))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(
-                s"""{
-                   | "id" : "$SessionId",
-                   | "data" : {
-                   |    "client-approved" : $mandateJson
-                   | }
-                   |}""".stripMargin
-              )
-          )
+        val result: WSResponse = await(
+          hitApplicationEndpoint("/client/confirmation").get()
         )
 
-        val result: WSResponse = await(hitApplicationEndpoint("/client/confirmation")
-          .withHttpHeaders(HN.SET_COOKIE -> getSessionCookie())
-          .withHttpHeaders(HeaderNames.xSessionId -> s"$SessionId")
-          .get())
+        result.status mustBe OK
+      }
+    }
 
-        result.status mustBe 200
+    "redirect" when {
+      "a client approved mandate is not available in the cache" in {
+        clearSessionCache()
+        stubAuthorisedClient()
+
+        val result: WSResponse = await(
+          hitApplicationEndpoint("/client/confirmation").get()
+        )
+
+        result.status mustBe SEE_OTHER
       }
     }
   }
-
 }

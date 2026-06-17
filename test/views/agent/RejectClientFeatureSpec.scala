@@ -21,6 +21,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.YesNoQuestionForm
@@ -28,7 +29,7 @@ import uk.gov.hmrc.agentclientmandate.views
 import uk.gov.hmrc.agentclientmandate.views.html.agent.rejectClient
 
 class RejectClientFeatureSpec extends AnyFeatureSpec
-  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite {
+  with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceRejectClient: rejectClient = app.injector.instanceOf[views.html.agent.rejectClient]

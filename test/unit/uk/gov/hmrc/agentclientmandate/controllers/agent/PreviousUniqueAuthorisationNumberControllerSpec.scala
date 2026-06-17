@@ -24,6 +24,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.mvc.{AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -45,7 +46,7 @@ class PreviousUniqueAuthorisationNumberControllerSpec extends PlaySpec
   with BeforeAndAfterEach
   with MockitoSugar
   with MockControllerSetup
-  with GuiceOneServerPerSuite {
+  with GuiceOneServerPerSuite with TestApplicationBuilder {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]

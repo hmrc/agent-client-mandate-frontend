@@ -22,16 +22,15 @@ import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json, OFormat}
+import play.api.libs.json.{Json, OFormat}
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentclientmandate.config.AppConfig
+import uk.gov.hmrc.agentclientmandate.repositories.SessionCacheRepository
 import uk.gov.hmrc.agentclientmandate.service.DataCacheService
-import uk.gov.hmrc.http.cache.client.{CacheMap, SessionCache}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, SessionId}
-import unit.uk.gov.hmrc.agentclientmandate.connectors.ConnectorMocks
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
+
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAfterEach {
+class DataCacheServiceSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("test")))
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
@@ -41,14 +40,10 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
 
   val formData: FormData = FormData("some-data")
 
-  val formDataJson: JsValue = Json.toJson(formData)
-
-  val cacheMap: CacheMap = CacheMap(id = formId, Map("date" -> formDataJson))
-
-  val mockSessionCache: SessionCache = mock[SessionCache]
+  val mockSessionCacheRepository: SessionCacheRepository = mock[SessionCacheRepository]
 
   override def beforeEach(): Unit = {
-    reset(mockSessionCache)
+    reset(mockSessionCacheRepository)
   }
 
   case class FormData(name: String)
@@ -57,69 +52,40 @@ class DataCacheServiceSpec extends PlaySpec  with MockitoSugar with BeforeAndAft
     implicit val formats: OFormat[FormData] = Json.format[FormData]
   }
 
-  val mockAppConfig: AppConfig = mock[AppConfig]
-
-  class Setup extends ConnectorMocks {
-    when(mockAppConfig.baseDataCacheUri).thenReturn("http://localhost:9020/")
-    val testDataCacheService = new DataCacheService(
-      mockHttpClient,
-      mockAppConfig
-    )
-  }
+  val testDataCacheService = new DataCacheService(mockSessionCacheRepository)
 
   "DataCacheService" must {
 
     "return None" when {
-      "formId of the cached form does not exist for defined data type" in new Setup {
-
-        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
-          (any(), any(), any())) thenReturn {
-          Future.successful(None)
-        }
-
-        when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map())))
+      "formId of the cached form does not exist for defined data type" in {
+        when(mockSessionCacheRepository.getFromSession[FormData](ArgumentMatchers.eq(formIdNotExist))(any(), any()))
+          .thenReturn(Future.successful(None))
 
         await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(None)
       }
     }
 
     "return Some" when {
-      "formId of the cached form does exist for defined data type" in new Setup {
+      "formId of the cached form does exist for defined data type" in {
+        when(mockSessionCacheRepository.getFromSession[FormData](ArgumentMatchers.eq(formId))(any(), any()))
+          .thenReturn(Future.successful(Some(formData)))
 
-        when(mockSessionCache.fetchAndGetEntry[FormData](key = ArgumentMatchers.eq(formIdNotExist))
-          (any(), any(), any())) thenReturn {
-          Future.successful(Some(formData))
-        }
-
-        when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.parse(
-            """{
-              |   "name":"some-data",
-              |   "other": false
-              |}
-              |""".stripMargin)))))
-
-        await(testDataCacheService.fetchAndGetFormData[FormData](formIdNotExist)) must be(Some(formData))
+        await(testDataCacheService.fetchAndGetFormData[FormData](formId)) must be(Some(formData))
       }
     }
 
     "save form data" when {
-      "valid form data with a valid form id is passed" in new Setup {
-        when(mockSessionCache.cache[FormData](ArgumentMatchers.eq(formId), ArgumentMatchers.eq(formData))
-          (any(), any(), any())) thenReturn {
-          Future.successful(cacheMap)
-        }
-
-       when(execute[CacheMap]).thenReturn(Future.successful(CacheMap("test", Map(formIdNotExist -> Json.toJson(formData)))))
+      "valid form data with a valid form id is passed" in {
+        when(mockSessionCacheRepository.putSession[FormData](ArgumentMatchers.eq(formId), ArgumentMatchers.eq(formData))(any(), any(), any()))
+          .thenReturn(Future.successful(formData))
 
         await(testDataCacheService.cacheFormData[FormData](formId, formData)) must be(formData)
       }
     }
 
     "clear cache" when {
-      "asked to do so" in new Setup {
-        when(mockSessionCache.remove()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
-
-        when(execute[HttpResponse]).thenReturn(Future.successful(HttpResponse(OK, "")))
+      "asked to do so" in {
+        when(mockSessionCacheRepository.deleteFromSession(any())).thenReturn(Future.successful(()))
 
         await(testDataCacheService.clearCache()) must be(())
       }

@@ -165,7 +165,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
           .thenReturn (Future.successful(Some(displayName)))
         when(mockAgentClientMandateConnector.createMandate(any(), any())
         (any(), any())) thenReturn Future.successful(HttpResponse(CREATED, respJson, Map.empty[String, Seq[String]]))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         when(mockDataCacheService.cacheFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(service.agentRefCacheId), any())(any(), any(), any()))
           .thenReturn(Future.successful(ClientMandateDisplayDetails("test name", "AS12345678", agentLastUsedEmail)))
 
@@ -304,7 +304,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.cacheFormData[Mandate](ArgumentMatchers.eq(service.clientApprovedMandateId), any())(any(), any(), any()))
           .thenReturn(Future.successful(mandateNew))
 
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[Mandate]] = service.approveMandate(mandateNew, testClientAuthRetrievals)
         await(response) must be(Some(mandateNew))
       }
@@ -487,7 +487,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,  editAgentDetails = Some(editAgentAddress))
 
@@ -503,7 +503,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges))
         await(response) must be(updatedDetails)
@@ -519,7 +519,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(cachedData))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals)
         await(response) must be(updatedDetails)
       }
@@ -529,7 +529,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
         when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(service.agentDetailsFormId))(any(), any(), any()))
           .thenReturn (Future.successful(None))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any())) thenReturn Future.successful(HttpResponse(OK, ""))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editNonUKIdDetails = Some(nonUkiOcrChanges))
         await(response) must be(None)
@@ -543,7 +543,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
           .thenReturn (Future.successful(cachedData))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any()))
           .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] =
           service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals, editAgentDetails = Some(editAgentAddress))
         await(response) must be(None)
@@ -555,7 +555,7 @@ class AgentClientMandateServiceSpec extends PlaySpec with MockitoSugar with Befo
           .thenReturn (Future.successful(None))
         when(mockBusinessCustomerConnector.updateRegistrationDetails(any(), any(), any())(any(), any()))
           .thenReturn (Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "")))
-        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+        when(mockDataCacheService.clearCache()(any(), any())).thenReturn(Future.successful(()))
         val response: Future[Option[UpdateRegistrationDetailsRequest]] = service.updateRegisteredDetails(agentAuthRetrievals = testAgentAuthRetrievals,
           editNonUKIdDetails = Some(nonUkiOcrChanges), editAgentDetails = None)
         await(response) must be(None)

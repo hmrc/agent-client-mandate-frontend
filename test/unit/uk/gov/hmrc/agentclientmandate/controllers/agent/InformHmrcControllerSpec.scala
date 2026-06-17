@@ -24,6 +24,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentclientmandate.connectors.AtedSubscriptionFrontendConnector
@@ -40,7 +41,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.{AuthenticatedWrapperBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants with GuiceOneServerPerSuite {
+class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with MandateConstants with GuiceOneServerPerSuite with TestApplicationBuilder {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val mockDataCacheService: DataCacheService = mock[DataCacheService]

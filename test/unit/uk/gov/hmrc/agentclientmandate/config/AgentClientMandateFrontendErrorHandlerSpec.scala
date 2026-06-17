@@ -19,6 +19,7 @@ package unit.uk.gov.hmrc.agentclientmandate.config
 import org.jsoup.Jsoup
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Injecting}
@@ -28,22 +29,40 @@ import uk.gov.hmrc.agentclientmandate.views.html.error_template
 import views.agent.ViewTestHelper
 import scala.concurrent.ExecutionContext
 
-
-class AgentClientMandateFrontendErrorHandlerSpec extends PlaySpec with GuiceOneAppPerSuite with ViewTestHelper with MockitoSugar with Injecting {
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+class AgentClientMandateFrontendErrorHandlerSpec
+    extends PlaySpec
+    with GuiceOneAppPerSuite
+    with TestApplicationBuilder
+    with ViewTestHelper
+    with MockitoSugar
+    with Injecting {
+  implicit val ec: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
   "internalServerErrorTemplate" must {
 
     "retrieve the correct messages" in {
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
       val errorTemplate: error_template = inject[error_template]
-      val errorHandler = new AgentClientMandateFrontendErrorHandler(mcc.messagesApi, mockConfig, errorTemplate, mockAppConfig, ec)
-      errorHandler.internalServerErrorTemplate.map{result =>
+      val errorHandler = new AgentClientMandateFrontendErrorHandler(
+        mcc.messagesApi,
+        mockConfig,
+        errorTemplate,
+        mockAppConfig,
+        ec
+      )
+      errorHandler.internalServerErrorTemplate.map { result =>
         val document = Jsoup.parse(contentAsString(result))
 
         document.title() must be("agent.client.mandate.generic.error.title")
-        document.getElementsByTag("h1").text() must include("agent.client.mandate.generic.error.header")
-        document.select("#main-content p").first().text() must be("agent.client.mandate.generic.error.message")
-        document.select("#main-content p").last().text() must be("agent.client.mandate.generic.error.message2")
+        document.getElementsByTag("h1").text() must include(
+          "agent.client.mandate.generic.error.header"
+        )
+        document.select("#main-content p").first().text() must be(
+          "agent.client.mandate.generic.error.message"
+        )
+        document.select("#main-content p").last().text() must be(
+          "agent.client.mandate.generic.error.message2"
+        )
       }
     }
   }

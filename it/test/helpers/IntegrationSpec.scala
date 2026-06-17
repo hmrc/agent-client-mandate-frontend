@@ -18,14 +18,17 @@ package helpers
 
 import helpers.application.IntegrationApplication
 import helpers.wiremock.WireMockSetup
-import play.api.mvc.{Session, SessionCookieBaker}
 import org.scalatest._
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.ws.{WSCookie, DefaultWSCookie, WSRequest}
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
+import play.api.libs.ws.{DefaultWSCookie, WSCookie, WSRequest}
+import play.api.mvc.{Session, SessionCookieBaker}
+import uk.gov.hmrc.agentclientmandate.service.DataCacheService
+import uk.gov.hmrc.crypto.PlainText
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, SessionId => HcSessionId}
 import uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCrypto
 import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.crypto.PlainText
+
+import scala.concurrent.ExecutionContext
 
 trait IntegrationSpec
   extends PlaySpec
@@ -37,11 +40,29 @@ trait IntegrationSpec
     with LoginStub {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+
   val BearerToken: String = "mock-bearer-token"
+
   lazy val cookieCrypto: SessionCookieCrypto = app.injector.instanceOf[SessionCookieCrypto]
   lazy val cookieBaker: SessionCookieBaker = app.injector.instanceOf[SessionCookieBaker]
 
+  protected lazy val dataCacheService: DataCacheService =
+    app.injector.instanceOf[DataCacheService]
+
+  protected val cacheHeaderCarrier: HeaderCarrier =
+    HeaderCarrier(sessionId = Some(HcSessionId(SessionId)))
+
+  protected def clearSessionCache(): Unit =
+    await(
+      dataCacheService.clearCache()(
+        cacheHeaderCarrier,
+        ec
+      )
+    )
+
   override def beforeAll(): Unit = {
+    clearSessionCache()
     super.beforeAll()
     startWmServer()
   }
@@ -62,19 +83,24 @@ trait IntegrationSpec
     val csrfToken = "Csrf-Token" -> "nocheck"
     val headers = List(sessionId, authorisation, csrfToken)
 
-    val appendSlash = if(url.startsWith("/")) url else s"/$url"
+    val appendSlash = if (url.startsWith("/")) url else s"/$url"
+
     ws.url(s"$testAppUrl$appendSlash")
       .withCookies(mockSessionCookie)
       .withFollowRedirects(false)
-      .withHttpHeaders(headers:_*)
+      .withHttpHeaders(headers: _*)
   }
 
   def mockSessionCookie: WSCookie = {
-    val sessionCookie = cookieBaker.encodeAsCookie(Session(Map(
-      SessionKeys.lastRequestTimestamp -> System.currentTimeMillis().toString,
-      SessionKeys.authToken -> BearerToken,
-      SessionKeys.sessionId -> SessionId
-    )))
+    val sessionCookie = cookieBaker.encodeAsCookie(
+      Session(
+        Map(
+          SessionKeys.lastRequestTimestamp -> System.currentTimeMillis().toString,
+          SessionKeys.authToken -> BearerToken,
+          SessionKeys.sessionId -> SessionId
+        )
+      )
+    )
 
     DefaultWSCookie(
       sessionCookie.name,
@@ -86,5 +112,4 @@ trait IntegrationSpec
       sessionCookie.httpOnly
     )
   }
-
 }

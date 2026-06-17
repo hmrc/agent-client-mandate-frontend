@@ -22,6 +22,7 @@ import org.scalatest.matchers.must.Matchers
 import play.api.test.FakeRequest
 import play.api.i18n.{Messages, MessagesApi}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import unit.uk.gov.hmrc.agentclientmandate.builders.TestApplicationBuilder
 import uk.gov.hmrc.agentclientmandate.views.html.agent.cannotRegisterClientKickout
 import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
@@ -29,7 +30,7 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
   class CannotRegisterClientKickoutSpec
     extends AnyWordSpec
       with Matchers
-      with GuiceOneAppPerSuite {
+      with GuiceOneAppPerSuite with TestApplicationBuilder {
 
     private val view   = app.injector.instanceOf[cannotRegisterClientKickout]
     private val mcc    = app.injector.instanceOf[play.api.mvc.MessagesControllerComponents]
