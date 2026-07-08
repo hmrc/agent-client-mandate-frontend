@@ -133,9 +133,9 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.paySA-question.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.paySA-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.paySA-question.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("agent.paySA-question.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("agent.paySA-question.header")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -145,9 +145,9 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.paySA-question.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.paySA-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
-          document.getElementsByClass("govuk-fieldset__legend").text() must be("agent.paySA-question.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("agent.paySA-question.header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByClass("govuk-fieldset__legend").text() must include("agent.paySA-question.header")
           document.getElementById("paySA").attr("checked") must be("")
           document.getElementById("submit").text() must be("continue-button")
         }

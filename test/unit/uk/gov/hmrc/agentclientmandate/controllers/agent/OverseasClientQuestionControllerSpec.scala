@@ -134,8 +134,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.overseas-client-question.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByClass("govuk-fieldset__legend--xl").text() must include("agent.overseas-client-question.header")
+          document.getElementsByClass("govuk-fieldset__legend--xl").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("submit").text() must be("continue-button")
         }
       }
@@ -145,8 +145,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.overseas-client-question.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.overseas-client-question.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
+          document.getElementsByClass("govuk-fieldset__legend--xl").text() must include("agent.overseas-client-question.header")
+          document.getElementsByClass("govuk-fieldset__legend--xl").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
           document.getElementById("isOverseas").attr("checked") must be("")
           document.getElementById("submit").text() must be("continue-button")
         }
