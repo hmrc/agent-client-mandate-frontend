@@ -50,25 +50,20 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(overseasClientQuestionForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.overseas-client-question.header")
-        </h1>
-    </header>
-
   @formHelper(action = routes.OverseasClientQuestionController.submit()) {
     @govukRadios(
         Radios(
             fieldset = Some(Fieldset(
                 legend = Some(Legend(
-                    classes = "govuk-visually-hidden",
-                    content = Text(Messages("agent.overseas-client-question.header"))
+                    classes = "govuk-fieldset__legend govuk-fieldset__legend--xl",
+                    content = HtmlContent(Html(s"""
+                        |<span class="govuk-caption-xl hmrc-caption-xl">
+                        |  <span class="govuk-visually-hidden">${messages("ated.screen-reader.section")}</span>
+                        |    ${messages("agent.add-a-client.sub-header")}
+                        |</span>
+                        |${messages("agent.overseas-client-question.header")}
+                    """.stripMargin)),
+                    isPageHeading = true
                 ))
             )),
             items = Seq(
