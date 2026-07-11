@@ -50,17 +50,7 @@ govukBackLink: GovukBackLink)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(clientPermissionForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-                <span class="govuk-caption-xl">
-                    <span class="govuk-visually-hidden">
-                    @messages("ated.screen-reader.section")
-                    </span>
-                    @messages("agent.add-a-client.sub-header")
-                </span>
-            @messages("agent.client-permission.header")
-        </h1>
-    </header>
+
 
     @formHelper(action = routes.ClientPermissionController.submit(callingPage)) {
 
@@ -68,8 +58,15 @@ govukBackLink: GovukBackLink)
         Radios(
             fieldset = Some(Fieldset(
                 legend = Some(Legend(
-                    classes = "govuk-visually-hidden",
-                    content = Text(Messages("agent.client-permission.header"))
+                    classes = "govuk-fieldset__legend govuk-fieldset__legend--xl",
+                    content = HtmlContent(Html(s"""
+                        |<span class="govuk-caption-xl hmrc-caption-xl">
+                        |  <span class="govuk-visually-hidden">${messages("ated.screen-reader.section")}</span>
+                        |    ${messages("agent.add-a-client.sub-header")}
+                        |</span>
+                        |${messages("agent.client-permission.header")}
+                    """.stripMargin)),
+                    isPageHeading = true
                     ))
                 )),
             items = Seq(

@@ -42,7 +42,6 @@ class ClientPermissionController @Inject()(
                                             implicit val ec: ExecutionContext,
                                             implicit val appConfig: AppConfig,
                                             implicit val servicesConfig: ServicesConfig,
-                                            templateClientPermission: views.html.agent.clientPermission,
                                             templateClientPermissionNew: views.html.agent.clientPermission_new,
                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
@@ -66,7 +65,7 @@ class ClientPermissionController @Inject()(
       withAgentRefNumber(Some(service)) { _ =>
         clientPermissionForm.bindFromRequest().fold(
           formWithErrors => {
-            val result = BadRequest(templateClientPermission(formWithErrors, service, callingPage, getBackLink(callingPage)))
+            val result = BadRequest(templateClientPermissionNew(formWithErrors, service, callingPage, getBackLink(callingPage)))
             Future.successful(result)
           },
           data => {
