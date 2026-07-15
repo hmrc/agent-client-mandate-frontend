@@ -57,7 +57,6 @@ class ClientPermissionControllerSpec
   val mockAtedSubscriptionConnector: AtedSubscriptionFrontendConnector = mock[AtedSubscriptionFrontendConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
-  val injectedViewInstanceClientPermission: clientPermission = app.injector.instanceOf[views.html.agent.clientPermission]
   val injectedViewInstanceClientPermissionNew: clientPermission_new = app.injector.instanceOf[views.html.agent.clientPermission_new]
 
   class Setup {
@@ -69,7 +68,6 @@ class ClientPermissionControllerSpec
       implicitly,
       mockAppConfig,
       mockServicesConfig,
-      injectedViewInstanceClientPermission,
       injectedViewInstanceClientPermissionNew
     )
 
