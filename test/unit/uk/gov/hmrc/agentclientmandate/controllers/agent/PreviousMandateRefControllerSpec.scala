@@ -176,7 +176,7 @@ class PreviousMandateRefControllerSpec extends PlaySpec with MockitoSugar with B
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.search-previous-mandate.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.search-previous-mandate.header")
+          document.select("h1 > label.govuk-label--xl").text() must include("agent.search-previous-mandate.header")
           document.getElementById("mandateRef").`val`() must be("ABC123")
           document.getElementById("submit").text() must be("continue-button")
         }

@@ -164,7 +164,7 @@ class ClientDisplayNameControllerSpec
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-display-name.header")
+          document.select("h1 > label.govuk-label--xl").text() must include("agent.client-display-name.header")
         }
       }
 
@@ -190,7 +190,7 @@ class ClientDisplayNameControllerSpec
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("agent.client-display-name.header")
+          document.select("h1 > label.govuk-label--xl").text() must include("agent.client-display-name.header")
         }
       }
 
