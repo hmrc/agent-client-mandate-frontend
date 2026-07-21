@@ -55,57 +55,72 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(prevUniqueAuthNumForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.prev-auth-num.header")
-        </h1>
-    </header>
-
-    <p class="govuk-body">@messages("agent.prev-auth-num.p")</p>
-
-    @govukDetails(Details(
-        summary = Text(messages("agent.prev-auth-num.accordion")),
-        content = HtmlContent(summaryContent),
-        attributes = Map("id" -> "titleNumber-reveal")
-    ))
-
     @formHelper(action = routes.PreviousUniqueAuthorisationNumberController.submit(callingPage)) {
 
         <div class="govuk-form-group" id="prevUniqueAuthNumId">
-            @govukRadios(
-                Radios(
-                    fieldset = Some(Fieldset(
-                        legend = Some(Legend(
-                            classes = "govuk-visually-hidden",
-                            content = Text(Messages("agent.prev-auth-num.header"))
-                        ))
-                    )),
-                    items = Seq(
-                        RadioItem(
-                            content = Text(Messages("radio-yes")),
-                            value = Some("true")
-                        ),
-                        RadioItem(
-                            content = Text(Messages("radio-no")),
-                            value = Some("false")
+        @govukRadios(
+            Radios(
+                fieldset = Some(
+                    Fieldset(
+                        legend = Some(
+                            Legend(
+                                content = HtmlContent(
+                                    s"""
+                                    <span class="govuk-caption-xl">
+                                        <span class="govuk-visually-hidden">
+                                            ${messages("ated.screen-reader.section")}
+                                        </span>
+                                        ${messages("agent.add-a-client.sub-header")}
+                                    </span>
+                                    ${messages("agent.prev-auth-num.header")}
+                                    """
+                                ),
+                                classes = "govuk-fieldset__legend--xl govuk-!-margin-bottom-7",
+                                isPageHeading = true
+                            )
                         )
+                    )
+                ),
+                hint = Some(
+                    Hint(
+                        content = HtmlContent(
+                            s"""
+                            <p class="govuk-body">
+                                ${messages("agent.prev-auth-num.p")}
+                            </p>
+                            ${govukDetails(
+                                Details(
+                                    summary = Text(messages("agent.prev-auth-num.accordion")),
+                                    content = HtmlContent(summaryContent),
+                                    attributes = Map("id" -> "titleNumber-reveal")
+                                )
+                            )}
+                            """
+                        )
+                    )
+                ),
+                items = Seq(
+                    RadioItem(
+                        content = Text(Messages("radio-yes")),
+                        value = Some("true")
                     ),
-                    classes = "govuk-radios--inline"
-                ).withFormField(prevUniqueAuthNumForm("authNum"))
-            )
+                    RadioItem(
+                        content = Text(Messages("radio-no")),
+                        value = Some("false")
+                    )
+                ),
+                classes = "govuk-radios--inline"
+            ).withFormField(prevUniqueAuthNumForm("authNum"))
+        )
         </div>
 
-        @govukButton(Button(
-            content = Text(messages("save-and-continue-button")),
-            inputType = Some("submit"),
-            attributes = Map("id" -> "submit")
-        ))
+        @govukButton(
+            Button(
+                content = Text(messages("save-and-continue-button")),
+                inputType = Some("submit"),
+                attributes = Map("id" -> "submit")
+            )
+        )
     }
 }
 

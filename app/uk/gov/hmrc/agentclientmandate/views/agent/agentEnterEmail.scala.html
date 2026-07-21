@@ -57,30 +57,37 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentEmailForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
             </span>
-            @messages("agent.enter-email.header")
-        </h1>
-    </header>
-
-    <p class="govuk-body" id="info">
-    @messages("agent.enter-email.info.text")
-  </p>
+            @messages("agent.add-a-client.sub-header")
+        </span>
+    </h2>
 
   @formHelper(action = routes.CollectAgentEmailController.submit(redirectUrl = redirectUrl)) {
 
     <div id="agent-enter-email-form" class="govuk-form-group">
+
+
         @govukInput(
             Input(
                 label = Label(
-                    classes = "govuk-visually-hidden",
-                    content = Text(Messages("agent.enter-email.field.email.label"))
+                    content = HtmlContent(
+                        s"""
+                            ${messages("agent.enter-email.header")}
+                            """
+                    ),
+                    classes = "govuk-label--xl govuk-!-margin-bottom-7",
+                    isPageHeading = true
+                ),
+                hint = Some(
+                    Hint(
+                        content = Text(
+                            Messages("agent.enter-email.info.text")
+                        )
+                    )
                 ),
             autocomplete = Some("email"),
             inputmode = Some("email")

@@ -49,25 +49,27 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(nrlQuestionForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
+
+        <h2 class="govuk-caption-l hmrc-caption-l">
             <span class="govuk-caption-xl">
                 <span class="govuk-visually-hidden">
                 @messages("ated.screen-reader.section")
                 </span>
                 @messages("agent.add-a-client.sub-header")
             </span>
-            @messages("agent.nrl-question.header")
-        </h1>
-    </header>
+        </h2>
+
 
   @formHelper(action = routes.NRLQuestionController.submit()) {
       @govukRadios(
           Radios(
               fieldset = Some(Fieldset(
                   legend = Some(Legend(
-                      classes = "govuk-visually-hidden",
-                      content = Text(Messages("agent.nrl-question.header"))
+                      classes = "govuk-fieldset__legend govuk-fieldset__legend--xl govuk-!-margin-bottom-7",
+                      content = HtmlContent(Html(s"""
+                        |${messages("agent.nrl-question.header")}
+                    """.stripMargin)),
+                      isPageHeading = true
                   ))
               )),
               items = Seq(
