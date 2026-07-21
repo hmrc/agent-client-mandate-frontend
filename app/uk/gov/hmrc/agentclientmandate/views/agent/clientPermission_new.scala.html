@@ -50,7 +50,6 @@ govukBackLink: GovukBackLink)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(clientPermissionForm))
     }
 
-
     @formHelper(action = routes.ClientPermissionController.submit(callingPage)) {
 
     @govukRadios(
