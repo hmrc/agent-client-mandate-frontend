@@ -49,19 +49,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(prevRegisteredForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
-            </span>
-            @messages("agent.client-prev-registered.header")
-        </h1>
-    </header>
 
-    <p class="govuk-body">@messages("agent.client-prev-registered.p")</p>
 
   @formHelper(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {
 
@@ -70,10 +58,24 @@
           Radios(
               fieldset = Some(Fieldset(
                   legend = Some(Legend(
-                      classes = "govuk-visually-hidden",
-                      content = Text(Messages("agent.client-prev-registered.header"))
+                      classes = "govuk-fieldset__legend govuk-fieldset__legend--xl govuk-!-margin-bottom-7",
+                      content = HtmlContent(Html(s"""
+                        |<span class="govuk-caption-xl hmrc-caption-xl">
+                        |  <span class="govuk-visually-hidden">${messages("ated.screen-reader.section")}</span>
+                        |    ${messages("agent.add-a-client.sub-header")}
+                        |</span>
+                        |${messages("agent.client-prev-registered.header")}
+                    """.stripMargin)),
+                      isPageHeading = true
                   ))
               )),
+              hint = Some(
+                  Hint(
+                      content = Text(
+                          Messages("agent.client-prev-registered.p")
+                      )
+                  )
+              ),
               items = Seq(
                   RadioItem(
                       content = Text(Messages("radio-yes")),

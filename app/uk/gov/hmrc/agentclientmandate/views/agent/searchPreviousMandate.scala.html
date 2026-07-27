@@ -48,28 +48,36 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(mandateRefForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
             </span>
-            @messages("agent.search-previous-mandate.header")
-        </h1>
-    </header>
+            @messages("agent.add-a-client.sub-header")
+        </span>
+    </h2>
 
-    <p class="govuk-body">@messages("agent.search-previous-mandate.header.lede")</p>
 
   @formHelper(action = routes.PreviousMandateRefController.submit(callingPage)) {
 
       @govukInput(
           Input(
               label = Label(
-                  classes = "govuk-visually-hidden",
-                  content = Text(Messages("agent.search-previous-mandate.label"))
-              )
+                  content = HtmlContent(
+                      s"""
+                            ${messages("agent.search-previous-mandate.header")}
+                            """
+                  ),
+                  classes = "govuk-label--xl govuk-!-margin-bottom-7",
+                  isPageHeading = true
+              ),
+              hint = Some(
+                  Hint(
+                      content = Text(
+                          Messages("agent.search-previous-mandate.header.lede")
+                      )
+                  )
+              ),
           ).withFormField(mandateRefForm("mandateRef"))
       )
 

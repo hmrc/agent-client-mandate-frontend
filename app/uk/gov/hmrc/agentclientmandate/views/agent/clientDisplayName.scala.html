@@ -50,29 +50,36 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(clientDisplayNameForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.add-a-client.sub-header")
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
             </span>
-            @messages("agent.client-display-name.header")
-        </h1>
-    </header>
+            @messages("agent.add-a-client.sub-header")
+        </span>
+    </h2>
 
-    <p class="govuk-body" id="info">
-       @messages("agent.client-display-name.text", service.toUpperCase)
-    </p>
 
     @formHelper(action = routes.ClientDisplayNameController.submit(redirectUrl = redirectUrl)) {
+
         <div id="client-display-name-form" class="govuk-form-group">
             @govukInput(
                 Input(
                     label = Label(
-                        classes = "govuk-visually-hidden",
-                        content = Text(Messages("agent.client-display-name.change"))
+                        content = HtmlContent(
+                            s"""
+                            ${messages("agent.client-display-name.header")}
+                            """
+                                    ),
+                                    classes = "govuk-label--xl govuk-!-margin-bottom-7",
+                                    isPageHeading = true
+                    ),
+                    hint = Some(
+                        Hint(
+                            content = Text(
+                                Messages("agent.client-display-name.text", service.toUpperCase)
+                            )
+                        )
                     ),
                     autocomplete = Some("name")
                 ).withFormField(clientDisplayNameForm("clientDisplayName"))
