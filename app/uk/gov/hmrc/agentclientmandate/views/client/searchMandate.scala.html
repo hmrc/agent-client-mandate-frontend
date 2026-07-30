@@ -47,33 +47,29 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(mandateRefForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("client.search-mandate.preheader")
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
             </span>
-            @messages("client.search-mandate.header")
-        </h1>
-    </header>
-
-  <p class="govuk-body" id="client.search-mandate.help">
-    @messages("client.search-mandate.lede")
-  </p>
+            @messages("client.search-mandate.preheader")
+        </span>
+    </h2>
 
   @formHelper(action = routes.SearchMandateController.submit()) {
 
       @govukInput(
           Input(
               label = Label(
-                  classes = "govuk-visually-hidden",
-                  content = Text(messages("client.search-mandate.header"))
+                  content = Text(messages("client.search-mandate.header")),
+                  classes = "govuk-label--xl govuk-!-marging-botton-7",
+                  isPageHeading = true
               ),
-              hint = Some(Hint(
-                  content = Text(messages("client.search-mandate.hint"))
-              ))
+              hint = Some(
+                  Hint(
+                      content = Text(messages("client.search-mandate.lede"))
+                  )
+              )
           ).withFormField(mandateRefForm("mandateRef"))
       )
 

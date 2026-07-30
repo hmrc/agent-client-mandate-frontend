@@ -47,42 +47,44 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(removeAgentForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
             </span>
-            @messages("client.remove-agent.header", agentName, service.toUpperCase)
-        </h1>
-    </header>
+            @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
+        </span>
+    </h2>
 
     @formHelper(action = routes.RemoveAgentController.submit(mandateId)) {
 
         <div class="govuk-form-group" id="removeAgent">
-            @govukRadios(
-                Radios(
-                    fieldset = Some(Fieldset(
-                        legend = Some(Legend(
-                            classes = "govuk-visually-hidden",
-                            content = Text(messages("client.remove-agent.header"))
-                        ))
-                    )),
-                    items = Seq(
-                        RadioItem(
-                            content = Text(messages("radio-yes")),
-                            value = Some("true")
-                        ),
-                        RadioItem(
-                            content = Text(messages("radio-no")),
-                            value = Some("false")
+        @govukRadios(
+            Radios(
+                fieldset = Some(
+                    Fieldset(
+                        legend = Some(
+                            Legend(
+                                content = Text(messages("client.remove-agent.header", agentName, service.toUpperCase)),
+                                classes = "govuk-fieldset__legend--xl",
+                                isPageHeading = true
+                            )
                         )
+                    )
+                ),
+                items = Seq(
+                    RadioItem(
+                        content = Text(messages("radio-yes")),
+                        value = Some("true")
                     ),
-                    classes = "govuk-radios--inline"
-                ).withFormField(removeAgentForm("yesNo"))
-            )
+                    RadioItem(
+                        content = Text(messages("radio-no")),
+                        value = Some("false")
+                    )
+                ),
+                classes = "govuk-radios--inline"
+            ).withFormField(removeAgentForm("yesNo"))
+        )
         </div>
 
         @govukButton(Button(

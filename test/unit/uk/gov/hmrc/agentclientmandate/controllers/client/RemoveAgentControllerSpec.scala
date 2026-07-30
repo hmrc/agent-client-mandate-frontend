@@ -166,8 +166,8 @@ class RemoveAgentControllerSpec extends PlaySpec with MockitoSugar with BeforeAn
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
           document.title() must be("client.remove-agent.title - service.name - GOV.UK")
-          document.getElementsByTag("header").text() must include("client.remove-agent.header")
-          document.getElementsByTag("header").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
+          document.select("h1.govuk-fieldset__heading").text() must include("client.remove-agent.header")
+          document.select("h2").text() must include("ated.screen-reader.section agent.edit-mandate-details.pre-header")
           document.getElementsByClass("govuk-fieldset__legend").text() must be("client.remove-agent.header")
           document.getElementById("submit").text() must be("confirm-button")
         }
