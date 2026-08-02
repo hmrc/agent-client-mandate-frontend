@@ -36,18 +36,6 @@
 
 @(agentDetailsForm: Form[EditAgentAddressDetails], service: String, displayDetails: BusinessRegistrationDisplayDetails, backLink: Option[String])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@pageScripts = {
-
-    <script @CSPNonce.attr type="text/javascript" src='@controllers.routes.Assets.versioned("javascript/location-autocomplete.min.js")'></script>
-    <script @CSPNonce.attr type="text/javascript">
-      openregisterLocationPicker({
-        defaultValue: '',
-        selectElement: document.getElementById('address.countryCode'),
-        url: '@controllers.routes.Assets.versioned("location-autocomplete-graph.json")'
-      })
-    </script>
-}
-
 @backLinkHtml = {
 @if(backLink.isDefined) {
     @govukBackLink(BackLink(
@@ -59,7 +47,7 @@
 
 @implicitFormInstance = @{ Some(agentDetailsForm) }
 
-@main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), scriptElem = Some(pageScripts), beforeContent = Some(backLinkHtml)) {
+@main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(agentDetailsForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentDetailsForm))
@@ -138,6 +126,12 @@
       Select(
           label = Label(
               content = Text(Messages("agent.edit-mandate-details.country"))
+          ),
+          attributes = Map(
+              "data-show-all-values" -> "false",
+              "data-auto-select" -> "false",
+              "data-default-value" -> "",
+              "data-module" -> "hmrc-accessible-autocomplete"
           ),
           items = Seq(SelectItem(Some(""), "Select a country")) ++ displayDetails.listOfIsoCode.map {
               case (code, country) => SelectItem(

@@ -19,6 +19,9 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcReportTechnicalIssueHelper, HmrcStandardPage, HmrcTimeoutDialogHelper}
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
 @import views.html.helper.CSPNonce
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteCss
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcAccessibleAutocompleteJavascript
+@import play.twirl.api.HtmlFormat
 
 @this(
         hmrcStandardPage: HmrcStandardPage,
@@ -26,7 +29,9 @@
         hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
         hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
         twoThirdsOneThirdMainContent: TwoThirdsOneThirdMainContent,
-        twoThirdsMainContent: TwoThirdsMainContent
+        twoThirdsMainContent: TwoThirdsMainContent,
+        autocompleteCss: HmrcAccessibleAutocompleteCss,
+        autocompleteJavascript: HmrcAccessibleAutocompleteJavascript
 )
 
 @(
@@ -46,6 +51,11 @@
     <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("jquery/jquery-ui.min.js")'></script>
     <script @CSPNonce.attr src='@controllers.routes.Assets.versioned("jquery/jquery-ui-1.12.1.min.js")'></script>
     @scripts
+     <script @CSPNonce.attr>
+            if (window.HMRCFrontend) {
+                window.HMRCFrontend.initAll()
+            }
+    </script>
 }
 
 @signOutUrl = @{appConfig.serviceSignOutUrl(Some("ated"))}
@@ -62,8 +72,11 @@
             serviceUrl = Some(serviceUrl)
         ),
         templateOverrides = TemplateOverrides(
-            additionalHeadBlock = Some(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl)),
-            additionalScriptsBlock = Some(allScripts),
+            additionalHeadBlock = Some(HtmlFormat.fill(Seq(hmrcTimeoutDialogHelper(signOutUrl = signOutUrl), autocompleteCss()))),
+            additionalScriptsBlock = Some(HtmlFormat.fill(Seq(
+                allScripts,
+                autocompleteJavascript()
+            ))),
             beforeContentBlock =  Some(beforeContentBlock),
             mainContentLayout = Some(sideBar match {
                 case Some(sideBar) => twoThirdsOneThirdMainContent(sideBar)
