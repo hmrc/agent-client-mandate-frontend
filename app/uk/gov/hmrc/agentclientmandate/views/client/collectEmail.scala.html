@@ -41,6 +41,8 @@
 }
 }
 
+
+
 @main_template(title = titleBuilder(messages("client.collect-email.title"), Some(addEmailForm)), beforeContent = Some(backLinkHtml)) {
 
 
@@ -48,32 +50,35 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(addEmailForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("client.collect-email.preheader")
-            </span>
-            @messages("client.collect-email.header")
-        </h1>
-    </header>
-
-    <p class="govuk-body">
-      @messages("client.collect-email.lede")
-    </p>
+    <h2 class="govuk-caption-l hmrc-caption-l"><span class="govuk-caption-xl">
+        <span class="govuk-visually-hidden">
+            @{messages("ated.screen-reader.section")}
+        </span>
+        @{messages("client.collect-email.preheader")}
+    </span>
+    </h2>
 
   @formHelper(action = routes.CollectEmailController.submit(mode)) {
 
       @govukInput(
           Input(
               label = Label(
-                  classes = "govuk-visually-hidden",
-                  content = Text(messages("client.collect-email.email.label"))
+                  content = HtmlContent(
+                      s"""
+
+                ${messages("client.collect-email.header")}
+                """
+                  ),
+                  classes = "govuk-label--xl govuk-!-margin-bottom-7",
+                  isPageHeading = true
               ),
-            autocomplete = Some("email"),
-            inputmode = Some("email")
+              hint = Some(
+                  Hint(
+                      content = Text(messages("client.collect-email.lede"))
+                  )
+              ),
+              autocomplete = Some("email"),
+              inputmode = Some("email")
           ).withFormField(addEmailForm("email"))
       )
 

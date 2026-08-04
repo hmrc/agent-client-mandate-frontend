@@ -41,34 +41,42 @@
 }
 }
 
+
+
 @main_template(title = titleBuilder(messages("client.change-agent.title"), Some(changeAgentForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(changeAgentForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(changeAgentForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("agent.edit-mandate-details.pre-header", service.toUpperCase)
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @{messages("ated.screen-reader.section")}
             </span>
-            @messages("client.change-agent.header")
-        </h1>
-    </header>
+            @{messages("agent.edit-mandate-details.pre-header", service.toUpperCase)}
+        </span>
+    </h2>
 
     @formHelper(action = routes.ChangeAgentController.submit(mandateId)) {
 
         @govukRadios(
             Radios(
-                fieldset = Some(Fieldset(
-                    legend = Some(Legend(
-                        classes = "govuk-visually-hidden",
-                        content = Text(messages("client.change-agent.header"))
-                    ))
-                )),
+                fieldset = Some(
+                    Fieldset(
+                        legend = Some(
+                            Legend(
+                                content = HtmlContent(
+                                    s"""
+                            ${messages("client.change-agent.header")}
+                            """
+                                ),
+                                classes = "govuk-fieldset__legend--xl",
+                                isPageHeading = true
+                            )
+                        )
+                    )
+                ),
                 items = Seq(
                     RadioItem(
                         content = Text(messages("radio-yes")),

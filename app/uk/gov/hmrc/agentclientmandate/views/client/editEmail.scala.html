@@ -48,38 +48,36 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(addEmailForm))
     }
 
-    <header>
-        <h1 class="govuk-heading-xl">
-            <span class="govuk-caption-xl">
-                <span class="govuk-visually-hidden">
-                @messages("ated.screen-reader.section")
-                </span>
-                @messages("client.edit-email.preheader", service)
-            </span>
-            @messages("client.edit-email.header")
-        </h1>
-    </header>
 
-<div class="govuk-form-group">
-    <p class="govuk-body">
-      @messages("client.edit-email.lede")
-    </p>
-</div>
+    <h2 class="govuk-caption-l hmrc-caption-l">
+        <span class="govuk-caption-xl">
+            <span class="govuk-visually-hidden">
+            @messages("ated.screen-reader.section")
+            </span>
+            @messages("client.edit-email.preheader", service)
+        </span>
+    </h2>
+
+
 
 @formHelper(action = routes.EditEmailController.submit()) {
 
-    <div class="govuk-form-group">
-        @govukInput(
-            Input(
-                label = Label(
-                    content = Text(messages("client.edit-email.header")),
-                    classes = "govuk-visually-hidden"
-                ),
+    @govukInput(
+        Input(
+            label = Label(
+                content = Text(messages("client.edit-email.header")),
+                classes = "govuk-label--xl",
+                isPageHeading = true
+            ),
+            hint = Some(
+                Hint(
+                    content = Text(messages("client.edit-email.lede"))
+                )
+            ),
             autocomplete = Some("email"),
             inputmode = Some("email")
-            ).withFormField(addEmailForm("email"))
-        )
-    </div>
+        ).withFormField(addEmailForm("email"))
+    )
 
     @govukButton(Button(
          content = Text(messages("agent.edit-mandate-details.submit")),
