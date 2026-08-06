@@ -241,6 +241,9 @@ agent.paySA-question.paySA.not-selected.error = Select yes if your client pays t
 
 agent.before-registering-client.title = Before registering your client
 agent.before-registering-client.header = Before registering your client
+agent.before-registering-client.bullet-1 = each client you register must complete an
+agent.before-registering-client.ATED_link = ATED 1 form
+agent.before-registering-client.bullet-1.another = . If you already have an ATED 1 for a client, they do not need to complete another.
 agent.before-registering-client.bullet-2 = once you have registered them, send their ATED 1 to HMRC and keep a copy for your records.
 agent.before-registering-client.bullet-3 = form 64-8 does not cover ATED or ATED-related Capital Gains Tax.
 

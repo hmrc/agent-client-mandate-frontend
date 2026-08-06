@@ -53,11 +53,14 @@
 
     <div class="govuk-body" id="info">
         <ul class="govuk-list govuk-list--bullet">
-            <li id="bullet-1">each client you register must complete an
+            <li id="bullet-1">
+                @messages("agent.before-registering-client.bullet-1")
                 <a class="govuk-link" href="https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1">
-                    ATED 1
+                    @messages("agent.before-registering-client.ATED_link")
                 </a>
-                form. If you already have an ATED 1 for a client, they do not need to complete another.</li>
+                    @messages("agent.before-registering-client.bullet-1.another")
+            </li>
+
             <li id="bullet-2">@messages("agent.before-registering-client.bullet-2")</li>
             <li id="bullet-3">@messages("agent.before-registering-client.bullet-3")</li>
         </ul>
