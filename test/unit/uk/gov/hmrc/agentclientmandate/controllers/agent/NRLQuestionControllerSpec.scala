@@ -132,7 +132,6 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          println("**********************************" + document)
           document.title() must be("agent.nrl-question.title - service.name - GOV.UK")
           document.select("h1.govuk-fieldset__heading").text() must include("agent.nrl-question.header")
           document.select("h2.govuk-caption-l > span").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")
