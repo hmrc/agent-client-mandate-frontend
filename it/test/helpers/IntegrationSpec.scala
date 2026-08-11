@@ -18,7 +18,7 @@ package helpers
 
 import helpers.application.IntegrationApplication
 import helpers.wiremock.WireMockSetup
-import org.scalatest._
+import org.scalatest.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.{DefaultWSCookie, WSCookie, WSRequest}
 import play.api.mvc.{Session, SessionCookieBaker}
@@ -39,8 +39,8 @@ trait IntegrationSpec
     with AssertionHelpers
     with LoginStub {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  given hc: HeaderCarrier = HeaderCarrier()
+  given ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val BearerToken: String = "mock-bearer-token"
 
@@ -55,7 +55,7 @@ trait IntegrationSpec
 
   protected def clearSessionCache(): Unit =
     await(
-      dataCacheService.clearCache()(
+      dataCacheService.clearCache()(using
         cacheHeaderCarrier,
         ec
       )

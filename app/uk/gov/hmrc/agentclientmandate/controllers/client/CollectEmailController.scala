@@ -37,10 +37,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
                                        val mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig,
                                        templateCollectEmail: views.html.client.collectEmail
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
+                                      )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport {
 
   def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
@@ -76,7 +75,7 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
       }
   }
 
-  private def showView(service: String, mode: Option[String])(implicit request: Request[AnyContent]): Future[Result] = {
+  private def showView(service: String, mode: Option[String])(using request: Request[AnyContent]): Future[Result] = {
     for {
       cachedData <- dataCacheService.fetchAndGetFormData[ClientCache](clientFormId)
       backLink <- getBackLink(mode)
@@ -120,11 +119,11 @@ class CollectEmailController @Inject()(val dataCacheService: DataCacheService,
   }
 
   val backLinkId = "CollectEmailController:BackLink"
-  private def saveBackLink(service: String, redirectUrl: Option[String])(implicit hc: _root_.uk.gov.hmrc.http.HeaderCarrier): Future[String] = {
+  private def saveBackLink(service: String, redirectUrl: Option[String])(using hc: _root_.uk.gov.hmrc.http.HeaderCarrier): Future[String] = {
     dataCacheService.cacheFormData[String](backLinkId, redirectUrl.getOrElse(DelegationUtils.getDelegatedServiceRedirectUrl(service)))
   }
 
-  private def getBackLink(mode: Option[String])(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  private def getBackLink(mode: Option[String])(using hc: HeaderCarrier): Future[Option[String]] = {
     mode match {
       case Some("edit") => Future.successful(Some(routes.ReviewMandateController.view().url))
       case _ =>

@@ -59,11 +59,9 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
       stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
       mockDataCacheService,
-      implicitly,
-      mockAppConfig,
       mockAuthConnector,
       injectedViewInstanceUpdateAddressDetails
-    )
+    )(using global, mockAppConfig)
 
     def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
       val userId = s"user-${UUID.randomUUID}"
@@ -78,9 +76,9 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[AgentDetails]
-        (ArgumentMatchers.eq(controller.agentDetailsFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (ArgumentMatchers.eq(controller.agentDetailsFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(cachedData))
-      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(agentDetails))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -100,7 +98,7 @@ class UpdateAddressDetailsControllerSpec extends PlaySpec with MockitoSugar with
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(),
-        ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(updatedRegDetails))
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       test(result)

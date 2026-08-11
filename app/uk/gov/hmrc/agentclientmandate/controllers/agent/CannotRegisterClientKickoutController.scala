@@ -32,22 +32,20 @@ import scala.concurrent.{ExecutionContext, Future}
 class CannotRegisterClientKickoutController @Inject()(
                                                        mcc: MessagesControllerComponents,
                                                        val authConnector: AuthConnector,
-                                                       implicit val ec: ExecutionContext,
-                                                       implicit val appConfig: AppConfig,
-                                                       implicit val servicesConfig: ServicesConfig,
                                                        cannotRegisterClientKickoutView: views.html.agent.cannotRegisterClientKickout
-                                                     ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                     )(using val ec: ExecutionContext, val appConfig: AppConfig, val servicesConfig: ServicesConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def show(callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { _ =>
-        Future.successful(
-          Ok(
-            cannotRegisterClientKickoutView(
-              agentSummaryUrl = routes.AgentSummaryController.view().url,
-              backLink = Some(routes.ClientPermissionController.view(callingPage).url)
-            )
+      Future.successful(
+        Ok(
+          cannotRegisterClientKickoutView(
+            agentSummaryUrl = routes.AgentSummaryController.view().url,
+            backLink = Some(routes.ClientPermissionController.view(callingPage).url)
           )
         )
+      )
     }
   }
 }

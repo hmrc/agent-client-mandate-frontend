@@ -27,12 +27,12 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DataCacheService @Inject()(val sessionCacheRepository: SessionCacheRepository) extends Logging {
 
-  def fetchAndGetFormData[T](formId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[Option[T]] =
+  def fetchAndGetFormData[T](formId: String)(using hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[Option[T]] =
     sessionCacheRepository.getFromSession[T](formId)
 
-  def cacheFormData[T](formId: String, formData: T)(implicit hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[T] =
+  def cacheFormData[T](formId: String, formData: T)(using hc: HeaderCarrier, ec: ExecutionContext, formats: Format[T]): Future[T] =
     sessionCacheRepository.putSession[T](formId, formData)
 
-  def clearCache()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+  def clearCache()(using hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     sessionCacheRepository.deleteFromSession
 }

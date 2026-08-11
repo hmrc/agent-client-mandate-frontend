@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentclientmandate.views.html.agent.rejectClient
 class RejectClientFeatureSpec extends AnyFeatureSpec
   with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceRejectClient: rejectClient = app.injector.instanceOf[views.html.agent.rejectClient]
 
   Feature("The user can view the reject client page") {

@@ -38,11 +38,10 @@ class UpdateAddressDetailsController @Inject()(
                                                 mcc: MessagesControllerComponents,
                                                 agentClientMandateService: AgentClientMandateService,
                                                 dataCacheService: DataCacheService,
-                                                implicit val ec: ExecutionContext,
-                                                implicit val appConfig: AppConfig,
                                                 val authConnector: AuthConnector,
                                                 templateUpdateAddressDetails: views.html.agent.editDetails.update_address_details
-                                              ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
+                                              )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants with I18nSupport with Logging {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

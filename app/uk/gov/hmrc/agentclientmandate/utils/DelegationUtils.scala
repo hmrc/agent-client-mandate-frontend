@@ -27,7 +27,7 @@ object DelegationUtils {
                               serviceId: String,
                               clientName: String,
                               attorney: Option[String],
-                              internal: String)(implicit messages: Messages, appConfig: AppConfig): StartDelegationContext = {
+                              internal: String)(using messages: Messages, appConfig: AppConfig): StartDelegationContext = {
     StartDelegationContext(
       principalName = clientName,
       attorneyName = attorney.getOrElse("Agent"),
@@ -47,13 +47,13 @@ object DelegationUtils {
     }
   }
 
-  def getReturnUrl(implicit appConfig: AppConfig): String = s"""${appConfig.servicesConfig.getString("microservice.return-part-url")}"""
+  def getReturnUrl(using appConfig: AppConfig): String = s"""${appConfig.servicesConfig.getString("microservice.return-part-url")}"""
 
-  def getDelegatedServiceRedirectUrl(service: String)(implicit appConfig: AppConfig): String = {
+  def getDelegatedServiceRedirectUrl(service: String)(using appConfig: AppConfig): String = {
     appConfig.servicesConfig.getString(s"microservice.delegated-service-redirect-url.${service.toLowerCase}")
   }
 
-  def getDelegatedServiceHomeUrl(service: String)(implicit appConfig: AppConfig): String = {
+  def getDelegatedServiceHomeUrl(service: String)(using appConfig: AppConfig): String = {
     appConfig.servicesConfig.getString(s"microservice.delegated-service-home-url.${service.toLowerCase}")
   }
 }

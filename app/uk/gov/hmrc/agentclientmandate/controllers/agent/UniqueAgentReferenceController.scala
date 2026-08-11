@@ -34,10 +34,9 @@ class UniqueAgentReferenceController @Inject()(
                                                 val authConnector: AuthConnector,
                                                 val dataCacheService: DataCacheService,
                                                 val mcc: MessagesControllerComponents,
-                                                implicit val ec: ExecutionContext,
-                                                implicit val appConfig: AppConfig,
                                                 templateUniqueAgentReference: views.html.agent.uniqueAgentReference
-                                              ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
+                                              )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

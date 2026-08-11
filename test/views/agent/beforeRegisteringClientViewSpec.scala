@@ -33,9 +33,9 @@ import uk.gov.hmrc.agentclientmandate.views.html.agent.beforeRegisteringClient
 
 class beforeRegisteringClientViewSpec extends AnyWordSpec with MockitoSugar with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder{
 
-  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-  override implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(request)
+  given appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given specMessages: Messages = app.injector.instanceOf[MessagesApi].preferred(request)
   val injectedViewInstanceBeforeRegisteringClient: beforeRegisteringClient = app.injector.instanceOf[beforeRegisteringClient]
 
   val view: Html = injectedViewInstanceBeforeRegisteringClient("callingPage", "ATED", "backLink")
@@ -53,7 +53,7 @@ class beforeRegisteringClientViewSpec extends AnyWordSpec with MockitoSugar with
       }
 
       "have the correct information text" in {
-        doc.getElementById("bullet-1").html() mustBe "each client you register must complete an <a class=\"govuk-link\" href=\"https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1\"> ATED 1 </a> form. If you already have an ATED 1 for a client, they do not need to complete another."
+        doc.getElementById("bullet-1").html() mustBe "each client you register must complete an <a class=\"govuk-link\" href=\"https://www.gov.uk/government/publications/annual-tax-on-enveloped-dwellings-ated-1\"> ATED 1 form </a> . If you already have an ATED 1 for a client, they do not need to complete another."
         doc.getElementById("bullet-2").html() mustBe "once you have registered them, send their ATED 1 to HMRC and keep a copy for your records."
         doc.getElementById("bullet-3").html() mustBe "form 64-8 does not cover ATED or ATED-related Capital Gains Tax."
       }

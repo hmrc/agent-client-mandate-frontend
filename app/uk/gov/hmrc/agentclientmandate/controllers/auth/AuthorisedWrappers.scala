@@ -35,19 +35,19 @@ trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
 
   lazy private val origin: String = "agent-client-mandate-frontend"
 
-  protected def continueUrl(isAnAgent: Boolean)(implicit appConfig: AppConfig): String = {
+  protected def continueUrl(isAnAgent: Boolean)(using appConfig: AppConfig): String = {
     if (isAnAgent) appConfig.loginCallbackAgent else appConfig.loginCallbackClient
   }
 
-  protected def loginUrl(implicit appConfig: AppConfig): String = s"${appConfig.basGatewayHost}/${appConfig.loginPath}"
+  protected def loginUrl(using appConfig: AppConfig): String = s"${appConfig.basGatewayHost}/${appConfig.loginPath}"
 
-  private def loginParams(isAnAgent: Boolean)(implicit appConfig: AppConfig): Map[String, Seq[String]] = Map(
+  private def loginParams(isAnAgent: Boolean)(using appConfig: AppConfig): Map[String, Seq[String]] = Map(
     "continue" -> Seq(continueUrl(isAnAgent)),
     "origin" -> Seq(origin)
   )
 
   private def authErrorHandling(isAnAgent: Boolean = true)
-                               (implicit appConfig: AppConfig): PartialFunction[Throwable, Result] = {
+                               (using appConfig: AppConfig): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession =>
       Redirect(loginUrl, loginParams(isAnAgent))
     case InternalError(e)   =>
@@ -59,21 +59,21 @@ trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
   }
 
   def agentAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                           (using hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     authorised(Enrolment(agentRefEnrolment) and AuthProviders(GovernmentGateway) and AffinityGroup.Agent).retrieve(retrieval) {
       body
     }.recover(authErrorHandling())
   }
 
   def clientAuthenticated[A](service: Option[String], retrieval: Retrieval[A])(body: A => Future[Result])
-                            (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                            (using hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     authorised(AffinityGroup.Organisation and AuthProviders(GovernmentGateway)).retrieve(retrieval) {
       body
     }.recover(authErrorHandling(isAnAgent = false))
   }
 
   def withAgentRefNumber(service: Option[String])(body: AgentAuthRetrievals => Future[Result])
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                        (using hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     agentAuthenticated(service,
       Retrievals.authorisedEnrolments and
         Retrievals.internalId and
@@ -115,7 +115,7 @@ trait AuthorisedWrappers extends AuthorisedFunctions with Logging {
   }
 
   def withOrgCredId(service: Option[String])(body: ClientAuthRetrievals => Future[Result])
-                   (implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
+                   (using hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] = {
     clientAuthenticated(service, Retrievals.credentials) {
       case Some(credentials) => body(ClientAuthRetrievals(OrgAuthUtil.hash(credentials.providerId)))
       case _                 =>

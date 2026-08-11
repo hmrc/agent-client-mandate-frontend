@@ -32,14 +32,14 @@ class DataCacheServiceSpec
     with MockitoSugar
     with ScalaFutures {
 
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
-  implicit val executionContext: ExecutionContext =
+  given headerCarrier: HeaderCarrier = HeaderCarrier()
+  given executionContext: ExecutionContext =
     ExecutionContext.Implicits.global
 
   case class FakeData(field: String)
 
   object FakeData {
-    implicit val formats: Format[FakeData] = Json.format[FakeData]
+    given formats: Format[FakeData] = Json.format[FakeData]
   }
 
   val mockSessionCacheRepository: SessionCacheRepository =
@@ -95,12 +95,12 @@ class DataCacheServiceSpec
 
     "clear the session cache repository" in {
       when(
-        mockSessionCacheRepository.deleteFromSession(any[HeaderCarrier])
+        mockSessionCacheRepository.deleteFromSession(using any[HeaderCarrier])
       ).thenReturn(Future.successful(()))
 
       service.clearCache().futureValue mustBe ()
 
-      verify(mockSessionCacheRepository).deleteFromSession(any[HeaderCarrier])
+      verify(mockSessionCacheRepository).deleteFromSession(using any[HeaderCarrier])
     }
   }
 }

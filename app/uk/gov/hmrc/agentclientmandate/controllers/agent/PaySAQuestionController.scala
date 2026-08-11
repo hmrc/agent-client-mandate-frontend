@@ -35,12 +35,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class PaySAQuestionController @Inject()(
                                          dataCacheService: DataCacheService,
                                          val authConnector: AuthConnector,
-                                         implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig,
-                                         implicit val servicesConfig: ServicesConfig,
                                          val mcc: MessagesControllerComponents,
                                          templatePaySAQuestion: views.html.agent.paySAQuestion
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                       )(using val ec: ExecutionContext, val appConfig: AppConfig, val servicesConfig: ServicesConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.paySAQuestionControllerId
 
@@ -67,7 +65,7 @@ class PaySAQuestionController @Inject()(
             val result = if (data.paySA.getOrElse(false)) {
               Redirect(routes.MandateDetailsController.view(controllerId))
             } else {
-                Redirect(routes.BeforeRegisteringClientController.view(controllerId))
+              Redirect(routes.BeforeRegisteringClientController.view(controllerId))
             }
             Future.successful(result)
           }

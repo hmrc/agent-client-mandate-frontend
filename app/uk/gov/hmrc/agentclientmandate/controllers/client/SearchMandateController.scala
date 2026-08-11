@@ -37,10 +37,9 @@ class SearchMandateController @Inject()(
                                          val authConnector: AuthConnector,
                                          dataCacheService: DataCacheService,
                                          mandateService: AgentClientMandateService,
-                                         implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig,
                                          templateSearchMandate: views.html.client.searchMandate
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                       )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

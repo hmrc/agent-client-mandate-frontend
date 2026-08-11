@@ -29,8 +29,8 @@ class FeatureSwitchSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEa
     System.clearProperty("feature.test")
   }
 
-  implicit val appConfig: AppConfig = mock[AppConfig]
-  implicit val config: ServicesConfig = appConfig.servicesConfig
+  given appConfig: AppConfig = mock[AppConfig]
+  given config: ServicesConfig = appConfig.servicesConfig
 
   "FeatureSwitch" should {
 

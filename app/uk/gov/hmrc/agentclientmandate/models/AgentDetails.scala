@@ -26,7 +26,7 @@ case class EtmpContactDetails(phoneNumber: Option[String] = None,
                               emailAddress: Option[String] = None)
 
 object EtmpContactDetails {
-  implicit val formats: OFormat[EtmpContactDetails] = Json.format[EtmpContactDetails]
+  given formats: OFormat[EtmpContactDetails] = Json.format[EtmpContactDetails]
 }
 
 case class Individual(firstName: String,
@@ -35,14 +35,14 @@ case class Individual(firstName: String,
                       dateOfBirth: LocalDate)
 
 object Individual {
-  implicit val formats: OFormat[Individual] = Json.format[Individual]
+  given formats: OFormat[Individual] = Json.format[Individual]
 }
 
 case class Organisation(organisationName: String,
                         isAGroup: Option[Boolean] = None)
 
 object Organisation {
-  implicit val formats: OFormat[Organisation] = Json.format[Organisation]
+  given formats: OFormat[Organisation] = Json.format[Organisation]
 }
 
 
@@ -55,7 +55,7 @@ case class BusinessRegistrationDisplayDetails(businessType: String,
 case class Identification(idNumber: String, issuingInstitution: String, issuingCountryCode: String)
 
 object Identification {
-  implicit val formats: OFormat[Identification] = Json.format[Identification]
+  given formats: OFormat[Identification] = Json.format[Identification]
 }
 
 
@@ -75,7 +75,7 @@ case class AgentDetails(safeId: String,
 }
 
 object AgentDetails {
-  implicit val formats: OFormat[AgentDetails] = Json.format[AgentDetails]
+  given formats: OFormat[AgentDetails] = Json.format[AgentDetails]
 }
 
 case class UpdateRegistrationDetailsRequest(acknowledgementReference: String,
@@ -89,5 +89,5 @@ case class UpdateRegistrationDetailsRequest(acknowledgementReference: String,
                                             identification: Option[Identification] = None)
 
 object UpdateRegistrationDetailsRequest {
-  implicit val formats: OFormat[UpdateRegistrationDetailsRequest] = Json.format[UpdateRegistrationDetailsRequest]
+  given formats: OFormat[UpdateRegistrationDetailsRequest] = Json.format[UpdateRegistrationDetailsRequest]
 }

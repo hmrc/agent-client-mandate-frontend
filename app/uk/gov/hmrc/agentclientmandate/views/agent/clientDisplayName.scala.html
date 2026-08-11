@@ -42,8 +42,6 @@
 }
 }
 
-@implicitFormInstance = @{ Some(clientDisplayNameForm) }
-
 @main_template(title = titleBuilder(messages("agent.client-display-name.title"), Some(clientDisplayNameForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(clientDisplayNameForm.hasErrors) {
@@ -58,7 +56,6 @@
             @messages("agent.add-a-client.sub-header")
         </span>
     </h2>
-
 
     @formHelper(action = routes.ClientDisplayNameController.submit(redirectUrl = redirectUrl)) {
 

@@ -36,7 +36,9 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val mockSessionCookieCrypto: SessionCookieCrypto = mock[SessionCookieCrypto]
-  val mockEncWithDec: Encrypter with Decrypter = mock[Encrypter with Decrypter]
+  val mockEncWithDec: Encrypter with Decrypter =
+    org.mockito.Mockito.mock(classOf[Encrypter], withSettings().extraInterfaces(classOf[Decrypter]))
+      .asInstanceOf[Encrypter with Decrypter]
 
   override def beforeEach(): Unit = {
     when(mockSessionCookieCrypto.crypto)
@@ -45,7 +47,7 @@ class AtedSubscriptionFrontendConnectorSpec extends PlaySpec  with MockitoSugar 
       .thenReturn(Crypted("test"))
   }
 
-  implicit val request: Request[_] = FakeRequest(GET, "")
+  given request: Request[_] = FakeRequest(GET, "")
 
   class Setup extends ConnectorMocks {
     when(mockServicesConfig.baseUrl("ated-subscription-frontend")).thenReturn("http://localhost:9020/")

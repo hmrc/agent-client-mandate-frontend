@@ -26,7 +26,7 @@ import uk.gov.hmrc.agentclientmandate.viewModelsAndForms.mappings.Constraints
 case class ClientEmail(email: String)
 
 object ClientEmail {
-  implicit val formats: OFormat[ClientEmail] = Json.format[ClientEmail]
+  given formats: OFormat[ClientEmail] = Json.format[ClientEmail]
 }
 
 object ClientEmailForm extends Constraints {
@@ -37,46 +37,47 @@ object ClientEmailForm extends Constraints {
           .verifying(regexp(emailRegex, "agent.edit-client.error.general.agent-enter-email-form"))
           .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
           .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
-      )(ClientEmail.apply)(ClientEmail.unapply)
+      )(ClientEmail.apply)(x => Some(x.email))
     )
 
 }
-    case class MandateReference(mandateRef: String)
 
-    object MandateReference {
-      implicit val formats: OFormat[MandateReference] = Json.format[MandateReference]
-    }
+case class MandateReference(mandateRef: String)
 
-    object MandateReferenceForm {
+object MandateReference {
+  given formats: OFormat[MandateReference] = Json.format[MandateReference]
+}
 
-      val mandateRefLength = 8
+object MandateReferenceForm {
 
-      def mandateRefForm =
-        Form(
-          mapping(
-            "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
-              .verifying("client.search-mandate.error.mandateRef", x => x.nonEmpty)
-              .verifying("client.search-mandate.error.mandateRef.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
-          )
-          (MandateReference.apply)(MandateReference.unapply)
-        )
+  val mandateRefLength = 8
 
-      def clientAuthNumForm =
-      Form(
-        mapping(
-          "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
-            .verifying("client.search-mandate.error.clientAuthNum", x => x.nonEmpty)
-            .verifying("client.search-mandate.error.clientAuthNum.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
-        )
-        (MandateReference.apply)(MandateReference.unapply)
+  def mandateRefForm =
+    Form(
+      mapping(
+        "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
+          .verifying("client.search-mandate.error.mandateRef", x => x.nonEmpty)
+          .verifying("client.search-mandate.error.mandateRef.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
       )
-    }
+      (MandateReference.apply)(x => Some(x.mandateRef))
+    )
 
-    case class ClientCache(
-                            email: Option[ClientEmail] = None,
-                            mandate: Option[Mandate] = None
-                          )
+  def clientAuthNumForm =
+    Form(
+      mapping(
+        "mandateRef" -> text.transform[String](a => a.trim.replaceAll("\\s+", ""), a => a.trim.replaceAll("\\s+", "").toUpperCase)
+          .verifying("client.search-mandate.error.clientAuthNum", x => x.nonEmpty)
+          .verifying("client.search-mandate.error.clientAuthNum.length", x => x.isEmpty || (x.nonEmpty && x.length <= mandateRefLength))
+      )
+      (MandateReference.apply)(x => Some(x.mandateRef))
+    )
+}
 
-    object ClientCache {
-      implicit val formats: OFormat[ClientCache] = Json.format[ClientCache]
-      }
+case class ClientCache(
+                        email: Option[ClientEmail] = None,
+                        mandate: Option[Mandate] = None
+                      )
+
+object ClientCache {
+  given formats: OFormat[ClientCache] = Json.format[ClientCache]
+}

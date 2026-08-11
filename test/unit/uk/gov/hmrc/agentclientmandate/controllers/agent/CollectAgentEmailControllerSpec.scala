@@ -61,17 +61,15 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       stubbedMessagesControllerComponents,
       mockAuthConnector,
       mockDataCacheService,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceAgentEnterEmail
-    )
+    )(using global, mockAppConfig)
 
     def addClientAuthorisedAgent(clientMandateDisplayDetails: Option[ClientMandateDisplayDetails])(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(agentRefCacheId))(
-        ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(clientMandateDisplayDetails))
       val result = controller.addClient(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -96,7 +94,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(),
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(using ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -106,10 +104,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(ArgumentMatchers.any(),
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.eq(formId1))(using ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.callingPageCacheId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some("callingPage")))
       val result = controller.editFromSummary(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -120,7 +118,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.cacheFormData[AgentEmail](ArgumentMatchers.eq(formId1), ArgumentMatchers.eq(agentEmail))(
+      when(mockDataCacheService.cacheFormData[AgentEmail](ArgumentMatchers.eq(formId1), ArgumentMatchers.eq(agentEmail))(using 
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(agentEmail))
       val result = controller.submit(service, redirectUrl).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
@@ -131,7 +129,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(),
+      when(mockDataCacheService.fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       val result = controller.getAgentEmail(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -169,7 +167,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("aa@aa.com")
           verify(mockDataCacheService, times(1))
-            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -197,7 +195,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           document.getElementById("email").`val`() must be("")
           document.getElementById("submit").text() must be("continue-button")
           verify(mockDataCacheService, times(1))
-            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -230,7 +228,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("agent@mail.com")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -241,7 +239,7 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           document.title() must be("agent.enter-email.title - service.name - GOV.UK")
           document.getElementById("email").`val`() must be("")
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[ClientMandateDisplayDetails](
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -262,10 +260,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
         submitEmailAuthorisedAgent(fakeRequest, isValidEmail = true, redirectUrl = Some(RedirectUrl("/api/anywhere"))) { result =>
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using 
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -285,10 +283,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "agent.edit-client.error.email"
           document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.email"
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using 
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -299,10 +297,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
           document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using 
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -313,10 +311,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
           document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using 
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -327,10 +325,10 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           val document = Jsoup.parse(contentAsString(result))
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.invalid"
           document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.invalid"
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using 
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -343,9 +341,9 @@ class CollectAgentEmailControllerSpec extends PlaySpec with MockitoSugar with Be
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
           document.getElementById("email-error").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[AgentEmail](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[AgentEmail](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }

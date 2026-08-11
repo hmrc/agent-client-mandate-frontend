@@ -35,10 +35,9 @@ class OverseasClientQuestionController @Inject()(
                                                   dataCacheService: DataCacheService,
                                                   mcc: MessagesControllerComponents,
                                                   val authConnector: AuthConnector,
-                                                  implicit val ec: ExecutionContext,
-                                                  implicit val appConfig: AppConfig,
                                                   templateClientQuestion: views.html.agent.overseasClientQuestion
-                                                ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.overseasClientQuestionControllerId
 

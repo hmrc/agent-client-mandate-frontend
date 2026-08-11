@@ -42,7 +42,7 @@ import scala.concurrent.Future
 
 class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
+  given implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
@@ -53,11 +53,8 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      mockServicesConfig,
       injectedViewInstanceNrlQuestion
-    )
+    )(using global, mockAppConfig, mockServicesConfig)
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
@@ -79,7 +76,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -89,7 +86,7 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[NRLQuestion](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(NRLQuestion(Some(true)))))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(NRLQuestion(Some(true)))))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -132,7 +129,6 @@ class NRLQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with Mo
         viewWithAuthorisedAgent { result =>
           status(result) must be(OK)
           val document = Jsoup.parse(contentAsString(result))
-          println("**********************************" + document)
           document.title() must be("agent.nrl-question.title - service.name - GOV.UK")
           document.select("h1.govuk-fieldset__heading").text() must include("agent.nrl-question.header")
           document.select("h2.govuk-caption-l > span").text() must include("ated.screen-reader.section agent.add-a-client.sub-header")

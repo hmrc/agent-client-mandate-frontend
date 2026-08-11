@@ -30,11 +30,11 @@ trait ViewTestHelper {
   self: MockitoSugar =>
 
   val mcc: MessagesControllerComponents = stubMessagesControllerComponents()
-  implicit val messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
+  given messages: Messages = mcc.messagesApi.preferred(Seq(Lang.defaultLang))
 
   val mockConfig: Configuration = mock[Configuration]
 
-  implicit val mockAppConfig: AppConfig = mock[AppConfig]
+  given mockAppConfig: AppConfig = mock[AppConfig]
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
 
   when(mockAppConfig.servicesConfig)

@@ -31,9 +31,9 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
 class clientPermissionViewSpec extends AnyWordSpec with MockitoSugar with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-  override implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(request)
+  given appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given specMessages: Messages = app.injector.instanceOf[MessagesApi].preferred(request)
   val injectedViewInstanceClientPermission: uk.gov.hmrc.agentclientmandate.views.html.agent.clientPermission_new = app.injector.instanceOf[uk.gov.hmrc.agentclientmandate.views.html.agent.clientPermission_new]
 
   val view: Html = injectedViewInstanceClientPermission(

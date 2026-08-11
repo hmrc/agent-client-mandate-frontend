@@ -34,14 +34,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PreviousMandateRefController @Inject()(
-                                            val mcc: MessagesControllerComponents,
-                                            val authConnector: AuthConnector,
-                                            dataCacheService: DataCacheService,
-                                            mandateService: AgentClientMandateService,
-                                            implicit val ec: ExecutionContext,
-                                            implicit val appConfig: AppConfig,
-                                            templateSearchPreviousMandate: views.html.agent.searchPreviousMandate
-                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                              val mcc: MessagesControllerComponents,
+                                              val authConnector: AuthConnector,
+                                              dataCacheService: DataCacheService,
+                                              mandateService: AgentClientMandateService,
+                                              templateSearchPreviousMandate: views.html.agent.searchPreviousMandate
+                                            )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -71,7 +70,7 @@ class PreviousMandateRefController @Inject()(
                   x.subscription.referenceNumber.getOrElse(throw new RuntimeException("No Client Ref no. found!"))))
                 dataCacheService.cacheFormData[ClientCache](clientFormId, ClientCache(Some(ClientEmail(x.clientParty
                   .map(_.contactDetails.email).getOrElse(""))), Some(x))) flatMap { cacheResp =>
-                    Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(routes.PreviousMandateRefController.view(callingPage).url)))
+                  Future.successful(Redirect(appConfig.addNonUkClientCorrespondenceUri(routes.PreviousMandateRefController.view(callingPage).url)))
                 }
               case None =>
                 val errorMsg = "client.search-mandate.error.clientAuthNum"
@@ -84,10 +83,10 @@ class PreviousMandateRefController @Inject()(
   }
 
   def getOldMandateFromSession(service: String): Action[AnyContent] = Action.async {
-      implicit request =>
-        dataCacheService.fetchAndGetFormData[OldMandateReference](oldNonUkMandate).map { mandateRef =>
-          Ok(Json.toJson(mandateRef))
-        }
+    implicit request =>
+      dataCacheService.fetchAndGetFormData[OldMandateReference](oldNonUkMandate).map { mandateRef =>
+        Ok(Json.toJson(mandateRef))
+      }
   }
 
   private def getBackLink(service: String, callingPage: String): Some[String] = {

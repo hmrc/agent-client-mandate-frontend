@@ -31,14 +31,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MandateDeclarationController @Inject()(
-                                             val dataCacheService: DataCacheService,
-                                             val mandateService: AgentClientMandateService,
-                                             val authConnector: AuthConnector,
-                                             mcc: MessagesControllerComponents,
-                                             implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig,
-                                             templateMandateDeclaration: views.html.client.mandateDeclaration
-                                            ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                              val dataCacheService: DataCacheService,
+                                              val mandateService: AgentClientMandateService,
+                                              val authConnector: AuthConnector,
+                                              mcc: MessagesControllerComponents,
+                                              templateMandateDeclaration: views.html.client.mandateDeclaration
+                                            )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -60,7 +59,7 @@ class MandateDeclarationController @Inject()(
             case Some(mandate) =>
               mandateService.approveMandate(mandate, clientAuthRetrievals) flatMap {
                 case Some(_) => Future.successful(Redirect(routes.MandateConfirmationController.view()))
-                case None    => Future.successful(Redirect(routes.ReviewMandateController.view()))
+                case None => Future.successful(Redirect(routes.ReviewMandateController.view()))
               }
             case None => Future.successful(Redirect(routes.ReviewMandateController.view()))
           }

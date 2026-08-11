@@ -36,13 +36,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CollectAgentEmailController @Inject()(
-                                           mcc: MessagesControllerComponents,
-                                           val authConnector: AuthConnector,
-                                           dataCacheService: DataCacheService,
-                                           implicit val ec: ExecutionContext,
-                                           implicit val appConfig: AppConfig,
-                                           templateAgentEnterEmail: views.html.agent.agentEnterEmail
-                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                             mcc: MessagesControllerComponents,
+                                             val authConnector: AuthConnector,
+                                             dataCacheService: DataCacheService,
+                                             templateAgentEnterEmail: views.html.agent.agentEnterEmail
+                                           )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def addClient(service: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -61,22 +60,22 @@ class CollectAgentEmailController @Inject()(
         for {
           agentEmailCached <- dataCacheService.fetchAndGetFormData[AgentEmail](agentEmailFormId)
         } yield {
-            redirectUrl match {
-              case Some(providedUrl) =>
-                AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
-                  case Some(safeLink) =>
-                    processViewRequest(service, agentEmailCached, redirectUrl, Some(safeLink))
-                  case None => BadRequest("The return url is not correctly formatted")
-                }
-              case _ => processViewRequest(service, agentEmailCached)
+          redirectUrl match {
+            case Some(providedUrl) =>
+              AgentClientMandateUtils.getSafeLink(providedUrl, appConfig) match {
+                case Some(safeLink) =>
+                  processViewRequest(service, agentEmailCached, redirectUrl, Some(safeLink))
+                case None => BadRequest("The return url is not correctly formatted")
+              }
+            case _ => processViewRequest(service, agentEmailCached)
           }
         }
       }
- }
+  }
 
-  private def processViewRequest(service: String, agentEmailCached : Option[AgentEmail],
+  private def processViewRequest(service: String, agentEmailCached: Option[AgentEmail],
                                  redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
-           (implicit request: Request[_], messages: Messages) = {
+                                (using request: Request[_], messages: Messages) = {
     agentEmailCached match {
       case Some(email) => Ok(templateAgentEnterEmail(agentEmailForm.fill(email), service, redirectUrl, getBackLink(safeLink)))
       case None => Ok(templateAgentEnterEmail(agentEmailForm, service, redirectUrl, getBackLink(safeLink)))
@@ -113,8 +112,8 @@ class CollectAgentEmailController @Inject()(
       }
   }
 
-  private def processSubmitRequest(service : String, redirectUrl : Option[RedirectUrl] = None, safeLink: Option[String] = None)
-                            (implicit request : Request[_], messages : Messages) = {
+  private def processSubmitRequest(service: String, redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
+                                  (using request: Request[_], messages: Messages) = {
     agentEmailForm.bindFromRequest().fold(
       formWithError => {
         Future.successful(BadRequest(templateAgentEnterEmail(formWithError, service, redirectUrl, getBackLink(safeLink))))
@@ -138,7 +137,7 @@ class CollectAgentEmailController @Inject()(
       }
   }
 
-  private def getBackLink(redirectUrl: Option[String]):Option[String] = {
+  private def getBackLink(redirectUrl: Option[String]): Option[String] = {
     redirectUrl match {
       case Some(x) => Some(x)
       case None => Some(uk.gov.hmrc.agentclientmandate.controllers.agent.routes.AgentSummaryController.view().url)

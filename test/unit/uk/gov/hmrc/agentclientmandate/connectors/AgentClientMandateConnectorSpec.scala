@@ -54,7 +54,7 @@ class AgentClientMandateConnectorSpec extends PlaySpec  with MockitoSugar with B
   val arn: AgentBusinessUtr = new AgentBusinessUtrGenerator().nextAgentBusinessUtr
 
   val mandateDto: CreateMandateDto = CreateMandateDto("test@test.com", "ATED", "client display name")
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   val testAgentAuthRetrievals = AgentAuthRetrievals(
     "agentRef",

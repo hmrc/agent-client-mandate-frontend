@@ -58,11 +58,9 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       mockDelegationConnector,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceClients,
       injectedViewInstanceNoClientsNoPending
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -123,19 +121,19 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(), ArgumentMatchers.any(),
-      ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+      ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(using
       ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
 
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
 
     when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
+      ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -147,24 +145,24 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
+      ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn {
       Future.successful(true)
     }
     when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+      ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
     ) thenReturn {
       Future.successful(Some(mandateActive))
     }
     when(mockAgentClientMandateService.fetchAllClientMandates(ArgumentMatchers.any(),
-      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn {
       Future.successful(Some(Mandates(activeMandates = Seq(mandateActive),
         pendingMandates = Seq(mandateNew, mandatePendingActivation, mandateApproved, mandatePendingCancellation))))
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
 
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
 
     val result = controller.activate(service, "mandateId").apply(SessionBuilder.buildRequestWithSession(userId))
@@ -178,17 +176,17 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockAgentClientMandateService.fetchAllClientMandates(
-      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn {
       Future.successful(mockMandates)
     }
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())) thenReturn Future.successful(agentDetails)
-    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(
+    when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())(using
       ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(Some("text"))
-    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(
+    when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.any(), ArgumentMatchers.any())(using
       ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful("text")
-    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(
+    when(mockAgentClientMandateService.fetchClientsCancelled(ArgumentMatchers.any(), ArgumentMatchers.any())(using 
       ArgumentMatchers.any(), ArgumentMatchers.any())) thenReturn Future.successful(None)
 
     val result = controller.update(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
@@ -294,7 +292,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       "agent selects and begins delegation on a particular client" in new Setup {
 
         when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(Some(mandateActive))
         }
@@ -304,7 +302,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
         val result: Future[Result] = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
@@ -314,7 +312,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       "agent selects and begins delegation but client does not exist" in new Setup {
 
         when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(Some(mandateActive.copy(clientParty = None)))
         }
@@ -324,7 +322,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
         val result: Future[Result] = controller.doDelegation(service, "1").apply(SessionBuilder.buildRequestWithSession(userId))
         status(result) must be(SEE_OTHER)
@@ -335,7 +333,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
         val mandateWithNoSubscription: Mandate = mandateActive.copy(subscription = mandateActive.subscription.copy(referenceNumber = None))
         when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(Some(mandateWithNoSubscription))
         }
@@ -345,7 +343,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockDelegationConnector.startDelegation(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(true)
         )
 
         val thrown: RuntimeException = the[RuntimeException] thrownBy
@@ -369,7 +367,7 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(false)
         }
@@ -385,12 +383,12 @@ class AgentSummaryControllerSpec extends PlaySpec with MockitoSugar with BeforeA
         AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
         when(mockAgentClientMandateService.acceptClient(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(true)
         }
         when(mockAgentClientMandateService.fetchClientMandate(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         ) thenReturn {
           Future.successful(None)
         }

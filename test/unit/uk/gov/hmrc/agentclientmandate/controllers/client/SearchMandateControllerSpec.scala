@@ -76,10 +76,8 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       mockAuthConnector,
       mockDataCacheService,
       mockMandateService,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceSearchMandate
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -100,7 +98,7 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -114,12 +112,12 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockMandateService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
     when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(returnCache))
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
@@ -240,11 +238,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -256,11 +254,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.search-mandate.error.mandateRef.length"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.length"
           verify(mockMandateService, times(0)).fetchClientMandate(ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -273,11 +271,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: client.search-mandate.error.mandateRef.not-found-by-mandate-service"
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -292,11 +290,11 @@ class SearchMandateControllerSpec extends PlaySpec with MockitoSugar with Before
           document.getElementsByClass("govuk-error-message").text() must
             include("client.search-mandate.error.mandateRef.already-used-by-mandate-service")
           verify(mockMandateService, times(1)).fetchClientMandate(ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }

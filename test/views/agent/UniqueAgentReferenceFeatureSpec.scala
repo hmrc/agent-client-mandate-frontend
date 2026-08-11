@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentclientmandate.views.html.agent.uniqueAgentReference
 class UniqueAgentReferenceFeatureSpec extends AnyFeatureSpec
   with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceUniqueAgentReference: uniqueAgentReference = app.injector.instanceOf[views.html.agent.uniqueAgentReference]
 
   Feature("The user can view the reject client page") {

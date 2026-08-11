@@ -34,11 +34,10 @@ class MandateDetailsController @Inject()(
                                           mcc: MessagesControllerComponents,
                                           dataCacheService: DataCacheService,
                                           mandateService: AgentClientMandateService,
-                                          implicit val ec: ExecutionContext,
-                                          implicit val appConfig: AppConfig,
                                           val authConnector: AuthConnector,
                                           templateMandateDetails: views.html.agent.mandateDetails
-                                        ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                        )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>
@@ -70,7 +69,7 @@ class MandateDetailsController @Inject()(
 
     callingPage match {
       case `pageId` => Some(routes.PaySAQuestionController.view().url)
-      case _        => Some(routes.OverseasClientQuestionController.view().url)
+      case _ => Some(routes.OverseasClientQuestionController.view().url)
     }
   }
 }

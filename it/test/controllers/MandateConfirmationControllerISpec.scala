@@ -16,12 +16,12 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import helpers.IntegrationSpec
 import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.libs.json.Format
 import play.api.libs.ws.WSResponse
-import uk.gov.hmrc.agentclientmandate.models._
+import uk.gov.hmrc.agentclientmandate.models.*
 
 import java.time.Instant
 
@@ -81,10 +81,10 @@ class MandateConfirmationControllerISpec extends IntegrationSpec {
           dataCacheService.cacheFormData[Mandate](
             "client-approved",
             mandate
-          )(
+          )(using
             cacheHeaderCarrier,
             ec,
-            implicitly[Format[Mandate]]
+            summon[Format[Mandate]]
           )
         )
 

@@ -34,11 +34,9 @@ import scala.concurrent.ExecutionContext
 class EditMandateDetailsController @Inject()(
                                               mcc: MessagesControllerComponents,
                                               acmService: AgentClientMandateService,
-                                              implicit val ec: ExecutionContext,
-                                              implicit val appConfig: AppConfig,
                                               val authConnector: AuthConnector,
                                               templateEditClient: views.html.agent.editClient
-                                            ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                            )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>

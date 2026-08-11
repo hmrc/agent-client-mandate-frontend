@@ -57,10 +57,8 @@ class CollectEmailControllerSpec
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceCollectEmail
-    )
+    )(using global, mockAppConfig)
 
     def viewWithUnAuthenticatedClient(redirectUrl: Option[RedirectUrl] = None)(test: Future[Result] => Any): Unit = {
 
@@ -74,10 +72,10 @@ class CollectEmailControllerSpec
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some("/api/anywhere")))
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       val result = controller.edit(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -88,12 +86,12 @@ class CollectEmailControllerSpec
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(backLink.get))
+        ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(backLink.get))
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(backLink.get)))
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       val result = controller.back(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -104,17 +102,17 @@ class CollectEmailControllerSpec
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/test/test"))
+        ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful("/test/test"))
       redirectUrl match {
         case Some(x) => when(mockDataCacheService.fetchAndGetFormData[String]
-          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(x.toString)))
         case _ => when(mockDataCacheService.fetchAndGetFormData[String]
-          (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+          (ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some("")))
       }
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       val result = controller.view(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -129,14 +127,14 @@ class CollectEmailControllerSpec
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String]
-        (ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some("/api/anywhere")))
       when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(cachedData))
       when(mockDataCacheService.cacheFormData[ClientCache]
         (ArgumentMatchers.eq(controller.clientFormId), ArgumentMatchers.eq(returnCache))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(returnCache))
       val result = controller.submit(service, mode).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
@@ -266,9 +264,9 @@ class CollectEmailControllerSpec
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/review"))
           verify(mockDataCacheService, times(1))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -279,9 +277,9 @@ class CollectEmailControllerSpec
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/client/search"))
           verify(mockDataCacheService, times(1))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.any())(using ArgumentMatchers.any(),ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(1)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -295,11 +293,11 @@ class CollectEmailControllerSpec
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.empty"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.empty"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -312,11 +310,11 @@ class CollectEmailControllerSpec
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -329,11 +327,11 @@ class CollectEmailControllerSpec
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -346,11 +344,11 @@ class CollectEmailControllerSpec
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -363,11 +361,11 @@ class CollectEmailControllerSpec
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.eq(controller.backLinkId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }

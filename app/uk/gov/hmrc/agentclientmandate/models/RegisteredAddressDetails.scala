@@ -25,5 +25,5 @@ case class RegisteredAddressDetails(addressLine1: String,
                                       postalCode: Option[String]=None,
                                       countryCode: String)
 object RegisteredAddressDetails {
-    implicit val formats: OFormat[RegisteredAddressDetails] = Json.format[RegisteredAddressDetails]
+    given formats: OFormat[RegisteredAddressDetails] = Json.format[RegisteredAddressDetails]
 }

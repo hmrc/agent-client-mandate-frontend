@@ -80,7 +80,7 @@ class clientsViewSpec extends AnyFeatureSpec
     statusHistory = Seq(MandateStatus(Status.New, time1, "credId")),Subscription(None, Service("ated", "ATED")),
     clientDisplayName = "client display name 6")
 
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceClients: clients = app.injector.instanceOf[views.html.agent.agentSummary.clients]
 
   Feature("The agent can view the agent summary page when they have active clients, pending clients and clients to accept") {
@@ -91,7 +91,7 @@ class clientsViewSpec extends AnyFeatureSpec
 
       Given("An agent visits the page and has active clients, pending clients and clients to accept")
       When("The agent views the mandates")
-      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+      given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       val activeMandates = Seq(mandateActive, mandateActiveTwo)
       val pendingMandates = Seq(mandateNew, mandateApproved, mandatePendingActivation, mandatePendingCancellation)
@@ -156,7 +156,7 @@ class clientsViewSpec extends AnyFeatureSpec
 
       Given("An agent visits the page and has current clients but no pending clients")
       When("The agent views the mandates")
-      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+      given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       val activeMandates = Seq(mandateActive)
 
@@ -193,7 +193,7 @@ class clientsViewSpec extends AnyFeatureSpec
 
       Given("An agent visits the page and has current clients but no pending clients")
       When("The agent views the mandates")
-      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+      given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       val activeMandates = Seq(mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
         mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive, mandateActive,
@@ -231,7 +231,7 @@ class clientsViewSpec extends AnyFeatureSpec
 
       Given("An agent visits the page and has current clients but no pending clients")
       When("The agent views the mandates")
-      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+      given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       val html = injectedViewInstanceClients("ATED", Mandates(Nil, Nil), agentDetails, None, "", filterClientsForm, isUpdate = true)
 

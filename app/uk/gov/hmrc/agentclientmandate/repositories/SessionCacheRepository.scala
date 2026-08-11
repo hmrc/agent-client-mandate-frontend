@@ -31,23 +31,23 @@ object SessionCacheId extends CacheIdType[HeaderCarrier] {
 }
 
 trait SessionCacheRepository {
-  def putSession[T: Writes](key: String, data: T)(implicit
+  def putSession[T: Writes](key: String, data: T)(using
       hc: HeaderCarrier,
       ec: ExecutionContext
   ): Future[T]
 
-  def getFromSession[T: Reads](key: String)(implicit
+  def getFromSession[T: Reads](key: String)(using
       hc: HeaderCarrier
   ): Future[Option[T]]
 
-  def deleteFromSession(implicit hc: HeaderCarrier): Future[Unit]
+  def deleteFromSession(using hc: HeaderCarrier): Future[Unit]
 }
 
 @Singleton
 class DefaultSessionCacheRepository @Inject() (
     mongoComponent: MongoComponent,
     timestampSupport: TimestampSupport
-)(implicit ec: ExecutionContext)
+)(using ec: ExecutionContext)
     extends SessionCacheRepository {
 
   private val cacheRepo = new MongoCacheRepository[HeaderCarrier](
@@ -58,17 +58,17 @@ class DefaultSessionCacheRepository @Inject() (
     cacheIdType = SessionCacheId
   )
 
-  def putSession[T: Writes](key: String, data: T)(implicit
+  def putSession[T: Writes](key: String, data: T)(using
       hc: HeaderCarrier,
       ec: ExecutionContext
   ): Future[T] =
     cacheRepo.put[T](hc)(DataKey[T](key), data).map(_ => data)
 
-  def getFromSession[T: Reads](key: String)(implicit
+  def getFromSession[T: Reads](key: String)(using
       hc: HeaderCarrier
   ): Future[Option[T]] =
     cacheRepo.get[T](hc)(DataKey[T](key))
 
-  def deleteFromSession(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteFromSession(using hc: HeaderCarrier): Future[Unit] =
     cacheRepo.deleteEntity(hc)
 }
