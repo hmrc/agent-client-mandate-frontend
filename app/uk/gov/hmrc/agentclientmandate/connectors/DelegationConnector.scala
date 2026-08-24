@@ -21,10 +21,11 @@ import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agentclientmandate.models.StartDelegationContext
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.StringContextOps
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,7 +37,7 @@ class DelegationConnector @Inject()(val http: HttpClientV2,
   private def delegationUrl(oid: String): String = s"$serviceUrl/oid/$oid"
 
   def startDelegation(oid: String, delegationContext: StartDelegationContext)
-                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                     (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     http.put(url"${delegationUrl(oid)}").withBody(Json.toJson(delegationContext)).execute[HttpResponse].map { response =>
       response.status match {
         case CREATED =>

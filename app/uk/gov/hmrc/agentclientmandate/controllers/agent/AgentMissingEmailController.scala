@@ -33,10 +33,8 @@ class AgentMissingEmailController @Inject()(
                                              agentClientMandateService: AgentClientMandateService,
                                              mcc: MessagesControllerComponents,
                                              val authConnector: AuthConnector,
-                                             implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig,
                                              templateAgentMissingEmail: views.html.agent.agentMissingEmail
-                                           ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                           )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

@@ -42,7 +42,7 @@ import scala.concurrent.Future
 
 class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with MockControllerSetup with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val mockConfiguration: ServicesConfig = mock[ServicesConfig]
+  given mockConfiguration: ServicesConfig = mock[ServicesConfig]
 
   "SelectServiceController" must {
 
@@ -86,7 +86,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
     "agent requests(GET) for 'select service question' view and single service feature is enabled" when {
       "redirect to 'summary page for ated' view for AUTHORISED agent" in new Setup {
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(false))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
@@ -96,7 +96,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
 
       "redirect to 'missing email' view for AUTHORISED agent" in new Setup {
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(true))
         viewWithAuthorisedAgent { result =>
           status(result) must be(SEE_OTHER)
@@ -108,7 +108,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
     "valid form is submitted" when {
       "redirect to 'agent summary page for service' Page" in new Setup {
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(false))
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
@@ -119,7 +119,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
 
       "redirect to 'missing email' Page" in new Setup {
         when(mockAgentClientMandateService.doesAgentHaveMissingEmail(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn (Future.successful(true))
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("service" -> "ated")
         submitWithAuthorisedAgent(fakeRequest) { result =>
@@ -151,16 +151,14 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
     val controller = new SelectServiceController(
       stubbedMessagesControllerComponents,
       mockAgentClientMandateService,
-      implicitly,
-      mockAppConfig,
       mockAuthConnector,
       injectedViewInstanceSelectServices
-    )
+    )(using global, mockAppConfig)
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view().apply(SessionBuilder.buildRequestWithSessionNoUser)
+      val result = controller.view.apply(SessionBuilder.buildRequestWithSessionNoUser)
       test(result)
     }
 
@@ -168,7 +166,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockUnAuthenticated(mockAuthConnector)
-      val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
+      val result = controller.view.apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
@@ -176,7 +174,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result = controller.view().apply(SessionBuilder.buildRequestWithSession(userId))
+      val result = controller.view.apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
 
@@ -184,7 +182,7 @@ class SelectServiceControllerSpec extends PlaySpec with MockitoSugar with Before
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      val result = controller.submit().apply(SessionBuilder.updateRequestFormWithSession(request, userId))
+      val result = controller.submit.apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
     }
   }

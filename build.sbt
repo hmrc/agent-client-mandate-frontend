@@ -9,7 +9,7 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 val appName: String = "agent-client-mandate-frontend"
 
 ThisBuild / majorVersion := 1
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.3.7"
 
 lazy val appDependencies : Seq[ModuleID] = AppDependencies()
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -45,7 +45,8 @@ lazy val microservice = Project(appName, file("."))
   .settings(defaultSettings() *)
   .settings(
     RoutesKeys.routesImport += "uk.gov.hmrc.play.bootstrap.binders.RedirectUrl",
-    scalacOptions ++= Seq("-Wconf:src=target/.*:s", "-Wconf:cat=unused-imports&src=routes/.*:s", "-Wconf:cat=unused-imports&src=html/.*:s")
+    scalacOptions ++= Seq("-Wconf:src=target/.*:s,msg=unused.*:s"),
+    scalacOptions ~= (_.distinct)
   )
   .settings(
     TwirlKeys.templateImports ++= Seq(

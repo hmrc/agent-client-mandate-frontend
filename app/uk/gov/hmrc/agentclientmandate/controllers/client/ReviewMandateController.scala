@@ -35,10 +35,9 @@ class ReviewMandateController @Inject()(
                                          dataCacheService: DataCacheService,
                                          mcc: MessagesControllerComponents,
                                          val authConnector: AuthConnector,
-                                         implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig,
                                          templateReviewMandate: views.html.client.reviewMandate
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                       )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withOrgCredId(Some(service)) { _ =>

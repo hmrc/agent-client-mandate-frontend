@@ -244,17 +244,15 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
     val controller = new EditMandateDetailsController(
       stubbedMessagesControllerComponents,
       mockAcmService,
-      implicitly,
-      mockAppConfig,
       mockAuthConnector,
       injectedViewInstanceEditClient
-    )
+    )(using global, mockAppConfig)
 
     def viewWithAuthorisedAgent(mandate: Option[Mandate] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
       val result = controller.view(service, mandateId).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -267,9 +265,9 @@ class EditMandateDetailsControllerSpec extends PlaySpec with MockitoSugar with B
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      when(mockAcmService.fetchClientMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(getMandate))
-      when(mockAcmService.editMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+      when(mockAcmService.editMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
         ArgumentMatchers.any())).thenReturn(Future.successful(editMandate))
       val result = controller.submit(service, mandateId).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)

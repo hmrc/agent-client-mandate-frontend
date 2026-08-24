@@ -52,10 +52,8 @@ class ReviewMandateControllerSpec extends PlaySpec with MockitoSugar with Before
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceReviewMandate
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -78,10 +76,10 @@ class ReviewMandateControllerSpec extends PlaySpec with MockitoSugar with Before
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     when(mockDataCacheService.cacheFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId),
-      ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(ClientCache()))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

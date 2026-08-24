@@ -55,11 +55,9 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
       stubbedMessagesControllerComponents,
       mockDataCacheService,
       mockAtedSubscriptionConnector,
-      implicitly,
-      mockAppConfig,
       mockAuthConnector,
       injectedViewInstanceHasClientRegisteredBefore
-    )
+    )(using global, mockAppConfig)
 
     def viewWithUnAuthenticatedAgent(callingPage: String)(test: Future[Result] => Any): Unit = {
 
@@ -80,11 +78,11 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
     (serviceUsed: String = service, callingPage: String, prevReg: Option[PrevRegistered] = None)(test: Future[Result] => Any): Unit = {
       val userId = s"user-${UUID.randomUUID}"
 
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
       val result = controller.view(serviceUsed, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -95,7 +93,7 @@ class HasClientRegisteredBeforeControllerSpec extends PlaySpec with BeforeAndAft
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
       val result = controller.submit(service, callingPage).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
       test(result)
     }

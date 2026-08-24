@@ -36,11 +36,9 @@ class NRLQuestionController @Inject()(
                                        dataCacheService: DataCacheService,
                                        mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig,
-                                       implicit val servicesConfig: ServicesConfig,
                                        templateNrlQuestion: views.html.agent.nrl_question
-                                     ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                     )(using val ec: ExecutionContext, val appConfig: AppConfig, val servicesConfig: ServicesConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   val controllerId: String = ControllerPageIdConstants.nrlQuestionControllerId
 
@@ -68,7 +66,7 @@ class NRLQuestionController @Inject()(
             val result = if (data.nrl.getOrElse(false)) {
               Redirect(routes.PaySAQuestionController.view())
             } else {
-                Redirect(routes.BeforeRegisteringClientController.view(controllerId))
+              Redirect(routes.BeforeRegisteringClientController.view(controllerId))
             }
             Future.successful(result)
           }

@@ -40,7 +40,7 @@ class BeforeRegisteringClientControllerSpec
     with MockControllerSetup
     with BeforeAndAfterEach {
 
-  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
+  given implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val injectedViewInstanceBeforeRegisteringClient: beforeRegisteringClient = app.injector.instanceOf[beforeRegisteringClient]
@@ -48,10 +48,8 @@ class BeforeRegisteringClientControllerSpec
   val mockBeforeRegisteringClientController: BeforeRegisteringClientController = new BeforeRegisteringClientController(
     stubbedMessagesControllerComponents,
     mockAuthConnector,
-    mockAppConfig,
-    mockServicesConfig,
     injectedViewInstanceBeforeRegisteringClient
-  )
+  )(using mockAppConfig, mockServicesConfig)
 
   lazy val userId = s"user-${UUID.randomUUID}"
 

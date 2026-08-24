@@ -39,10 +39,8 @@ class ClientDisplayNameController @Inject()(
                                              dataCacheService: DataCacheService,
                                              mcc: MessagesControllerComponents,
                                              val authConnector: AuthConnector,
-                                             implicit val ec: ExecutionContext,
-                                             implicit val appConfig: AppConfig,
                                              templateClientDisplayName:views.html.agent.clientDisplayName
-                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                           )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, redirectUrl: Option[RedirectUrl]): Action[AnyContent] = Action.async {
     implicit request =>
@@ -65,7 +63,7 @@ class ClientDisplayNameController @Inject()(
 
   private def processViewRequest(service: String, clientDisplayname: Option[ClientDisplayName],
                                  redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
-                                (implicit request: Request[_], messages: Messages) = {
+                                (using request: Request[_], messages: Messages) = {
     clientDisplayname match {
       case Some(clientName) => Ok(templateClientDisplayName(
         clientDisplayNameForm.fill(clientName), service, redirectUrl, getBackLink(safeLink)))
@@ -97,7 +95,7 @@ class ClientDisplayNameController @Inject()(
 
   private def processEditSummaryRequest(service: String, clientDisplayname: Option[ClientDisplayName], callingPage: Option[String],
                                  redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
-                                (implicit request: Request[_], messages: Messages) = {
+                                (using request: Request[_], messages: Messages) = {
     clientDisplayname match {
       case Some(clientName) =>
         Ok(templateClientDisplayName(
@@ -125,7 +123,7 @@ class ClientDisplayNameController @Inject()(
   }
 
   private def processSubmitRequest(service: String, redirectUrl: Option[RedirectUrl] = None, safeLink: Option[String] = None)
-                                  (implicit request: Request[_], messages: Messages) = {
+                                  (using request: Request[_], messages: Messages) = {
     clientDisplayNameForm.bindFromRequest().fold(
       formWithError => {
         Future.successful(BadRequest(templateClientDisplayName(

@@ -21,11 +21,11 @@ import play.api.libs.json.{Json, OFormat}
 case class IdentifierForDisplay(`type`: String, value: String)
 
 object IdentifierForDisplay {
-  implicit val formats: OFormat[IdentifierForDisplay] = Json.format[IdentifierForDisplay]
+  given formats: OFormat[IdentifierForDisplay] = Json.format[IdentifierForDisplay]
 }
 
 case class RetrieveClientAllocation(friendlyName: String, identifiersForDisplay: List[IdentifierForDisplay])
 
 object RetrieveClientAllocation {
-  implicit val formats: OFormat[RetrieveClientAllocation] = Json.format[RetrieveClientAllocation]
+  given formats: OFormat[RetrieveClientAllocation] = Json.format[RetrieveClientAllocation]
 }

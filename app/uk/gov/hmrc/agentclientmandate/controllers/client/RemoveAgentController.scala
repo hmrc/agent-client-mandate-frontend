@@ -40,11 +40,10 @@ class RemoveAgentController @Inject()(
                                        delegationConnector: DelegationConnector,
                                        mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig,
                                        templateRemoveAgent: views.html.client.removeAgent,
                                        templateRemoveAgentConfirmation: views.html.client.removeAgentConfirmation
-                                     ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
+                                     )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   def view(service: String, mandateId: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request =>
@@ -62,7 +61,7 @@ class RemoveAgentController @Inject()(
   private def showView(service: String,
                        mandateId: String,
                        backLink: Option[String],
-                       authRetrievals: MandateAuthRetrievals)(implicit request: Request[AnyContent]): Future[Result] = {
+                       authRetrievals: MandateAuthRetrievals)(using request: Request[AnyContent]): Future[Result] = {
 
     acmService.fetchClientMandate(mandateId, authRetrievals).map {
       case Some(mandate) => Ok(templateRemoveAgent(

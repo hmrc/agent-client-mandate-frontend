@@ -41,8 +41,6 @@
 }
 }
 
-@implicitFormInstance = @{ Some(paySAQuestionForm) }
-
 @main_template(title = titleBuilder(messages("agent.paySA-question.title"), Some(paySAQuestionForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(paySAQuestionForm.hasErrors) {

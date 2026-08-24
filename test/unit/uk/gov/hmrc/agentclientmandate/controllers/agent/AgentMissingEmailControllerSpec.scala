@@ -148,7 +148,7 @@ class AgentMissingEmailControllerSpec
           status(result) must be(SEE_OTHER)
           redirectLocation(result).get must include("summary")
           verify(mockAgentClientMandateService, times(1)).updateAgentMissingEmail(ArgumentMatchers.any(),
-            ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
     }
@@ -180,10 +180,8 @@ class AgentMissingEmailControllerSpec
       mockAgentClientMandateService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceAgentMissingEmail
-    )
+    )(using global, mockAppConfig)
 
     def viewEmailUnAuthenticatedAgent()(test: Future[Result] => Any): Unit = {
 

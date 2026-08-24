@@ -31,13 +31,12 @@ import javax.inject.{Inject, Singleton}
 class BeforeRegisteringClientController @Inject()(
                                                    mcc: MessagesControllerComponents,
                                                    val authConnector: AuthConnector,
-                                                   implicit val appConfig: AppConfig,
-                                                   implicit val servicesConfig: ServicesConfig,
                                                    templateBeforeRegisteringClient: views.html.agent.beforeRegisteringClient
-                                                 ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                 )(using val appConfig: AppConfig, val servicesConfig: ServicesConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action { implicit request =>
-      Ok(templateBeforeRegisteringClient(callingPage, service, getBackLink(callingPage)))
+    Ok(templateBeforeRegisteringClient(callingPage, service, getBackLink(callingPage)))
   }
 
   def submit(callingPage: String): Action[AnyContent] = Action {

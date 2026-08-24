@@ -32,8 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DataCacheServiceSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("test")))
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  given hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("test")))
+  given ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val formId = "form-id"
   val formIdNotExist = "no-form-id"
@@ -49,7 +49,7 @@ class DataCacheServiceSpec extends PlaySpec with MockitoSugar with BeforeAndAfte
   case class FormData(name: String)
 
   object FormData {
-    implicit val formats: OFormat[FormData] = Json.format[FormData]
+    given formats: OFormat[FormData] = Json.format[FormData]
   }
 
   val testDataCacheService = new DataCacheService(mockSessionCacheRepository)
@@ -85,7 +85,7 @@ class DataCacheServiceSpec extends PlaySpec with MockitoSugar with BeforeAndAfte
 
     "clear cache" when {
       "asked to do so" in {
-        when(mockSessionCacheRepository.deleteFromSession(any())).thenReturn(Future.successful(()))
+        when(mockSessionCacheRepository.deleteFromSession(using any())).thenReturn(Future.successful(()))
 
         await(testDataCacheService.clearCache()) must be(())
       }

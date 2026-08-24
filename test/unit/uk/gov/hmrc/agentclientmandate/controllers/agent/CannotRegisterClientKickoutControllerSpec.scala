@@ -40,7 +40,7 @@ class CannotRegisterClientKickoutControllerSpec
     with GuiceOneAppPerSuite
     with TestApplicationBuilder {
 
-  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
+  given implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   private val mockAuthConnector: AuthConnector = mock[AuthConnector]
   private val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   private val injectedView: cannotRegisterClientKickout = app.injector.instanceOf[cannotRegisterClientKickout]
@@ -53,11 +53,8 @@ class CannotRegisterClientKickoutControllerSpec
   private val controller = new CannotRegisterClientKickoutController(
     mcc,
     mockAuthConnector,
-    global,
-    mockAppConfig,
-    mockServicesConfig,
     injectedView
-  )
+  )(using global, mockAppConfig, mockServicesConfig)
 
   "KickoutController GET show" must {
     "redirect to sign-in for UNAUTHENTICATED agents" in {

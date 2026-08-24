@@ -36,8 +36,6 @@
 
 @(service: String, mandates: Mandates, agentDetails: AgentDetails, clientsCancelled: Option[Seq[String]], screenReaderText: String, filterClientsForm: Form[FilterClients], isUpdate: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@implicitFormInstance = @{ Some(filterClientsForm) }
-
 @pendingClientsTab = @{mandates.pendingMandates.filter(m => (checkStatus(m.currentStatus.status) == "Await") || (checkStatus(m.currentStatus.status) == "Pending"))}
 
 @acceptClientsTab = @{mandates.pendingMandates.filterNot(m => (checkStatus(m.currentStatus.status) == "Await") || (checkStatus(m.currentStatus.status) == "Pending"))}

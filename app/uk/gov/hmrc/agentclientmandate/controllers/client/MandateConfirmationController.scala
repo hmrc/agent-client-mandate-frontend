@@ -32,12 +32,11 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class MandateConfirmationController @Inject()(
                                                val mcc: MessagesControllerComponents,
-                                               implicit val ec: ExecutionContext,
-                                               implicit val appConfig: AppConfig,
                                                val dataCacheService: DataCacheService,
                                                val authConnector: AuthConnector,
                                                templateMandateConfirmation: views.html.client.mandateConfirmation
-                                             ) extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
+                                             )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with MandateConstants with AuthorisedWrappers {
 
   def view(service: String): Action[AnyContent] = Action.async {
     implicit request =>

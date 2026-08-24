@@ -35,10 +35,8 @@ class AgencyDetailsController @Inject()(
                                           dataCacheService: DataCacheService,
                                           mcc: MessagesControllerComponents,
                                           val authConnector: AuthConnector,
-                                          implicit val ec: ExecutionContext,
-                                          implicit val appConfig: AppConfig,
                                           templateAgentDetails: views.html.agent.agentDetails
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                       )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>

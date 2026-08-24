@@ -58,10 +58,8 @@ class ChangeAgentControllerSpec
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceChangeAgent
-    )
+    )(using global, mockAppConfig)
 
     def viewUnAuthenticatedClient(test: Future[Result] => Any): Unit = {
 
@@ -133,7 +131,7 @@ class ChangeAgentControllerSpec
 
         val request: FakeRequest[AnyContentAsJson] = FakeRequest().withJsonBody(Json.toJson("""{}"""))
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
         viewAuthorisedClient(request, { result =>
           status(result) must be(OK)
@@ -151,7 +149,7 @@ class ChangeAgentControllerSpec
       "invalid form is submitted" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody("yesNo" -> "")
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(BAD_REQUEST)
@@ -172,7 +170,7 @@ class ChangeAgentControllerSpec
       "submitted with false will redirect to remove agent confirmation" in new Setup {
         val fakeRequest: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withMethod("POST").withFormUrlEncodedBody("yesNo" -> "false")
         when(mockAgentClientMandateService.fetchClientMandateAgentName(ArgumentMatchers.any(),
-          ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+          ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful("Agent Limited"))
         submitWithAuthorisedClient(fakeRequest) { result =>
           status(result) must be(SEE_OTHER)

@@ -31,7 +31,7 @@ import unit.uk.gov.hmrc.agentclientmandate.builders.AgentBuilder
 class AgentDetailsFeatureSpec extends AnyFeatureSpec
   with MockitoSugar with BeforeAndAfterEach with GivenWhenThen with ViewTestHelper with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceAgentDetails: agentDetails = app.injector.instanceOf[views.html.agent.agentDetails]
 
   Feature("The user can view the agent details page") {

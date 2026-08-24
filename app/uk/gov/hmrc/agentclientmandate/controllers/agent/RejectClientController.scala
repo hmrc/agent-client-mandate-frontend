@@ -32,12 +32,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class RejectClientController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         acmService: AgentClientMandateService,
-                                        implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig,
                                         val authConnector: AuthConnector,
                                         templateRejectClient: views.html.agent.rejectClient,
                                         templateRejectClientConfirmation: views.html.agent.rejectClientConfirmation
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                      )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { authRetrievals =>

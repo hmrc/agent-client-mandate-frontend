@@ -42,7 +42,7 @@ class noClientsNoPendingViewSpec extends AnyFeatureSpec
   val service: String = "ATED"
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
-  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  given request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val injectedViewInstanceNoClientsNoPending: noClientsNoPending = app.injector.instanceOf[views.html.agent.agentSummary.noClientsNoPending]
 
   Feature("The agent can view the agent summary page but they have no clients and no pending clients") {

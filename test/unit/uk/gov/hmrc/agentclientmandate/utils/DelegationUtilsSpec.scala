@@ -31,10 +31,10 @@ class DelegationUtilsSpec extends PlaySpec with MockitoSugar {
 
   val atedUtr: AtedUtr = new Generator().nextAtedUtr
 
-  implicit val appConfig: AppConfig = mock[AppConfig]
-  implicit val messages: Messages = mock[Messages]
+  given appConfig: AppConfig = mock[AppConfig]
+  given messages: Messages = mock[Messages]
 
-  implicit val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+  given mockServicesConfig: ServicesConfig = mock[ServicesConfig]
 
   when(appConfig.servicesConfig)
     .thenReturn(mockServicesConfig)

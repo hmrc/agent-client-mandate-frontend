@@ -42,7 +42,7 @@ import scala.concurrent.Future
 
 class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with MockitoSugar with MockControllerSetup with GuiceOneServerPerSuite with TestApplicationBuilder {
 
-  implicit val implicitMockServicesConfig: ServicesConfig = mockServicesConfig
+  given implicitMockServicesConfig: ServicesConfig = mockServicesConfig
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val service: String = "ATED"
   val mockDataCacheService: DataCacheService = mock[DataCacheService]
@@ -52,12 +52,9 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
     val controller = new PaySAQuestionController(
       mockDataCacheService,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
-      mockServicesConfig,
       stubbedMessagesControllerComponents,
       injectedViewInstancePaySAQuestion
-    )
+    )(using global, mockAppConfig, mockServicesConfig)
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
@@ -79,7 +76,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -89,7 +86,7 @@ class PaySAQuestionControllerSpec extends PlaySpec with BeforeAndAfterEach with 
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[PaySAQuestion](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(PaySAQuestion(Some(true)))))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(PaySAQuestion(Some(true)))))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }

@@ -65,10 +65,8 @@ class ClientDisplayNameControllerSpec
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceClientDisplayName
-    )
+    )(using global, mockAppConfig)
 
     def viewClientDisplayNameUnAuthenticatedAgent()(test: Future[Result] => Any): Unit = {
 
@@ -90,7 +88,7 @@ class ClientDisplayNameControllerSpec
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
+      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(using
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       val result = controller.view(service, Some(RedirectUrl(redirectUrl.getOrElse("")))).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -101,10 +99,10 @@ class ClientDisplayNameControllerSpec
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
+      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(using
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.callingPageCacheId))
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some("callingPage")))
       val result = controller.editFromSummary(service, redirectUrl).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -116,7 +114,7 @@ class ClientDisplayNameControllerSpec
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.cacheFormData[ClientDisplayName]
-        (ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+        (ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn(Future.successful(clientDisplayName))
       val result = controller.submit(service, redirectUrl)
         .apply(SessionBuilder.updateRequestFormWithSession(request, userId))
@@ -128,7 +126,7 @@ class ClientDisplayNameControllerSpec
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(
+      when(mockDataCacheService.fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(using 
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(cachedData))
       val result = controller.getClientDisplayName(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -175,7 +173,7 @@ class ClientDisplayNameControllerSpec
           document.title() must be("agent.client-display-name.title - service.name - GOV.UK")
           document.getElementById("clientDisplayName").`val`() must be("client display name")
           verify(mockDataCacheService, times(1))
-            .fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            .fetchAndGetFormData[ClientDisplayName](ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -218,7 +216,7 @@ class ClientDisplayNameControllerSpec
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/mandate/agent/overseas-client-question"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 
@@ -229,7 +227,7 @@ class ClientDisplayNameControllerSpec
           status(result) must be(SEE_OTHER)
           redirectLocation(result) must be(Some("/api/anywhere"))
           verify(mockDataCacheService, times(1)).cacheFormData[ClientDisplayName](ArgumentMatchers.any(),
-            ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+            ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
         }
       }
 

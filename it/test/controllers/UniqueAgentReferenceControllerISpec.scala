@@ -16,7 +16,7 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import helpers.{AgentBusinessUtrGenerator, IntegrationSpec}
 import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.libs.json.Format
@@ -75,10 +75,10 @@ class UniqueAgentReferenceControllerISpec
           dataCacheService.cacheFormData[ClientMandateDisplayDetails](
             agentRefCacheId,
             cachedMandateDetails
-          )(
+          )(using
             cacheHeaderCarrier,
             ec,
-            implicitly[Format[ClientMandateDisplayDetails]]
+            summon[Format[ClientMandateDisplayDetails]]
           )
         )
 

@@ -40,10 +40,9 @@ class EditEmailController @Inject()(
                                      mandateService: AgentClientMandateService,
                                      mcc: MessagesControllerComponents,
                                      val authConnector: AuthConnector,
-                                     implicit val ec: ExecutionContext,
-                                     implicit val appConfig: AppConfig,
                                      templateEditEmail: views.html.client.editEmail
-                                   ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                   )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def getClientMandateDetails(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async {
     implicit request => {
@@ -109,13 +108,16 @@ class EditEmailController @Inject()(
   }
 
   val backLinkId = "EditEmailController:BackLink"
-  private def saveBackLink(redirectUrl: String)(implicit hc: HeaderCarrier): Future[String] = {
+
+  private def saveBackLink(redirectUrl: String)(using hc: HeaderCarrier): Future[String] = {
     dataCacheService.cacheFormData[String](backLinkId, redirectUrl)
   }
 
-  private def getBackLink(implicit hc: HeaderCarrier) :Future[Option[String]]= {
+  private def getBackLink(using hc: HeaderCarrier): Future[Option[String]] = {
     dataCacheService.fetchAndGetFormData[String](backLinkId)
-      .map {_.filter(_.trim.nonEmpty)}
+      .map {
+        _.filter(_.trim.nonEmpty)
+      }
   }
 
 }

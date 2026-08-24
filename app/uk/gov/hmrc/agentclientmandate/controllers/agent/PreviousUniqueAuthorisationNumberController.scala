@@ -37,11 +37,10 @@ class PreviousUniqueAuthorisationNumberController @Inject()(
                                                              mcc: MessagesControllerComponents,
                                                              dataCacheService: DataCacheService,
                                                              atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
-                                                             implicit val ec: ExecutionContext,
-                                                             implicit val appConfig: AppConfig,
                                                              val authConnector: AuthConnector,
                                                              templatePreviousUniqueAuthorisationNumber: views.html.agent.previousUniqueAuthorisationNumber
-                                                           ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                           )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

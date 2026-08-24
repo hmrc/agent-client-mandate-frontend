@@ -71,8 +71,6 @@
     </p>
 }
 
-@implicitFormInstance = @{ Some(agentMissingEmailForm) }
-
 @main_template(title = titleBuilder(messages("agent.missing-email.title"), Some(agentMissingEmailForm)), scriptElem = Some(pageScripts)) {
 
     @if(agentMissingEmailForm.hasErrors) {
@@ -90,7 +88,6 @@
             @messages("agent.missing-email.header")
         </h1>
     </header>
-
 
     <p id="info" class="govuk-body">
       @messages("agent.missing-email.text", service.toUpperCase)

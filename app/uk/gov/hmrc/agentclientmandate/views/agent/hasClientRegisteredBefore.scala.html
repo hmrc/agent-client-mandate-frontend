@@ -41,14 +41,11 @@
 }
 }
 
-@implicitFormInstance = @{ Some(prevRegisteredForm) }
-
 @main_template(title = titleBuilder(messages("agent.client-prev-registered.title"), Some(prevRegisteredForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(prevRegisteredForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(prevRegisteredForm))
     }
-
 
 
   @formHelper(action = routes.HasClientRegisteredBeforeController.submit(callingPage)) {

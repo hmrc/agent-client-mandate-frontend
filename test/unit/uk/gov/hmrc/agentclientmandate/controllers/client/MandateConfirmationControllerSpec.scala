@@ -49,12 +49,10 @@ class MandateConfirmationControllerSpec extends PlaySpec with MockitoSugar with 
   class Setup {
     val controller = new MandateConfirmationController(
       stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
       mockDataCacheService,
       mockAuthConnector,
       injectedViewInstanceMandateConfirmation
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -82,7 +80,7 @@ class MandateConfirmationControllerSpec extends PlaySpec with MockitoSugar with 
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[Mandate]
-      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (ArgumentMatchers.eq(controller.clientApprovedMandateId))(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

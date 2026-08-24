@@ -33,12 +33,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveClientController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         acmService: AgentClientMandateService,
-                                        implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig,
                                         val authConnector: AuthConnector,
                                         templateRemoveClient: views.html.agent.removeClient,
                                         templateRemoveClientConfirmation: views.html.agent.removeClientConfirmation
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                      )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>

@@ -31,14 +31,14 @@ object AgentSelectServiceForm {
     Form(
       mapping(
         "service" -> optional(text).verifying("agent.select-service.error.service", serviceOpt => serviceOpt.isDefined)
-      )(AgentSelectService.apply)(AgentSelectService.unapply)
+      )(AgentSelectService.apply)(x => Some(x.service))
     )
 }
 
 case class FilterClients(displayName: Option[String], showAllClients: String)
 
 object FilterClients {
-  implicit val formats: OFormat[FilterClients] = Json.format[FilterClients]
+  given formats: OFormat[FilterClients] = Json.format[FilterClients]
 }
 
 object FilterClientsForm {
@@ -46,14 +46,14 @@ object FilterClientsForm {
     mapping(
        "displayName" -> optional(text),
        "showAllClients" -> text
-  )(FilterClients.apply)(FilterClients.unapply)
+  )(FilterClients.apply)(x => Some(Tuple.fromProductTyped(x)))
   )
 }
 
 case class AgentEmail(email: String)
 
 object AgentEmail {
-  implicit val formats: OFormat[AgentEmail] = Json.format[AgentEmail]
+  given formats: OFormat[AgentEmail] = Json.format[AgentEmail]
 }
 
 object AgentEmailForm extends Constraints {
@@ -64,14 +64,14 @@ object AgentEmailForm extends Constraints {
           .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
           .verifying(minLength(minimumEmailLength, "agent.edit-client.error.email"))
           .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
-      )(AgentEmail.apply)(AgentEmail.unapply)
+      )(AgentEmail.apply)(x => Some(x.email))
     )
 }
 
 case class AgentMissingEmail(useEmailAddress: Option[Boolean] = None, email: Option[String] = None)
 
 object AgentMissingEmail {
-  implicit val formats: OFormat[AgentMissingEmail] = Json.format[AgentMissingEmail]
+  given formats: OFormat[AgentMissingEmail] = Json.format[AgentMissingEmail]
 }
 
 object AgentMissingEmailForm extends Constraints  {
@@ -86,14 +86,14 @@ object AgentMissingEmailForm extends Constraints  {
             .verifying(minLength(minimumEmailLength, "client.email.error.email.empty"))
             .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long")))
 
-        )(AgentMissingEmail.apply)(AgentMissingEmail.unapply)
+        )(AgentMissingEmail.apply)(x => Some(Tuple.fromProductTyped(x)))
     )
 }
 
 case class OverseasClientQuestion(isOverseas: Option[Boolean] = None)
 
 object OverseasClientQuestion {
-  implicit val formats: OFormat[OverseasClientQuestion] = Json.format[OverseasClientQuestion]
+  given formats: OFormat[OverseasClientQuestion] = Json.format[OverseasClientQuestion]
 }
 
 object OverseasClientQuestionForm {
@@ -101,14 +101,14 @@ object OverseasClientQuestionForm {
     Form(
       mapping(
         "isOverseas" -> optional(boolean).verifying("agent.overseas-client-question.error.isOverseas", x => x.isDefined)
-      )(OverseasClientQuestion.apply)(OverseasClientQuestion.unapply)
+      )(OverseasClientQuestion.apply)(x => Some(x.isOverseas))
     )
 }
 
 case class CollectClientBusinessDetails(businessName: String, utr: String)
 
 object CollectClientBusinessDetails {
-  implicit val formats: OFormat[CollectClientBusinessDetails] = Json.format[CollectClientBusinessDetails]
+  given formats: OFormat[CollectClientBusinessDetails] = Json.format[CollectClientBusinessDetails]
 }
 
 object CollectClientBusinessDetailsForm {
@@ -126,7 +126,7 @@ object CollectClientBusinessDetailsForm {
       .verifying("agent.enter-business-details-error.utr.length", x => x.isEmpty || (x.nonEmpty && x.matches("""^[0-9]{10}$""")))
       .verifying("agent.enter-business-details-error.invalidUTR", x => x.isEmpty || (validateUTR(Option(x)) || !x.matches("""^[0-9]{10}$""")))
 
-  )(CollectClientBusinessDetails.apply)(CollectClientBusinessDetails.unapply))
+  )(CollectClientBusinessDetails.apply)(x => Some(Tuple.fromProductTyped(x))))
 }
 
 case class EditMandateDetails(displayName: String, email: String)
@@ -147,19 +147,21 @@ object EditMandateDetailsForm extends Constraints {
       .verifying(regexp(emailRegex, "client.email.error.email.invalid"))
       .verifying(minLength(minimumEmailLength, "agent.edit-client.error.email"))
       .verifying(maxLength(maximumEmailLength, "client.email.error.email.too.long"))
-  )(EditMandateDetails.apply)(EditMandateDetails.unapply))
+  )(EditMandateDetails.apply)(x => Some(Tuple.fromProductTyped(x))))
 
 }
 
 case class NRLQuestion(nrl: Option[Boolean] = None)
 
-object NRLQuestionForm {
-  implicit val formats: OFormat[NRLQuestion] = Json.format[NRLQuestion]
+object NRLQuestion {
+  given formats: OFormat[NRLQuestion] = Json.format[NRLQuestion]
+}
 
+object NRLQuestionForm {
   def nrlQuestionForm: Form[NRLQuestion] = Form(
     mapping(
       "nrl" -> optional(boolean).verifying("agent.nrl-question.nrl.not-selected.error", a => a.isDefined)
-    )(NRLQuestion.apply)(NRLQuestion.unapply)
+    )(NRLQuestion.apply)(x => Some(x.nrl))
   )
 
 }
@@ -167,51 +169,57 @@ object NRLQuestionForm {
 case class PaySAQuestion(paySA: Option[Boolean] = None)
 
 object PaySAQuestion {
-  implicit val formats: OFormat[PaySAQuestion] = Json.format[PaySAQuestion]
+  given formats: OFormat[PaySAQuestion] = Json.format[PaySAQuestion]
 
   def paySAQuestionForm: Form[PaySAQuestion] = Form(
     mapping(
       "paySA" -> optional(boolean).verifying("agent.paySA-question.paySA.not-selected.error", a => a.isDefined)
-    )(PaySAQuestion.apply)(PaySAQuestion.unapply)
+    )(PaySAQuestion.apply)(x => Some(x.paySA))
   )
 
 }
 
 case class ClientPermission(hasPermission: Option[Boolean] = None)
 
-object ClientPermissionForm {
-  implicit val formats: OFormat[ClientPermission] = Json.format[ClientPermission]
+object ClientPermission {
+  given formats: OFormat[ClientPermission] = Json.format[ClientPermission]
+}
 
+object ClientPermissionForm {
   def clientPermissionForm: Form[ClientPermission] = Form(
     mapping(
       "hasPermission" -> optional(boolean).verifying("agent.client-permission.hasPermission.not-selected.error", a => a.isDefined)
-    )(ClientPermission.apply)(ClientPermission.unapply)
+    )(ClientPermission.apply)(x => Some(x.hasPermission))
   )
 
 }
 
 case class PrevUniqueAuthNum(authNum: Option[Boolean] = None)
 
-object PrevUniqueAuthNumForm{
-  implicit val formats: OFormat[PrevUniqueAuthNum] = Json.format[PrevUniqueAuthNum]
+object PrevUniqueAuthNum {
+  given formats: OFormat[PrevUniqueAuthNum] = Json.format[PrevUniqueAuthNum]
+}
 
+object PrevUniqueAuthNumForm{
   def prevUniqueAuthNumForm: Form[PrevUniqueAuthNum] = Form(
     mapping(
       "authNum" -> optional(boolean).verifying("agent.prev-auth-num.not-selected.field-error", a => a.isDefined)
-    )(PrevUniqueAuthNum.apply)(PrevUniqueAuthNum.unapply)
+    )(PrevUniqueAuthNum.apply)(x => Some(x.authNum))
   )
 
 }
 
 case class PrevRegistered(prevRegistered: Option[Boolean] = None)
 
-object PrevRegisteredForm {
-  implicit val formats: OFormat[PrevRegistered] = Json.format[PrevRegistered]
+object PrevRegistered {
+  given formats: OFormat[PrevRegistered] = Json.format[PrevRegistered]
+}
 
+object PrevRegisteredForm {
   def prevRegisteredForm: Form[PrevRegistered] = Form(
     mapping(
       "prevRegistered" -> optional(boolean).verifying("agent.client-prev-registered.not-selected.field-error", a => a.isDefined)
-    )(PrevRegistered.apply)(PrevRegistered.unapply)
+    )(PrevRegistered.apply)(x => Some(x.prevRegistered))
   )
 
 }
@@ -220,14 +228,14 @@ object PrevRegisteredForm {
 case class ClientDisplayName(name: String)
 
 object ClientDisplayName {
-  implicit val formats: OFormat[ClientDisplayName] = Json.format[ClientDisplayName]
+  given formats: OFormat[ClientDisplayName] = Json.format[ClientDisplayName]
 }
 
 
 case class ClientMandateDisplayDetails(name: String, mandateId: String, agentLastUsedEmail: String)
 
 object ClientMandateDisplayDetails {
-  implicit val formats: OFormat[ClientMandateDisplayDetails] = Json.format[ClientMandateDisplayDetails]
+  given formats: OFormat[ClientMandateDisplayDetails] = Json.format[ClientMandateDisplayDetails]
 }
 
 object ClientDisplayNameForm {
@@ -238,7 +246,7 @@ object ClientDisplayNameForm {
       "clientDisplayName" -> text
         .verifying("agent.client-display-name.error.not-selected", x => x.trim.length > lengthZero)
         .verifying("agent.client-display-name.error.length", x => x.isEmpty || (x.nonEmpty && x.length <= 99))
-    )(ClientDisplayName.apply)(ClientDisplayName.unapply)
+    )(ClientDisplayName.apply)(x => Some(x.name))
   )
 
 }
@@ -246,7 +254,7 @@ object ClientDisplayNameForm {
 case class EditAgentAddressDetails(agentName: String, address: RegisteredAddressDetails)
 
 object EditAgentAddressDetails {
-  implicit val formats: OFormat[EditAgentAddressDetails] = Json.format[EditAgentAddressDetails]
+  given formats: OFormat[EditAgentAddressDetails] = Json.format[EditAgentAddressDetails]
 }
 
 object EditAgentAddressDetailsForm {
@@ -282,9 +290,9 @@ object EditAgentAddressDetailsForm {
             x => x.isEmpty || (x.nonEmpty && x.get.length <= postcodeLength)),
         "countryCode" -> text.
           verifying("agent.edit-details-error.country", x => x.length > length0)
-      )(RegisteredAddressDetails.apply)(RegisteredAddressDetails.unapply)
-    )(EditAgentAddressDetails.apply)(EditAgentAddressDetails.unapply)
-  )
+      )(RegisteredAddressDetails.apply)(x => Some(Tuple.fromProductTyped(x)))
+    )(EditAgentAddressDetails.apply)((x => Some(Tuple.fromProductTyped(x)))
+  ))
 }
 
 case class OverseasCompany(hasBusinessUniqueId: Option[Boolean] = Some(false),
@@ -293,7 +301,7 @@ case class OverseasCompany(hasBusinessUniqueId: Option[Boolean] = Some(false),
                            issuingCountryCode: Option[String] = None)
 
 object OverseasCompany {
-  implicit val formats: OFormat[OverseasCompany] = Json.format[OverseasCompany]
+  given formats: OFormat[OverseasCompany] = Json.format[OverseasCompany]
 }
 
 object NonUkIdentificationForm {
@@ -311,7 +319,7 @@ object NonUkIdentificationForm {
       "issuingInstitution" -> optional(text)
         .verifying("agent.edit-details-error.issuingInstitution.length", x => x.isEmpty || (x.nonEmpty && x.get.length <= length40)),
       "issuingCountryCode" -> optional(text)
-    )(OverseasCompany.apply)(OverseasCompany.unapply)
+    )(OverseasCompany.apply)(x => Some(Tuple.fromProductTyped(x)))
   )
 
   def validateNonUK(registrationData: Form[OverseasCompany]): Form[OverseasCompany] = {

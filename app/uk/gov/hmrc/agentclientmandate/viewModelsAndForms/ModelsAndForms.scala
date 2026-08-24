@@ -24,7 +24,7 @@ import play.api.libs.json.{Json, OFormat}
 case class YesNoQuestion(yesNo: Boolean)
 
 object YesNoQuestion {
-  implicit val formats: OFormat[YesNoQuestion] = Json.format[YesNoQuestion]
+  given formats: OFormat[YesNoQuestion] = Json.format[YesNoQuestion]
 }
 
 class YesNoQuestionForm(errorMessage: String, args: Seq[String] = Seq()) {
@@ -33,7 +33,7 @@ class YesNoQuestionForm(errorMessage: String, args: Seq[String] = Seq()) {
     Form(
       mapping(
         "yesNo" -> Forms.of[Boolean](requiredBooleanFormatter)
-      )(YesNoQuestion.apply)(YesNoQuestion.unapply)
+      )(YesNoQuestion.apply)(x => Some(x.yesNo))
     )
 
   def requiredBooleanFormatter: Formatter[Boolean] = new Formatter[Boolean] {

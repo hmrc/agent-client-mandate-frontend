@@ -65,10 +65,8 @@ class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with M
       mockMandateService,
       mockAuthConnector,
       stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceMandateDeclaration
-    )
+    )(using global, mockAppConfig)
   }
 
   val service: String = "ATED"
@@ -86,7 +84,7 @@ class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with M
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -102,10 +100,10 @@ class MandateDeclarationControllerSpec extends PlaySpec with MockitoSugar with M
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
 
     when(mockDataCacheService.fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(clientCache))
 
-    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
+    when(mockMandateService.approveMandate(ArgumentMatchers.any(), ArgumentMatchers.any())(using ArgumentMatchers.any(),
       ArgumentMatchers.any())).thenReturn(Future.successful(mandate))
 
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))

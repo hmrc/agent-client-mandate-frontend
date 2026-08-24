@@ -47,10 +47,8 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with MockitoSugar with
       mockAuthConnector,
       mockDataCacheService,
       stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceUniqueAgentReference
-    )
+    )(using global, mockAppConfig)
   }
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -86,7 +84,7 @@ class UniqueAgentReferenceControllerSpec extends PlaySpec with MockitoSugar with
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
 
     when(mockDataCacheService.fetchAndGetFormData[ClientMandateDisplayDetails](ArgumentMatchers.eq(controller.agentRefCacheId))
-      (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(clientDisplayDetails))
+      (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(clientDisplayDetails))
 
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

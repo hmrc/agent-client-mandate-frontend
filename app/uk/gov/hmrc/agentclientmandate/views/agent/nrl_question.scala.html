@@ -41,14 +41,11 @@
 }
 }
 
-@implicitFormInstance = @{ Some(nrlQuestionForm) }
-
 @main_template(title = titleBuilder(messages("agent.nrl-question.title"), Some(nrlQuestionForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(nrlQuestionForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(nrlQuestionForm))
     }
-
 
         <h2 class="govuk-caption-l hmrc-caption-l">
             <span class="govuk-caption-xl">
@@ -58,7 +55,6 @@
                 @messages("agent.add-a-client.sub-header")
             </span>
         </h2>
-
 
   @formHelper(action = routes.NRLQuestionController.submit()) {
       @govukRadios(

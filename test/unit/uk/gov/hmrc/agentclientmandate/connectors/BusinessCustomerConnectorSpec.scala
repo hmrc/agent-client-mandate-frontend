@@ -47,7 +47,7 @@ class BusinessCustomerConnectorSpec extends PlaySpec  with MockitoSugar {
     val connector = new BusinessCustomerConnector(mockHttpClient, mockServicesConfig)
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   "BusinessCustomerConnector" must {
 

@@ -54,11 +54,9 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
   class Setup {
     val informHmrcController = new InformHmrcController(
       stubbedMessagesControllerComponents,
-      implicitly,
-      mockAppConfig,
       mockAuthConnector,
       injectedViewInstanceInformHMRC
-    )
+    )(using global, mockAppConfig)
 
     def viewWithUnAuthenticatedAgent(controller: InformHmrcController)(test: Future[Result] => Any): Unit = {
 
@@ -71,9 +69,9 @@ class InformHmrcControllerSpec extends PlaySpec with MockitoSugar with BeforeAnd
       val userId = s"user-${UUID.randomUUID}"
       val prevReg: Option[PrevRegistered] = None
 
-      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(mockAtedSubscriptionConnector.clearCache(ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(OK, "")))
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(ArgumentMatchers.any(),
+      when(mockDataCacheService.fetchAndGetFormData[PrevRegistered](ArgumentMatchers.any())(using ArgumentMatchers.any(),
         ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(prevReg))
       val result = controller.view(service, callingPage).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)

@@ -34,9 +34,9 @@ import uk.gov.hmrc.agentclientmandate.config.AppConfig
 
     private val view   = app.injector.instanceOf[cannotRegisterClientKickout]
     private val mcc    = app.injector.instanceOf[play.api.mvc.MessagesControllerComponents]
-    private implicit val messagesApi: MessagesApi = mcc.messagesApi
-    private implicit val messages: Messages = messagesApi.preferred(FakeRequest())
-    private implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+    private given messagesApi: MessagesApi = mcc.messagesApi
+    private given messages: Messages = messagesApi.preferred(FakeRequest())
+    private given appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
     "cannotRegisterClientKickout.scala.html" should {
 

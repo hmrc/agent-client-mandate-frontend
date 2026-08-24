@@ -32,10 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClientBannerPartialInternalController @Inject()(mcc: MessagesControllerComponents,
-                                              val authConnector: AuthConnector,
-                                              mandateService: AgentClientMandateService,
-                                              implicit val ec: ExecutionContext,
-                                              implicit val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
+                                                      val authConnector: AuthConnector,
+                                                      mandateService: AgentClientMandateService
+                                                     )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
   def getClientBannerPartial(clientId: String, service: String, returnUrl: RedirectUrl): Action[AnyContent] = Action.async { implicit request =>
     val mandateHost = appConfig.mandateFrontendHost
 

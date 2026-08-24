@@ -51,10 +51,8 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceClientQuestion
-    )
+    )(using global, mockAppConfig)
 
     def viewWithUnAuthenticatedAgent(test: Future[Result] => Any): Unit = {
 
@@ -76,7 +74,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(None))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }
@@ -86,7 +84,7 @@ class OverseasClientQuestionControllerSpec extends PlaySpec with MockitoSugar wi
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[OverseasClientQuestion](ArgumentMatchers.any())
-        (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(OverseasClientQuestion(Some(true)))))
+        (using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(Some(OverseasClientQuestion(Some(true)))))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
     }

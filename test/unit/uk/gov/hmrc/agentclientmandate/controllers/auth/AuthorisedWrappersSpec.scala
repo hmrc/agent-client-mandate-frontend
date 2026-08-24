@@ -35,11 +35,11 @@ import scala.concurrent.Future
 
 class AuthorisedWrappersSpec extends PlaySpec with MockitoSugar {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given hc: HeaderCarrier = HeaderCarrier()
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  implicit val mockAppConfig: AppConfig = mock[AppConfig]
-  implicit val fr: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(Headers("Authorization" -> "value"))
+  given mockAppConfig: AppConfig = mock[AppConfig]
+  given fr: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(Headers("Authorization" -> "value"))
 
   trait Setup {
     protected val authorisedWrappers: AuthorisedWrappers = new AuthorisedWrappers {

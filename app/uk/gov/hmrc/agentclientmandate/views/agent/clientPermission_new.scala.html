@@ -42,8 +42,6 @@ govukBackLink: GovukBackLink)
     }
 }
 
-@implicitFormInstance = @{ Some(clientPermissionForm) }
-
 @main_template(title = titleBuilder(messages("agent.client-permission.title"), Some(clientPermissionForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(clientPermissionForm.hasErrors) {

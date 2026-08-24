@@ -28,9 +28,8 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class PerformanceTestSupportController @Inject()(
                                                   mcc: MessagesControllerComponents,
-                                                  agentClientMandateConnector: AgentClientMandateConnector,
-                                                  implicit val ec: ExecutionContext
-                                                ) extends FrontendController(mcc) with Logging {
+                                                  agentClientMandateConnector: AgentClientMandateConnector
+                                                )(using val ec: ExecutionContext) extends FrontendController(mcc) with Logging {
 
 
   def createMandate(): Action[AnyContent] = Action.async { implicit request =>

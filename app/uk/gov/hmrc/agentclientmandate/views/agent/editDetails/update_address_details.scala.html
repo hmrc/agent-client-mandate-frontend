@@ -45,8 +45,6 @@
 }
 }
 
-@implicitFormInstance = @{ Some(agentDetailsForm) }
-
 @main_template(title = titleBuilder(messages("agent.edit-details.title"), Some(agentDetailsForm)), beforeContent = Some(backLinkHtml)) {
 
     @if(agentDetailsForm.hasErrors) {

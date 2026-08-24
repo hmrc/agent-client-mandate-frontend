@@ -40,11 +40,9 @@ class AgentSummaryController @Inject()(
                                         delegationConnector: DelegationConnector,
                                         mcc: MessagesControllerComponents,
                                         val authConnector: AuthConnector,
-                                        implicit val ec: ExecutionContext,
-                                        implicit val appConfig: AppConfig,
                                         templateClients: views.html.agent.agentSummary.clients,
                                         templateNoClientsNoPending: views.html.agent.agentSummary.noClientsNoPending
-                                      ) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
+                                      )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers with I18nSupport {
 
   val screenReaderTextId = "screenReaderTextId"
 
@@ -111,7 +109,7 @@ class AgentSummaryController @Inject()(
                        mandates: Option[Mandates],
                        agentDetails: AgentDetails,
                        clientsCancelled: Option[Seq[String]],
-                       screenReaderText: String)(implicit request: Request[_]): Result = {
+                       screenReaderText: String)(using request: Request[_]): Result = {
 
     mandates match {
       case Some(x) if x.activeMandates.nonEmpty || x.pendingMandates.nonEmpty =>

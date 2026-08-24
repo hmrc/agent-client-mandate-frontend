@@ -22,7 +22,7 @@ import uk.gov.hmrc.domain._
 case class Link(text: String, url: String)
 
 object Link {
-  implicit val format: OFormat[Link] = Json.format[Link]
+  given format: OFormat[Link] = Json.format[Link]
 }
 
 case class StartDelegationContext(
@@ -34,7 +34,7 @@ case class StartDelegationContext(
                                  )
 
 object StartDelegationContext {
-  implicit val delegationContextFormat: OFormat[StartDelegationContext] = Json.format[StartDelegationContext]
+  given delegationContextFormat: OFormat[StartDelegationContext] = Json.format[StartDelegationContext]
 }
 
 case class PrincipalTaxIdentifiers(paye: Option[Nino] = None,
@@ -46,5 +46,5 @@ case class PrincipalTaxIdentifiers(paye: Option[Nino] = None,
                                    ated: Option[AtedUtr] = None)
 
 object PrincipalTaxIdentifiers {
-  implicit val format: OFormat[PrincipalTaxIdentifiers] = Json.format[PrincipalTaxIdentifiers]
+  given format: OFormat[PrincipalTaxIdentifiers] = Json.format[PrincipalTaxIdentifiers]
 }

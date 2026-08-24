@@ -21,6 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.agentclientmandate.models.{AgentAuthRetrievals, UpdateRegistrationDetailsRequest}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -39,7 +40,7 @@ class BusinessCustomerConnector @Inject()(
   val updateRegistrationDetailsURI: String = "update"
 
   def updateRegistrationDetails(safeId: String, updateRegistrationDetails: UpdateRegistrationDetailsRequest, authRetrievals: AgentAuthRetrievals)
-                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+                               (using hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val authLink = authRetrievals.mandateConnectorUri
     val postUrl = s"""$serviceUrl$authLink/$baseUri/$updateRegistrationDetailsURI/$safeId"""
     val jsonData = Json.toJson(updateRegistrationDetails)

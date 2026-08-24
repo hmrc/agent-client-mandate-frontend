@@ -33,15 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class SelectServiceController @Inject()(
                                          mcc: MessagesControllerComponents,
                                          agentClientMandateService: AgentClientMandateService,
-                                         implicit val ec: ExecutionContext,
-                                         implicit val appConfig: AppConfig,
                                          val authConnector: AuthConnector,
                                          templateSelectServices: views.html.agent.selectService
-                                       ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                       )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view: Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { authRetrievals =>
-      if (singleService(appConfig.servicesConfig).enabled) {
+      if (singleService(using appConfig.servicesConfig).enabled) {
         agentClientMandateService.doesAgentHaveMissingEmail("ated", authRetrievals).map { agentHasMissingEmail =>
           if (agentHasMissingEmail) {
             Redirect(routes.AgentMissingEmailController.view())

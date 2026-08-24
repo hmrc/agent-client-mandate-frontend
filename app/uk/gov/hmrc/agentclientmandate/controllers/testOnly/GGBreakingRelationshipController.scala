@@ -33,12 +33,11 @@ class GGBreakingRelationshipController @Inject()(
                                                   mcc: MessagesControllerComponents,
                                                   agentClientMandateConnector: AgentClientMandateConnector,
                                                   val authConnector: AuthConnector,
-                                                  implicit val appConfig: AppConfig,
-                                                  implicit val ec: ExecutionContext,
                                                   templateCheckBreakingRelationships: views.html.testOnly.checkBreakingRelationships
-                                                ) extends FrontendController(mcc) with AuthorisedWrappers with Logging {
+                                                )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with Logging {
 
-  def view(): Action[AnyContent] = Action.async {implicit request =>
+  def view(): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(None) { _ =>
       val result = Ok(templateCheckBreakingRelationships())
       Future.successful(result)

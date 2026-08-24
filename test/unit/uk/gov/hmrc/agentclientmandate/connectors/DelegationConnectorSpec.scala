@@ -40,7 +40,7 @@ class DelegationConnectorSpec extends PlaySpec  with MockitoSugar {
     )
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   val startDelegationContext = StartDelegationContext(
     "principalName",

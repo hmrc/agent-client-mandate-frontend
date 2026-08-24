@@ -59,10 +59,8 @@ class AgencyDetailsControllerSpec
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceAgentDetails
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -82,9 +80,9 @@ class AgencyDetailsControllerSpec
     AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
     val cachedData = AgentBuilder.buildAgentDetails
     when(mockDataCacheService.cacheFormData[AgentDetails]
-      (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+      (ArgumentMatchers.eq(controller.agentDetailsFormId), ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(cachedData))
-    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future.successful(agentDetails))
     val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)

@@ -56,10 +56,8 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
       mockMandateService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceEditEmail
-    )
+    )(using global, mockAppConfig)
   }
 
   override def beforeEach(): Unit = {
@@ -88,7 +86,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockMandateService.fetchClientMandateByClient(any(), any())
-    (any(), any())) thenReturn Future.successful(mandate)
+    (using any(), any())) thenReturn Future.successful(mandate)
     val result = controller.getClientMandateDetails("mandateId", service, RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
   }
@@ -98,10 +96,10 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq(controller.backLinkId),
-      any())(any(), any(), any())).thenReturn(Future.successful("/api/anywhere"))
+      any())(using any(), any(), any())).thenReturn(Future.successful("/api/anywhere"))
     when(mockDataCacheService.cacheFormData[String](ArgumentMatchers.eq("MANDATE_ID"),
-      any())(any(), any(), any())).thenReturn(Future.successful("mandateId"))
-    when(mockMandateService.fetchClientMandate(any(), any())(any(),
+      any())(using any(), any(), any())).thenReturn(Future.successful("mandateId"))
+    when(mockMandateService.fetchClientMandate(any(), any())(using any(),
       any())) thenReturn Future.successful(Some(mandate))
     val result = controller.view("mandateId", service, RedirectUrl(continueUrl)).apply(SessionBuilder.buildRequestWithSession(userId))
     test(result)
@@ -114,10 +112,10 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
 
     AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
     when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
-      (any(), any(), any()))
+      (using any(), any(), any()))
       .thenReturn(Future.successful(Some("/api/anywhere")))
     when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq("MANDATE_ID"))
-      (any(), any(), any()))
+      (using any(), any(), any()))
       .thenReturn(Future.successful(Some("mandateId")))
     val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(request, userId))
     test(result)
@@ -197,10 +195,10 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.empty"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.empty"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
-          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
+          verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            any(), any())(any(), any(), any())
+            any(), any())(using any(), any(), any())
         }
       }
 
@@ -213,11 +211,11 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           document.getElementsByClass("govuk-error-summary__body").text() mustBe "client.email.error.email.too.long"
           document.getElementsByClass("govuk-error-message").text() mustBe "govukErrorMessage.visuallyHiddenText: client.email.error.email.too.long"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            any(), any())(any(), any(), any())
+            any(), any())(using any(), any(), any())
         }
       }
 
@@ -230,11 +228,11 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            any(), any())(any(), any(), any())
+            any(), any())(using any(), any(), any())
         }
       }
 
@@ -247,11 +245,11 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            any(), any())(any(), any(), any())
+            any(), any())(using any(), any(), any())
         }
       }
 
@@ -264,11 +262,11 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
           document.getElementsByClass("govuk-error-message")
             .text() mustBe "govukErrorMessage.visuallyHiddenText: agent.edit-client.error.general.agent-enter-email-form"
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
           verify(mockDataCacheService, times(0))
-            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+            .fetchAndGetFormData[ClientCache](ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
           verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-            any(), any())(any(), any(), any())
+            any(), any())(using any(), any(), any())
         }
       }
     }
@@ -280,7 +278,7 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
         submitWithAuthorisedClient(controller)(fakeRequest, isValidEmail = true, redirectUrl = Some("/api/anywhere")) { result =>
           status(result) must be(SEE_OTHER)
           verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-            ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+            ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
         }
       }
     }
@@ -291,16 +289,16 @@ class EditEmailControllerSpec extends PlaySpec with MockitoSugar with BeforeAndA
 
       AuthenticatedWrapperBuilder.mockAuthorisedClient(mockAuthConnector)
       when(mockDataCacheService.fetchAndGetFormData[String](ArgumentMatchers.eq(controller.backLinkId))
-        (any(), any(), any()))
+        (using any(), any(), any()))
         .thenReturn(Future.successful(None))
       val result: Future[Result] = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       status(result) must be(BAD_REQUEST)
       verify(mockDataCacheService, times(1)).fetchAndGetFormData[String](
-        ArgumentMatchers.eq(controller.backLinkId))(any(), any(), any())
+        ArgumentMatchers.eq(controller.backLinkId))(using any(), any(), any())
       verify(mockDataCacheService, times(0)).fetchAndGetFormData[ClientCache](
-        ArgumentMatchers.eq(controller.clientFormId))(any(), any(), any())
+        ArgumentMatchers.eq(controller.clientFormId))(using any(), any(), any())
       verify(mockDataCacheService, times(0)).cacheFormData[ClientCache](
-        any(), any())(any(), any(), any())
+        any(), any())(using any(), any(), any())
     }
   }
 

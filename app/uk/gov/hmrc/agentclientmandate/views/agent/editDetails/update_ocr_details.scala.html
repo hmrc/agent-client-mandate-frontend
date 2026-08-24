@@ -28,7 +28,6 @@
 @import uk.gov.hmrc.hmrcfrontend.views.Implicits.RichErrorSummary
 @import views.html.helper.CSPNonce
 
-
 @this(main_template: main_template,
     formHelper: FormWithCSRF,
     govukRadios: GovukRadios,
@@ -48,8 +47,6 @@
     ))
 }
 }
-
-@implicitFormInstance = @{ Some(identificationForm) }
 
 @conditionalOcr = {
     <div class="govuk-form-group" id="hidden-ocrDetails">

@@ -37,11 +37,10 @@ class HasClientRegisteredBeforeController @Inject()(
                                                      mcc: MessagesControllerComponents,
                                                      dataCacheService: DataCacheService,
                                                      atedSubscriptionConnector: AtedSubscriptionFrontendConnector,
-                                                     implicit val ec: ExecutionContext,
-                                                     implicit val appConfig: AppConfig,
                                                      val authConnector: AuthConnector,
                                                      templateHasClientRegisteredBefore: views.html.agent.hasClientRegisteredBefore
-                                                   ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                                   )(using val ec: ExecutionContext, val appConfig: AppConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async { implicit request =>
     withAgentRefNumber(Some(service)) { _ =>

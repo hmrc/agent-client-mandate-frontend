@@ -37,7 +37,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   def acknowledgementReference: String = AgentClientMandateUtils.getUniqueAckNo
 
   def createMandate(service: String, authRetrievals: AgentAuthRetrievals)
-                   (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
+                   (using hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
     dataCacheService.fetchAndGetFormData[AgentEmail](agentEmailFormId) flatMap {
       case Some(cachedEmail) =>
         dataCacheService.fetchAndGetFormData[ClientDisplayName](clientDisplayNameFormId) flatMap {
@@ -63,7 +63,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def fetchClientMandateClientName(mandateId: String, authRetrievals: MandateAuthRetrievals)
-                                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Mandate] = {
+                                  (using hc: HeaderCarrier, ec: ExecutionContext): Future[Mandate] = {
     fetchClientMandate(mandateId, authRetrievals).map {
       case Some(mandate) => mandate
       case _ => throw new RuntimeException(s"[AgentClientMandateService][fetchClientMandateClientName] No Mandate returned for id $mandateId")
@@ -71,7 +71,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def fetchClientMandateAgentName(mandateId: String, authRetrievals: MandateAuthRetrievals)
-                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
+                                 (using hc: HeaderCarrier, ec: ExecutionContext): Future[String] = {
     fetchClientMandate(mandateId, authRetrievals).map {
       case Some(mandate) => mandate.agentParty.name
       case _ => throw new RuntimeException(s"[AgentClientMandateService][fetchClientMandateAgentName] No Mandate Agent Name returned with id $mandateId")
@@ -80,7 +80,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
 
 
   def fetchClientMandate(mandateId: String, authRetrievals: MandateAuthRetrievals)
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
+                        (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
     agentClientMandateConnector.fetchMandate(mandateId) map {
       response => response.status match {
         case OK => response.json.asOpt[Mandate]
@@ -90,7 +90,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def fetchClientMandateByClient(clientId: String, serviceName: String)
-                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
+                                (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
     agentClientMandateConnector.fetchMandateByClient(clientId, serviceName) map {
       response => response.status match {
         case OK => response.json.asOpt[Mandate]
@@ -100,7 +100,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def approveMandate(mandate: Mandate, clientAuthRetrievals: ClientAuthRetrievals)
-                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
+                    (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
     agentClientMandateConnector.approveMandate(mandate, clientAuthRetrievals) flatMap { response =>
       response.status match {
         case OK =>
@@ -119,7 +119,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
                              serviceName: String,
                              allClients: Boolean = true,
                              displayName: Option[String] = None)
-                            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandates]] = {
+                            (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandates]] = {
     agentClientMandateConnector.fetchAllMandates(agentAuthRetrievals, serviceName, allClients, displayName) map {
       response =>
         response.status match {
@@ -137,7 +137,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def rejectClient(mandateId: String, authRetrievals: AgentAuthRetrievals)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                  (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     agentClientMandateConnector.rejectClient(mandateId, authRetrievals.agentCode).map { response =>
       response.status match {
         case OK => true
@@ -147,7 +147,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def acceptClient(mandateId: String, agentAuthRetrievals: AgentAuthRetrievals)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                  (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     agentClientMandateConnector.activateMandate(mandateId, agentAuthRetrievals.agentCode).map { response =>
       response.status match {
         case OK => true
@@ -159,7 +159,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def fetchClientsCancelled(agentAuthRetrievals: AgentAuthRetrievals, serviceName: String)
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[String]]] = {
+                           (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[String]]] = {
     agentClientMandateConnector.fetchClientsCancelled(agentAuthRetrievals, serviceName).map { response =>
       response.status match {
         case OK => Some(response.json.as[Seq[String]])
@@ -169,22 +169,22 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def fetchAgentDetails(agentAuthRetrievals: AgentAuthRetrievals)
-                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentDetails] = {
+                       (using hc: HeaderCarrier, ec: ExecutionContext): Future[AgentDetails] = {
     agentClientMandateConnector.fetchAgentDetails()
   }
 
   def removeAgent(mandateId: String, authRetrievals: ClientAuthRetrievals)
-                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                 (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     removeAgentClient(mandateId, authRetrievals)
   }
 
   def removeClient(mandateId: String, authRetrievals: AgentAuthRetrievals)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                  (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     removeAgentClient(mandateId, authRetrievals)
   }
 
   private def removeAgentClient(mandateId: String, authRetrievals: MandateAuthRetrievals)
-                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                               (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     agentClientMandateConnector.remove(mandateId).map { response =>
       response.status match {
         case OK => true
@@ -194,7 +194,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def editMandate(mandate: Mandate, agentAuthRetrievals: AgentAuthRetrievals)
-                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
+                 (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Mandate]] = {
     agentClientMandateConnector.editMandate(mandate, agentAuthRetrievals).map { response =>
       response.status match {
         case OK =>
@@ -207,7 +207,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def doesAgentHaveMissingEmail(service: String, agentAuthRetrievals: AgentAuthRetrievals)
-                               (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+                               (using hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     for{
       response <- agentClientMandateConnector.doesAgentHaveMissingEmail(service, agentAuthRetrievals)
       _        <- agentClientMandateConnector.updateAgentCredId(agentAuthRetrievals)
@@ -220,19 +220,19 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
   }
 
   def updateAgentMissingEmail(emailAddress: Option[String], agentAuthRetrievals: AgentAuthRetrievals, service: String)
-                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Unit = {
+                             (using hc: HeaderCarrier, ec: ExecutionContext): Unit = {
     agentClientMandateConnector.updateAgentMissingEmail(emailAddress, agentAuthRetrievals, service)
   }
 
   def updateClientEmail(emailAddress: String, mandateId: String, clientAuthRetrievals: ClientAuthRetrievals)
-                       (implicit hc: HeaderCarrier, ec: ExecutionContext): Unit = {
+                       (using hc: HeaderCarrier, ec: ExecutionContext): Unit = {
     agentClientMandateConnector.updateClientEmail(emailAddress, mandateId, clientAuthRetrievals)
   }
 
   def updateRegisteredDetails(editAgentDetails: Option[EditAgentAddressDetails] = None,
                               editNonUKIdDetails: Option[Identification] = None,
                               agentAuthRetrievals: AgentAuthRetrievals)
-                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateRegistrationDetailsRequest]] = {
+                             (using hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateRegistrationDetailsRequest]] = {
     val cachedRespData = dataCacheService.fetchAndGetFormData[AgentDetails](agentDetailsFormId)
     for {
       cachedData <- cachedRespData
@@ -256,7 +256,7 @@ class AgentClientMandateService @Inject()(val dataCacheService: DataCacheService
                             editAgentDetails: Option[EditAgentAddressDetails],
                             nonUkiChangeDetails: Option[Identification],
                             agentAuthRetrievals: AgentAuthRetrievals)
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+                           (using hc: HeaderCarrier, ec: ExecutionContext) = {
     val updateData = UpdateRegistrationDetailsRequest(
       acknowledgementReference = acknowledgementReference,
       isAnIndividual = false,

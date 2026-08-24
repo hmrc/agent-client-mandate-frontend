@@ -36,10 +36,8 @@ class ChangeAgentController @Inject()(
                                        val dataCacheService: DataCacheService,
                                        val mcc: MessagesControllerComponents,
                                        val authConnector: AuthConnector,
-                                       implicit val ec: ExecutionContext,
-                                       implicit val appConfig: AppConfig,
                                        templateChangeAgent: views.html.client.changeAgent
-                                     ) extends FrontendController(mcc) with AuthorisedWrappers {
+                                     )(using val ec: ExecutionContext, val appConfig: AppConfig) extends FrontendController(mcc) with AuthorisedWrappers {
 
   def view(service: String, mandateId: String): Action[AnyContent] = Action.async {
     implicit request =>

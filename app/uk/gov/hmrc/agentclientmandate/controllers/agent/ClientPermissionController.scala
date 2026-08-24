@@ -39,11 +39,9 @@ class ClientPermissionController @Inject()(
                                             dataCacheService: DataCacheService,
                                             mcc: MessagesControllerComponents,
                                             val authConnector: AuthConnector,
-                                            implicit val ec: ExecutionContext,
-                                            implicit val appConfig: AppConfig,
-                                            implicit val servicesConfig: ServicesConfig,
                                             templateClientPermissionNew: views.html.agent.clientPermission_new,
-                                          ) extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
+                                          )(using val ec: ExecutionContext, val appConfig: AppConfig, val servicesConfig: ServicesConfig)
+  extends FrontendController(mcc) with AuthorisedWrappers with MandateConstants {
 
   def view(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -60,6 +58,7 @@ class ClientPermissionController @Inject()(
         }
       }
   }
+
   def submit(service: String, callingPage: String): Action[AnyContent] = Action.async {
     implicit request =>
       withAgentRefNumber(Some(service)) { _ =>
@@ -74,7 +73,7 @@ class ClientPermissionController @Inject()(
               if (data.hasPermission.getOrElse(false)) {
                 Redirect(routes.HasClientRegisteredBeforeController.view(callingPage))
               } else {
-                  Redirect(routes.CannotRegisterClientKickoutController.show(callingPage))
+                Redirect(routes.CannotRegisterClientKickoutController.show(callingPage))
               }
             Future.successful(result)
           }

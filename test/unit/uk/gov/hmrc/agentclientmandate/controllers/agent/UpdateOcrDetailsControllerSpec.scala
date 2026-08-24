@@ -62,10 +62,8 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
       mockDataCacheService,
       stubbedMessagesControllerComponents,
       mockAuthConnector,
-      implicitly,
-      mockAppConfig,
       injectedViewInstanceUpdateOcrDetails
-    )
+    )(using global, mockAppConfig)
 
     def getWithUnAuthorisedUser(service: String)(test: Future[Result] => Any): Any = {
       val userId = s"user-${UUID.randomUUID}"
@@ -79,10 +77,10 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
       val userId = s"user-${UUID.randomUUID}"
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
-      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(
+      when(mockDataCacheService.fetchAndGetFormData[AgentDetails](ArgumentMatchers.eq(controller.agentDetailsFormId))(using 
         ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(cachedData))
-      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(mockAgentClientMandateService.fetchAgentDetails(ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(agentDetails))
       val result = controller.view(service).apply(SessionBuilder.buildRequestWithSession(userId))
       test(result)
@@ -102,7 +100,7 @@ class UpdateOcrDetailsControllerSpec extends PlaySpec with MockitoSugar with Bef
 
       AuthenticatedWrapperBuilder.mockAuthorisedAgent(mockAuthConnector)
       when(mockAgentClientMandateService.updateRegisteredDetails(ArgumentMatchers.any(), ArgumentMatchers.any(),
-        ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        ArgumentMatchers.any())(using ArgumentMatchers.any(), ArgumentMatchers.any()))
         .thenReturn (Future.successful(updatedRegDetails))
       val result = controller.submit(service).apply(SessionBuilder.updateRequestFormWithSession(fakeRequest, userId))
       test(result)
