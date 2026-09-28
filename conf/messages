@@ -279,14 +279,17 @@ agent.client-permission.error.general.prevRegistered = Select yes if your client
 
 ##### AGENT PREVIOUS UNIQUE AUTHORISATION NUMBER PAGE
 
-agent.prev-auth-num.title = Do you have the previous unique authorisation number for this client?
-agent.prev-auth-num.header = Do you have the previous unique authorisation number for this client?
-agent.prev-auth-num.p = To access the client’s ATED account, you need the unique authorisation number from their previous agent. You will not be able to enter this number at a later date.
-agent.prev-auth-num.accordion = How an agent can find the UAN for a client
-agent.prev-auth-num.accordion.p = The UAN is shown on the client record on the agent’s ATED account. The agent needs to select ‘Edit’ link next to the client’s name, which shows the number at the top.
-agent.prev-auth-num.accordion.p2 = The agent also needs to click ‘Remove this client’ to allow the transfer to the new agent to take place.
+agent.prev-auth-num.title = Previous unique authorisation number
+agent.prev-auth-num.header = Previous unique authorisation number
+agent.prev-auth-num.form.question = Do you have the previous UAN?
 agent.prev-auth-num.not-selected.field-error = Select yes if you have the previous unique authorisation number for this client
 agent.prev-auth-num.not-selected.field-error.authNum = Select yes if you have the previous unique authorisation number
+agent.prev-auth-num.p1 = You will need the clients unique authorisation number (UAN) to access the clients ATED account.
+agent.prev-auth-num.p2 = Their previous agent will have this number. You will not be able to enter this number at a later date.
+agent.prev-auth-num.p3 = Their previous agent can find the UAN on the client record on their ATED account. They need to select ‘'edit link'’ next to the client''s name, which shows the number at the top.
+agent.prev-auth-num.p4 = To allow your client to transfer to you, the previous agent needs to select ''remove this client''. Until they do this, your client will show as ''client pending''.
+
+
 
 ##### AGENT INFORM HMRC PAGE
 
