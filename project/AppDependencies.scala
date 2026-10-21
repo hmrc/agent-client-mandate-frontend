@@ -19,7 +19,7 @@ import play.sbt.PlayImport.*
 
 private object AppDependencies {
 
-  val bootstrapVersion = "10.7.0"
+  val bootstrapVersion = "10.8.0"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
@@ -28,8 +28,8 @@ private object AppDependencies {
     "uk.gov.hmrc"       %% "domain-play-30"                        % "11.0.0",
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30"                    % "2.14.0",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping-play-30" % "3.5.0",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc-play-30"            % "13.14.0",
-    "commons-codec"     % "commons-codec"                          % "1.22.1"
+    "uk.gov.hmrc"       %% "play-frontend-hmrc-play-30"            % "13.16.0",
+    "commons-codec"     % "commons-codec"                          % "1.23.0"
   )
 
   val test: Seq[ModuleID] = Seq(
